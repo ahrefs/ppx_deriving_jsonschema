@@ -1,0 +1,19 @@
+version=0.26.2
+profile=default
+ocaml-version=4.14.0
+
+break-cases=toplevel # deprecated
+break-infix-before-func=false
+break-infix=fit-or-vertical
+cases-exp-indent=2
+doc-comments=before
+exp-grouping=preserve
+leading-nested-match-parens=true
+let-and=sparse
+m=120
+max-indent=2
+module-item-spacing=preserve # deprecated
+nested-match=align # deprecated
+parens-ite=true
+parens-tuple=multi-line-only
+type-decl=sparse
