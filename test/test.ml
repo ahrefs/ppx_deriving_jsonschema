@@ -8,8 +8,18 @@ type kind =
 
 type event = {
   date : float;
-  kind : kind;
+  kind_f : kind;
   comment : string;
   t : [ `Foo | `Bar | `Baz ];
 }
 [@@deriving jsonschema]
+
+type events = event list [@@deriving jsonschema]
+
+(* type eventss = event list list [@@deriving jsonschema] *)
+
+(* type event_comment = event * string [@@deriving jsonschema] *)
+
+type events_array = events array [@@deriving jsonschema]
+
+type numbers = int list [@@deriving jsonschema]

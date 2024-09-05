@@ -15,7 +15,7 @@ include
 type event =
   {
   date: float ;
-  kind: kind ;
+  kind_f: kind ;
   comment: string ;
   t: [ `Foo  | `Bar  | `Baz ] }[@@deriving jsonschema]
 include
@@ -26,7 +26,33 @@ include
         ("properties",
           (`Assoc
              [("date", (`Assoc [("type", (`String "float"))]));
-             ("kind", (`Assoc [("$ref", (`String "#/definitions/kind"))]));
+             ("kind_f", (`Assoc [("$ref", (`String "#/definitions/kind"))]));
              ("comment", (`Assoc [("type", (`String "string"))]));
              ("t", (`Assoc []))]))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type events = event list[@@deriving jsonschema]
+include
+  struct
+    let events_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items", (`Assoc [("$ref", (`String "#/definitions/event"))]))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type events_array = events array[@@deriving jsonschema]
+include
+  struct
+    let events_array_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items", (`Assoc [("$ref", (`String "#/definitions/events"))]))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type numbers = int list[@@deriving jsonschema]
+include
+  struct
+    let numbers_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items", (`Assoc [("type", (`String "int"))]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
