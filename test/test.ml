@@ -1,19 +1,15 @@
-type t_record = { f1 : string }
+[@@@ocaml.warning "-37-69"]
 
-type t_variant =
-  | Aa
-  | Bb
+type kind =
+  | Success
+  | Error
+  | Skipped
 [@@deriving jsonschema]
 
-let print_record () =
-  let t = { f1 = "hello world" } in
-  print_endline t.f1
-
-let print_variant () =
-  match Aa, Bb with
-  | _ -> print_endline "variant"
-
-let () =
-  print_record ();
-  print_variant ();
-  ()
+type event = {
+  date : float;
+  kind : kind;
+  comment : string;
+  t : [ `Foo | `Bar | `Baz ];
+}
+[@@deriving jsonschema]

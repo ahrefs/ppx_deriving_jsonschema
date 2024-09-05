@@ -1,15 +1,32 @@
-type t_record = {
-  f1: string }
-type t_variant =
-  | Aa 
-  | Bb [@@deriving jsonschema]
+[@@@ocaml.warning "-37-69"]
+type kind =
+  | Success 
+  | Error 
+  | Skipped [@@deriving jsonschema]
 include
   struct
-    let t_variant_jsonschema =
+    let kind_jsonschema =
       `Assoc
         [("type", (`String "string"));
-        ("enum", (`List [`String "Aa"; `String "Bb"]))][@@warning "-32"]
+        ("enum",
+          (`List [`String "Success"; `String "Error"; `String "Skipped"]))]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
-let print_record () = let t = { f1 = "hello world" } in print_endline t.f1
-let print_variant () = match (Aa, Bb) with | _ -> print_endline "variant"
-let () = print_record (); print_variant (); ()
+type event =
+  {
+  date: float ;
+  kind: kind ;
+  comment: string ;
+  t: [ `Foo  | `Bar  | `Baz ] }[@@deriving jsonschema]
+include
+  struct
+    let event_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("date", (`Assoc [("type", (`String "float"))]));
+             ("kind", (`Assoc [("$ref", (`String "#/definitions/kind"))]));
+             ("comment", (`Assoc [("type", (`String "string"))]));
+             ("t", (`Assoc []))]))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
