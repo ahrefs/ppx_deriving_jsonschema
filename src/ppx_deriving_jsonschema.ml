@@ -46,9 +46,23 @@ let object_ ~loc fields =
 
 let array_ ~loc element_type = [%expr `Assoc [ "type", `String "array"; "items", [%e element_type] ]]
 
+let tuple ~loc elements = [%expr `Assoc [ "type", `String "array"; "items", `List [%e elist ~loc elements] ]]
+
 let value_name_pattern ~loc type_name = [%pat? [%p ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }]]
 
 let create_value ~loc name value = [%stri let[@warning "-32"] [%p value_name_pattern ~loc name] = [%e value]]
+
+let rec type_of_core ~loc core_type =
+  match core_type.ptyp_desc with
+  | Ptyp_constr ({ txt = Lident ("list" | "array"); _ }, [ t ]) ->
+    let t = type_of_core ~loc t in
+    array_ ~loc t
+  | Ptyp_constr ({ txt = Lident type_name; _ }, []) ->
+    if is_predefined_type type_name then type_def ~loc type_name else type_ref ~loc type_name
+  | Ptyp_tuple types ->
+    let ts = List.map (type_of_core ~loc) types in
+    tuple ~loc ts
+  | _ -> assert false
 
 let derive_jsonschema ~ctxt ast =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
@@ -60,34 +74,12 @@ let derive_jsonschema ~ctxt ast =
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
     let jsonschema_expr = create_value ~loc type_name (object_ ~loc label_declarations) in
     [ jsonschema_expr ]
-  | ( _,
-      [
-        {
-          ptype_name = { txt = type_name; _ };
-          ptype_kind = Ptype_abstract;
-          ptype_manifest =
-            Some
-              {
-                ptyp_desc =
-                  Ptyp_constr
-                    ( { txt = Lident ("list" | "array"); _ },
-                      [
-                        (* should have some kind of function to recursively turn Ptyp_constr into a type definition or reference *)
-                        { ptyp_desc = Ptyp_constr ({ txt = Lident array_type_name; _ }, []); _ };
-                      ] );
-                _;
-              };
-          _;
-        };
-      ] ) ->
-    let typ =
-      if is_predefined_type array_type_name then type_def ~loc array_type_name else type_ref ~loc array_type_name
-    in
-    let jsonschema_expr = create_value ~loc type_name (array_ ~loc typ) in
+  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
+    let jsonschema_expr = create_value ~loc type_name (type_of_core ~loc core_type) in
     [ jsonschema_expr ]
   | _, ast ->
     Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast;
-    [%str [%ocaml.error "Ops, jsonschema deriving must be applied to a variant type without args"]]
+    [%str [%ocaml.error "Oops, jsonschema deriving does not support this type"]]
 
 (* return "deriving jsonschem" *)
 (* if flag then return "flag is on"

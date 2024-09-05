@@ -39,6 +39,67 @@ include
         ("items", (`Assoc [("$ref", (`String "#/definitions/event"))]))]
       [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type eventss = event list list[@@deriving jsonschema]
+include
+  struct
+    let eventss_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          (`Assoc
+             [("type", (`String "array"));
+             ("items", (`Assoc [("$ref", (`String "#/definitions/event"))]))]))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type event_comment = (event * string)[@@deriving jsonschema]
+include
+  struct
+    let event_comment_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          (`List
+             [`Assoc [("$ref", (`String "#/definitions/event"))];
+             `Assoc [("type", (`String "string"))]]))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type event_comments = (event * string list)[@@deriving jsonschema]
+include
+  struct
+    let event_comments_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          (`List
+             [`Assoc [("$ref", (`String "#/definitions/event"))];
+             `Assoc
+               [("type", (`String "array"));
+               ("items", (`Assoc [("type", (`String "string"))]))]]))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type event_comments' = event_comment list[@@deriving jsonschema]
+include
+  struct
+    let event_comments'_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          (`Assoc [("$ref", (`String "#/definitions/event_comment"))]))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type event_n = (event * int) list[@@deriving jsonschema]
+include
+  struct
+    let event_n_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          (`Assoc
+             [("type", (`String "array"));
+             ("items",
+               (`List
+                  [`Assoc [("$ref", (`String "#/definitions/event"))];
+                  `Assoc [("type", (`String "int"))]]))]))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type events_array = events array[@@deriving jsonschema]
 include
   struct
