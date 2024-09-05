@@ -22,7 +22,14 @@ let type_ref ~loc type_name =
   let name = estring ~loc ("#/definitions/" ^ type_name) in
   [%expr `Assoc [ "$ref", `String [%e name] ]]
 
-let type_def ~loc type_name = [%expr `Assoc [ "type", `String [%e estring ~loc type_name] ]]
+let type_def ~loc type_name =
+  let type_name =
+    match type_name with
+    | "int" -> "integer"
+    | "float" -> "number"
+    | _ -> type_name
+  in
+  [%expr `Assoc [ "type", `String [%e estring ~loc type_name] ]]
 
 let enum ~loc values =
   let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
@@ -42,7 +49,7 @@ let object_ ~loc fields =
         [%expr [%e estring ~loc name], [%e type_def]])
       fields
   in
-  [%expr `Assoc [ "type", `String "object"; "properties", `Assoc [%e elist ~loc fields] ]]
+  [%expr `Assoc [ "type", `String "object"; "properties", `Assoc [%e elist ~loc fields]; "required", `List [] ]]
 
 let array_ ~loc element_type = [%expr `Assoc [ "type", `String "array"; "items", [%e element_type] ]]
 

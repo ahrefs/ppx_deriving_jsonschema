@@ -25,10 +25,11 @@ include
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("date", (`Assoc [("type", (`String "float"))]));
+             [("date", (`Assoc [("type", (`String "number"))]));
              ("kind_f", (`Assoc [("$ref", (`String "#/definitions/kind"))]));
              ("comment", (`Assoc [("type", (`String "string"))]));
-             ("t", (`Assoc []))]))][@@warning "-32"]
+             ("t", (`Assoc []))]));
+        ("required", (`List []))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type events = event list[@@deriving jsonschema]
 include
@@ -98,7 +99,8 @@ include
              ("items",
                (`List
                   [`Assoc [("$ref", (`String "#/definitions/event"))];
-                  `Assoc [("type", (`String "int"))]]))]))][@@warning "-32"]
+                  `Assoc [("type", (`String "integer"))]]))]))][@@warning
+                                                                 "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type events_array = events array[@@deriving jsonschema]
 include
@@ -115,5 +117,5 @@ include
     let numbers_jsonschema =
       `Assoc
         [("type", (`String "array"));
-        ("items", (`Assoc [("type", (`String "int"))]))][@@warning "-32"]
+        ("items", (`Assoc [("type", (`String "integer"))]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
