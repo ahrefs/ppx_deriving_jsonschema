@@ -1,4 +1,17 @@
 [@@@ocaml.warning "-37-69"]
+module M =
+  struct
+    type m_1 =
+      | A 
+      | B [@@deriving jsonschema]
+    include
+      struct
+        let m_1_jsonschema =
+          `Assoc
+            [("type", (`String "string"));
+            ("enum", (`List [`String "A"; `String "B"]))][@@warning "-32"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+  end
 type kind =
   | Success 
   | Error 
@@ -127,4 +140,32 @@ include
   struct
     let opt_jsonschema = `Assoc [("type", (`String "integer"))][@@warning
                                                                  "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type using_m = {
+  m: M.m_1 }[@@deriving jsonschema]
+include
+  struct
+    let using_m_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties", (`Assoc [("m", (`Assoc []))]));
+        ("required", (`List ["m"]))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type 'param poly = {
+  f: 'param }[@@deriving jsonschema]
+include
+  struct
+    let poly_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties", (`Assoc [("f", (`Assoc []))]));
+        ("required", (`List ["f"]))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type 'param2 poly2 =
+  | C of 'param2 [@@deriving jsonschema]
+include
+  struct
+    let poly2_jsonschema =
+      `Assoc [("type", (`String "string")); ("enum", (`List []))][@@warning
+                                                                   "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]

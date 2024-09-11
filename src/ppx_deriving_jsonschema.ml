@@ -62,7 +62,13 @@ let rec type_of_core ~loc core_type =
   | Ptyp_tuple types ->
     let ts = List.map (type_of_core ~loc) types in
     tuple ~loc ts
-  | _ -> [%expr (* This type is unknown, placeholder to accept anything *) `Assoc []]
+  | _ ->
+    Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type;
+    (* todo:
+       - types living in different modules
+       - types with parameters
+    *)
+    [%expr (* This type is unknown, placeholder to accept anything *) `Assoc []]
 
 (* todo: add option to inline types instead of using definitions references *)
 let object_ ~loc fields =
@@ -86,6 +92,19 @@ let derive_jsonschema ~ctxt ast =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
+    let variants =
+      List.filter
+        (fun { pcd_args; _ } ->
+          match pcd_args with
+          | Pcstr_record _ | Pcstr_tuple (_ :: _) ->
+            (* todo: emit an error when a type can't be turned into a valid json schema *)
+            Format.printf "unsuported variant constructor with a payload: %a\n======\n"
+              Format.(pp_print_list Astlib.Pprintast.type_declaration)
+              (snd ast);
+            false
+          | Pcstr_tuple [] -> true)
+        variants
+    in
     let names = List.map (fun { pcd_name = { txt = value; _ }; _ } -> value) variants in
     let jsonschema_expr = create_value ~loc type_name (enum ~loc names) in
     [ jsonschema_expr ]
@@ -98,13 +117,6 @@ let derive_jsonschema ~ctxt ast =
   | _, ast ->
     Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast;
     [%str [%ocaml.error "Oops, jsonschema deriving does not support this type"]]
-
-(* return "deriving jsonschem" *)
-(* if flag then return "flag is on"
-   else (
-     match option1 with
-     | Some i -> return (Printf.sprintf "option is %d" i)
-     | None -> return "flag and option are not set") *)
 
 let generator () = Deriving.Generator.V2.make (args ()) derive_jsonschema
 (* let generator () = Deriving.Generator.V2.make_noarg derive_jsonschema *)

@@ -1,5 +1,12 @@
 [@@@ocaml.warning "-37-69"]
 
+module M = struct
+  type m_1 =
+    | A
+    | B
+  [@@deriving jsonschema]
+end
+
 type kind =
   | Success
   | Error
@@ -32,3 +39,9 @@ type events_array = events array [@@deriving jsonschema]
 type numbers = int list [@@deriving jsonschema]
 
 type opt = int option [@@deriving jsonschema]
+
+type using_m = { m : M.m_1 } [@@deriving jsonschema]
+
+type 'param poly = { f : 'param } [@@deriving jsonschema]
+
+type 'param2 poly2 = C of 'param2 [@@deriving jsonschema]
