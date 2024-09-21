@@ -20,6 +20,12 @@
  (synopsis "jsonschema generator for ppx_deriving")
  (description
   "ppx_deriving_jsonschema is a ppx rewriter that generates jsonschema from ocaml types")
- (depends ocaml dune ppxlib)
+ (depends
+  ocaml
+  dune
+  ppxlib
+  (yojson :with-test)
+  (ocamlformat :with-dev-setup)
+  (ocaml-lsp-server :with-dev-setup))
  (tags
   (jsonschema "org:ahrefs" syntax)))

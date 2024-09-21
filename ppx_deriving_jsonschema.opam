@@ -14,6 +14,9 @@ depends: [
   "ocaml"
   "dune" {>= "3.16"}
   "ppxlib"
+  "yojson" {with-test}
+  "ocamlformat" {with-dev-setup}
+  "ocaml-lsp-server" {with-dev-setup}
   "odoc" {with-doc}
 ]
 build: [
