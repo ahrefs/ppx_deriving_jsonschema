@@ -18,8 +18,21 @@ type event = {
   kind_f : kind;
   comment : string;
   opt : int option;
+  a : float array;
+  l : string list;
   t : [ `Foo | `Bar | `Baz ];
 }
+[@@deriving jsonschema]
+
+type recursive_record = {
+  a : int;
+  b : recursive_record list;
+}
+[@@deriving jsonschema]
+
+type recursive_variant =
+  | A of recursive_variant
+  | B
 [@@deriving jsonschema]
 
 type events = event list [@@deriving jsonschema]

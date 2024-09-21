@@ -31,6 +31,8 @@ type event =
   kind_f: kind ;
   comment: string ;
   opt: int option ;
+  a: float array ;
+  l: string list ;
   t: [ `Foo  | `Bar  | `Baz ] }[@@deriving jsonschema]
 include
   struct
@@ -40,12 +42,48 @@ include
         ("properties",
           (`Assoc
              [("t", (`Assoc []));
+             ("l",
+               (`Assoc
+                  [("type", (`String "array"));
+                  ("items", (`Assoc [("type", (`String "string"))]))]));
+             ("a",
+               (`Assoc
+                  [("type", (`String "array"));
+                  ("items", (`Assoc [("type", (`String "number"))]))]));
              ("opt", (`Assoc [("type", (`String "integer"))]));
              ("comment", (`Assoc [("type", (`String "string"))]));
              ("kind_f", (`Assoc [("$ref", (`String "#/definitions/kind"))]));
              ("date", (`Assoc [("type", (`String "number"))]))]));
-        ("required", (`List ["t"; "comment"; "kind_f"; "date"]))][@@warning
-                                                                   "-32"]
+        ("required", (`List ["t"; "l"; "a"; "comment"; "kind_f"; "date"]))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type recursive_record = {
+  a: int ;
+  b: recursive_record list }[@@deriving jsonschema]
+include
+  struct
+    let recursive_record_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("b",
+                (`Assoc
+                   [("type", (`String "array"));
+                   ("items",
+                     (`Assoc
+                        [("$ref", (`String "#/definitions/recursive_record"))]))]));
+             ("a", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List ["b"; "a"]))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type recursive_variant =
+  | A of recursive_variant 
+  | B [@@deriving jsonschema]
+include
+  struct
+    let recursive_variant_jsonschema =
+      `Assoc [("type", (`String "string")); ("enum", (`List [`String "B"]))]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type events = event list[@@deriving jsonschema]
 include
