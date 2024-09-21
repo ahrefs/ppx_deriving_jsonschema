@@ -40,25 +40,29 @@ let array_ ~loc element_type = [%expr `Assoc [ "type", `String "array"; "items",
 
 let tuple ~loc elements = [%expr `Assoc [ "type", `String "array"; "items", `List [%e elist ~loc elements] ]]
 
-let value_name_pattern ~loc type_name = [%pat? [%p ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }]]
+let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
 
-let create_value ~loc name value = [%stri let[@warning "-32"] [%p value_name_pattern ~loc name] = [%e value]]
+let create_value ~loc name value =
+  [%stri let[@warning "-32"] ([%p value_name_pattern ~loc name] : [< `Assoc of _ ]) = [%e value]]
 
 let is_optional_type core_type =
-  match core_type.ptyp_desc with
-  | Ptyp_constr ({ txt = Lident "option"; _ }, _) -> true
+  match core_type with
+  | [%type: [%t? _] option] -> true
   | _ -> false
 
 let rec type_of_core ~loc core_type =
-  match core_type.ptyp_desc with
-  | Ptyp_constr ({ txt = Lident ("list" | "array"); _ }, [ t ]) ->
+  match core_type with
+  | [%type: int] -> type_def ~loc "int"
+  | [%type: float] -> type_def ~loc "float"
+  | [%type: string] -> type_def ~loc "string"
+  | [%type: bool] -> type_def ~loc "bool"
+  | [%type: [%t? t] option] -> type_of_core ~loc t
+  | [%type: [%t? t] list] | [%type: [%t? t] array] ->
     let t = type_of_core ~loc t in
     array_ ~loc t
-  | Ptyp_constr ({ txt = Lident "option"; _ }, [ t ]) ->
-    (* might have to tweak to allow nullable? *)
-    type_of_core ~loc t
-  | Ptyp_constr ({ txt = Lident type_name; _ }, []) ->
-    if is_predefined_type type_name then type_def ~loc type_name else type_ref ~loc type_name
+  | _ ->
+  match core_type.ptyp_desc with
+  | Ptyp_constr ({ txt = Lident type_name; _ }, []) -> type_ref ~loc type_name
   | Ptyp_tuple types ->
     let ts = List.map (type_of_core ~loc) types in
     tuple ~loc ts
@@ -68,7 +72,10 @@ let rec type_of_core ~loc core_type =
        - types living in different modules
        - types with parameters
     *)
-    [%expr (* This type is unknown, placeholder to accept anything *) `Assoc []]
+    [%expr
+      (* This type is unknown, placeholder to accept anything *)
+      `Assoc
+        [ "unsuported type", `String [%e estring ~loc (Format.asprintf "%a" Astlib.Pprintast.core_type core_type)] ]]
 
 (* todo: add option to inline types instead of using definitions references *)
 let object_ ~loc fields =
@@ -80,17 +87,13 @@ let object_ ~loc fields =
           if is_optional_type pld_type then required else name :: required ))
       ([], []) fields
   in
+  let required = List.map (fun name -> [%expr `String [%e estring ~loc name]]) required in
   [%expr
     `Assoc
       [
         "type", `String "object";
         "properties", `Assoc [%e elist ~loc fields];
-        ( "required",
-          `List
-            [%e
-              elist ~loc
-                (let names = List.map (estring ~loc) required in
-                 List.map (fun name -> [%expr `String [%e name]]) names)] );
+        "required", `List [%e elist ~loc required];
       ]]
 
 let derive_jsonschema ~ctxt ast =
@@ -98,20 +101,19 @@ let derive_jsonschema ~ctxt ast =
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
     let variants =
-      List.filter
-        (fun { pcd_args; _ } ->
+      List.map
+        (fun { pcd_args; pcd_name = { txt = name; _ }; _ } ->
           match pcd_args with
           | Pcstr_record _ | Pcstr_tuple (_ :: _) ->
             (* todo: emit an error when a type can't be turned into a valid json schema *)
-            (* Format.printf "unsuported variant constructor with a payload: %a\n======\n"
-               Format.(pp_print_list Astlib.Pprintast.type_declaration)
-               (snd ast); *)
-            false
-          | Pcstr_tuple [] -> true)
+            Format.asprintf "unsuported variant constructor with a payload: %a"
+              Format.(pp_print_list Astlib.Pprintast.type_declaration)
+              (snd ast)
+          | Pcstr_tuple [] -> name)
         variants
     in
-    let names = List.map (fun { pcd_name = { txt = value; _ }; _ } -> value) variants in
-    let jsonschema_expr = create_value ~loc type_name (enum ~loc names) in
+    (* let names = List.map (fun { pcd_name = { txt = value; _ }; _ } -> value) variants in *)
+    let jsonschema_expr = create_value ~loc type_name (enum ~loc variants) in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
     let jsonschema_expr = create_value ~loc type_name (object_ ~loc label_declarations) in

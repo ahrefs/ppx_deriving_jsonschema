@@ -9,7 +9,7 @@ module M =
       | B [@@deriving jsonschema]
     include
       struct
-        let m_1_jsonschema =
+        let (m_1_jsonschema : [< `Assoc of _ ]) =
           `Assoc
             [("type", (`String "string"));
             ("enum", (`List [`String "A"; `String "B"]))][@@warning "-32"]
@@ -21,7 +21,7 @@ type kind =
   | Skipped [@@deriving jsonschema]
 include
   struct
-    let kind_jsonschema =
+    let (kind_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "string"));
         ("enum",
@@ -40,12 +40,14 @@ type event =
   t: [ `Foo  | `Bar  | `Baz ] }[@@deriving jsonschema]
 include
   struct
-    let event_jsonschema =
+    let (event_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("t", (`Assoc []));
+             [("t",
+                (`Assoc
+                   [("unsuported type", (`String "[ `Foo  | `Bar  | `Baz ]"))]));
              ("l",
                (`Assoc
                   [("type", (`String "array"));
@@ -73,7 +75,7 @@ type recursive_record = {
   b: recursive_record list }[@@deriving jsonschema]
 include
   struct
-    let recursive_record_jsonschema =
+    let (recursive_record_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "object"));
         ("properties",
@@ -93,15 +95,20 @@ type recursive_variant =
   | B [@@deriving jsonschema]
 include
   struct
-    let recursive_variant_jsonschema =
-      `Assoc [("type", (`String "string")); ("enum", (`List [`String "B"]))]
-      [@@warning "-32"]
+    let (recursive_variant_jsonschema : [< `Assoc of _ ]) =
+      `Assoc
+        [("type", (`String "string"));
+        ("enum",
+          (`List
+             [`String
+                "unsuported variant constructor with a payload: \n| A of recursive_variant \n| B\n";
+             `String "B"]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema recursive_variant_jsonschema
 type events = event list[@@deriving jsonschema]
 include
   struct
-    let events_jsonschema =
+    let (events_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "array"));
         ("items", (`Assoc [("$ref", (`String "#/definitions/event"))]))]
@@ -111,7 +118,7 @@ let () = print_schema events_jsonschema
 type eventss = event list list[@@deriving jsonschema]
 include
   struct
-    let eventss_jsonschema =
+    let (eventss_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "array"));
         ("items",
@@ -124,7 +131,7 @@ let () = print_schema eventss_jsonschema
 type event_comment = (event * string)[@@deriving jsonschema]
 include
   struct
-    let event_comment_jsonschema =
+    let (event_comment_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "array"));
         ("items",
@@ -136,7 +143,7 @@ let () = print_schema event_comment_jsonschema
 type event_comments' = event_comment list[@@deriving jsonschema]
 include
   struct
-    let event_comments'_jsonschema =
+    let (event_comments'_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "array"));
         ("items",
@@ -147,7 +154,7 @@ let () = print_schema event_comments'_jsonschema
 type event_n = (event * int) list[@@deriving jsonschema]
 include
   struct
-    let event_n_jsonschema =
+    let (event_n_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "array"));
         ("items",
@@ -163,7 +170,7 @@ let () = print_schema event_n_jsonschema
 type events_array = events array[@@deriving jsonschema]
 include
   struct
-    let events_array_jsonschema =
+    let (events_array_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "array"));
         ("items", (`Assoc [("$ref", (`String "#/definitions/events"))]))]
@@ -173,7 +180,7 @@ let () = print_schema events_array_jsonschema
 type numbers = int list[@@deriving jsonschema]
 include
   struct
-    let numbers_jsonschema =
+    let (numbers_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "array"));
         ("items", (`Assoc [("type", (`String "integer"))]))][@@warning "-32"]
@@ -182,18 +189,19 @@ let () = print_schema numbers_jsonschema
 type opt = int option[@@deriving jsonschema]
 include
   struct
-    let opt_jsonschema = `Assoc [("type", (`String "integer"))][@@warning
-                                                                 "-32"]
+    let (opt_jsonschema : [< `Assoc of _ ]) =
+      `Assoc [("type", (`String "integer"))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema opt_jsonschema
 type using_m = {
   m: M.m_1 }[@@deriving jsonschema]
 include
   struct
-    let using_m_jsonschema =
+    let (using_m_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "object"));
-        ("properties", (`Assoc [("m", (`Assoc []))]));
+        ("properties",
+          (`Assoc [("m", (`Assoc [("unsuported type", (`String "M.m_1"))]))]));
         ("required", (`List [`String "m"]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema using_m_jsonschema
@@ -201,10 +209,11 @@ type 'param poly = {
   f: 'param }[@@deriving jsonschema]
 include
   struct
-    let poly_jsonschema =
+    let (poly_jsonschema : [< `Assoc of _ ]) =
       `Assoc
         [("type", (`String "object"));
-        ("properties", (`Assoc [("f", (`Assoc []))]));
+        ("properties",
+          (`Assoc [("f", (`Assoc [("unsuported type", (`String "'param"))]))]));
         ("required", (`List [`String "f"]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_jsonschema
@@ -212,8 +221,13 @@ type 'param2 poly2 =
   | C of 'param2 [@@deriving jsonschema]
 include
   struct
-    let poly2_jsonschema =
-      `Assoc [("type", (`String "string")); ("enum", (`List []))][@@warning
-                                                                   "-32"]
+    let (poly2_jsonschema : [< `Assoc of _ ]) =
+      `Assoc
+        [("type", (`String "string"));
+        ("enum",
+          (`List
+             [`String
+                "unsuported variant constructor with a payload: \n| C of 'param2\n"]))]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly2_jsonschema

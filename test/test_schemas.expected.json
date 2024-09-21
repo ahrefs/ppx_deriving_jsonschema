@@ -7,7 +7,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "t": {},
+    "t": { "unsuported type": "[ `Foo  | `Bar  | `Baz ]" },
     "l": { "type": "array", "items": { "type": "string" } },
     "a": { "type": "array", "items": { "type": "number" } },
     "opt": { "type": "integer" },
@@ -32,7 +32,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "string",
-  "enum": [ "B" ]
+  "enum": [
+    "unsuported variant constructor with a payload: \n| A of recursive_variant \n| B\n",
+    "B"
+  ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -79,17 +82,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "properties": { "m": {} },
+  "properties": { "m": { "unsuported type": "M.m_1" } },
   "required": [ "m" ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "properties": { "f": {} },
+  "properties": { "f": { "unsuported type": "'param" } },
   "required": [ "f" ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "string",
-  "enum": []
+  "enum": [
+    "unsuported variant constructor with a payload: \n| C of 'param2\n"
+  ]
 }
