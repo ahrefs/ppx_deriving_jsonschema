@@ -19,6 +19,7 @@
 (executable
  (name test)
  (modules test)
+ (libraries yojson)
  (preprocess
   (pps ppx_deriving_jsonschema)))
 

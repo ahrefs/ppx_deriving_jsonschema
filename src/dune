@@ -1,7 +1,7 @@
 (library
  (public_name ppx_deriving_jsonschema)
  (kind ppx_deriver)
- (libraries ppxlib yojson)
+ (libraries ppxlib)
  (preprocess
   (pps ppxlib.metaquot))
- (ppx_runtime_libraries ppx_deriving_jsonschema.runtime yojson))
+ (ppx_runtime_libraries ppx_deriving_jsonschema.runtime))

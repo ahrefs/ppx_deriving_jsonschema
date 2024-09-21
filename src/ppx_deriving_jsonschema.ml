@@ -3,12 +3,12 @@ open Ast_builder.Default
 
 let deriver_name = "jsonschema"
 
-let default_attribute =
-  Attribute.declare "ppx_deriving_yojson.of_yojson.default" Attribute.Context.label_declaration
-    Ast_pattern.(single_expr_payload __)
-    (fun expr -> expr)
+(* let default_attribute =
+     Attribute.declare "ppx_deriving_yojson.of_yojson.default" Attribute.Context.label_declaration
+       Ast_pattern.(single_expr_payload __)
+       (fun expr -> expr)
 
-let attributes = [ Attribute.T default_attribute ]
+   let attributes = [ Attribute.T default_attribute ] *)
 
 let args () = Deriving.Args.(empty)
 (* let args () = Deriving.Args.(empty +> arg "option1" (eint __) +> flag "flag") *)
