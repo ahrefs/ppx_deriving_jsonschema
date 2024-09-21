@@ -5,12 +5,27 @@ let print_schema s =
   let () = print_endline (Yojson.Basic.pretty_to_string s) in
   ()
 
-module M = struct
+module Mod1 = struct
   type m_1 =
     | A
     | B
   [@@deriving jsonschema]
+
+  module Mod2 = struct
+    type m_2 =
+      | C
+      | D
+    [@@deriving jsonschema]
+  end
 end
+
+type with_modules = {
+  m : Mod1.m_1;
+  m2 : Mod1.Mod2.m_2;
+}
+[@@deriving jsonschema]
+
+let () = print_schema with_modules_jsonschema
 
 type kind =
   | Success
@@ -33,20 +48,20 @@ type event = {
 
 let () = print_schema event_jsonschema
 
-type recursive_record = {
-  a : int;
-  b : recursive_record list;
-}
-[@@deriving jsonschema]
+(* type recursive_record = {
+     a : int;
+     b : recursive_record list;
+   }
+   [@@deriving jsonschema]
 
-let () = print_schema recursive_record_jsonschema
+   let () = print_schema recursive_record_jsonschema
 
-type recursive_variant =
-  | A of recursive_variant
-  | B
-[@@deriving jsonschema]
+   type recursive_variant =
+     | A of recursive_variant
+     | B
+   [@@deriving jsonschema]
 
-let () = print_schema recursive_variant_jsonschema
+   let () = print_schema recursive_variant_jsonschema *)
 
 type events = event list [@@deriving jsonschema]
 
@@ -80,7 +95,7 @@ type opt = int option [@@deriving jsonschema]
 
 let () = print_schema opt_jsonschema
 
-type using_m = { m : M.m_1 } [@@deriving jsonschema]
+type using_m = { m : Mod1.m_1 } [@@deriving jsonschema]
 
 let () = print_schema using_m_jsonschema
 

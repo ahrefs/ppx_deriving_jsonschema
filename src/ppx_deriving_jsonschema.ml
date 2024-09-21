@@ -43,7 +43,7 @@ let tuple ~loc elements = [%expr `Assoc [ "type", `String "array"; "items", `Lis
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
 
 let create_value ~loc name value =
-  [%stri let[@warning "-32"] ([%p value_name_pattern ~loc name] : [< `Assoc of _ ]) = [%e value]]
+  [%stri let[@warning "-32-39"] (* rec *) [%p value_name_pattern ~loc name (* : [< `Assoc of _ list ] *)] = [%e value]]
 
 let is_optional_type core_type =
   match core_type with
@@ -62,7 +62,7 @@ let rec type_of_core ~loc core_type =
     array_ ~loc t
   | _ ->
   match core_type.ptyp_desc with
-  | Ptyp_constr ({ txt = Lident type_name; _ }, []) -> type_ref ~loc type_name
+  | Ptyp_constr (id, []) -> type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") [] (* type_ref ~loc type_name *)
   | Ptyp_tuple types ->
     let ts = List.map (type_of_core ~loc) types in
     tuple ~loc ts

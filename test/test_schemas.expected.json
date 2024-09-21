@@ -1,5 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "m2": { "type": "string", "enum": [ "C", "D" ] },
+    "m": { "type": "string", "enum": [ "A", "B" ] }
+  },
+  "required": [ "m2", "m" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "string",
   "enum": [ "Success", "Error", "Skipped" ]
 }
@@ -12,63 +21,151 @@
     "a": { "type": "array", "items": { "type": "number" } },
     "opt": { "type": "integer" },
     "comment": { "type": "string" },
-    "kind_f": { "$ref": "#/definitions/kind" },
+    "kind_f": { "type": "string", "enum": [ "Success", "Error", "Skipped" ] },
     "date": { "type": "number" }
   },
   "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "b": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/recursive_record" }
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "t": { "unsuported type": "[ `Foo  | `Bar  | `Baz ]" },
+      "l": { "type": "array", "items": { "type": "string" } },
+      "a": { "type": "array", "items": { "type": "number" } },
+      "opt": { "type": "integer" },
+      "comment": { "type": "string" },
+      "kind_f": {
+        "type": "string",
+        "enum": [ "Success", "Error", "Skipped" ]
+      },
+      "date": { "type": "number" }
     },
-    "a": { "type": "integer" }
-  },
-  "required": [ "b", "a" ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "string",
-  "enum": [
-    "unsuported variant constructor with a payload: \n| A of recursive_variant \n| B\n",
-    "B"
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": { "$ref": "#/definitions/event" }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": { "type": "array", "items": { "$ref": "#/definitions/event" } }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": [ { "$ref": "#/definitions/event" }, { "type": "string" } ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": { "$ref": "#/definitions/event_comment" }
+    "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+  }
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "array",
   "items": {
     "type": "array",
-    "items": [ { "$ref": "#/definitions/event" }, { "type": "integer" } ]
+    "items": {
+      "type": "object",
+      "properties": {
+        "t": { "unsuported type": "[ `Foo  | `Bar  | `Baz ]" },
+        "l": { "type": "array", "items": { "type": "string" } },
+        "a": { "type": "array", "items": { "type": "number" } },
+        "opt": { "type": "integer" },
+        "comment": { "type": "string" },
+        "kind_f": {
+          "type": "string",
+          "enum": [ "Success", "Error", "Skipped" ]
+        },
+        "date": { "type": "number" }
+      },
+      "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+    }
   }
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "array",
-  "items": { "$ref": "#/definitions/events" }
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "t": { "unsuported type": "[ `Foo  | `Bar  | `Baz ]" },
+        "l": { "type": "array", "items": { "type": "string" } },
+        "a": { "type": "array", "items": { "type": "number" } },
+        "opt": { "type": "integer" },
+        "comment": { "type": "string" },
+        "kind_f": {
+          "type": "string",
+          "enum": [ "Success", "Error", "Skipped" ]
+        },
+        "date": { "type": "number" }
+      },
+      "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+    },
+    { "type": "string" }
+  ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "t": { "unsuported type": "[ `Foo  | `Bar  | `Baz ]" },
+          "l": { "type": "array", "items": { "type": "string" } },
+          "a": { "type": "array", "items": { "type": "number" } },
+          "opt": { "type": "integer" },
+          "comment": { "type": "string" },
+          "kind_f": {
+            "type": "string",
+            "enum": [ "Success", "Error", "Skipped" ]
+          },
+          "date": { "type": "number" }
+        },
+        "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+      },
+      { "type": "string" }
+    ]
+  }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "t": { "unsuported type": "[ `Foo  | `Bar  | `Baz ]" },
+          "l": { "type": "array", "items": { "type": "string" } },
+          "a": { "type": "array", "items": { "type": "number" } },
+          "opt": { "type": "integer" },
+          "comment": { "type": "string" },
+          "kind_f": {
+            "type": "string",
+            "enum": [ "Success", "Error", "Skipped" ]
+          },
+          "date": { "type": "number" }
+        },
+        "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+      },
+      { "type": "integer" }
+    ]
+  }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "t": { "unsuported type": "[ `Foo  | `Bar  | `Baz ]" },
+        "l": { "type": "array", "items": { "type": "string" } },
+        "a": { "type": "array", "items": { "type": "number" } },
+        "opt": { "type": "integer" },
+        "comment": { "type": "string" },
+        "kind_f": {
+          "type": "string",
+          "enum": [ "Success", "Error", "Skipped" ]
+        },
+        "date": { "type": "number" }
+      },
+      "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+    }
+  }
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -82,7 +179,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "properties": { "m": { "unsuported type": "M.m_1" } },
+  "properties": { "m": { "type": "string", "enum": [ "A", "B" ] } },
   "required": [ "m" ]
 }
 {
