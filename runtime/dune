@@ -1,0 +1,4 @@
+(library
+ (name ppx_deriving_jsonschema_runtime)
+ (public_name ppx_deriving_jsonschema.runtime)
+ (libraries yojson))

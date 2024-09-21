@@ -16,8 +16,20 @@
  (action
   (diff test.expected.ml test.actual.ml)))
 
-(test
+(executable
  (name test)
  (modules test)
  (preprocess
   (pps ppx_deriving_jsonschema)))
+
+(rule
+ (targets test_schemas.actual.json)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run ./test.exe))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff test_schemas.expected.json test_schemas.actual.json)))

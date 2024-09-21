@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "enum": [ "Success", "Error", "Skipped" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "t": {},
+    "l": { "type": "array", "items": { "type": "string" } },
+    "a": { "type": "array", "items": { "type": "number" } },
+    "opt": { "type": "integer" },
+    "comment": { "type": "string" },
+    "kind_f": { "$ref": "#/definitions/kind" },
+    "date": { "type": "number" }
+  },
+  "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "b": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/recursive_record" }
+    },
+    "a": { "type": "integer" }
+  },
+  "required": [ "b", "a" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "enum": [ "B" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": { "$ref": "#/definitions/event" }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": { "type": "array", "items": { "$ref": "#/definitions/event" } }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": [ { "$ref": "#/definitions/event" }, { "type": "string" } ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": { "$ref": "#/definitions/event_comment" }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "array",
+    "items": [ { "$ref": "#/definitions/event" }, { "type": "integer" } ]
+  }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": { "$ref": "#/definitions/events" }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": { "type": "integer" }
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "integer"
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": { "m": {} },
+  "required": [ "m" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": { "f": {} },
+  "required": [ "f" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "enum": []
+}

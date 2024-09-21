@@ -63,7 +63,7 @@ let rec type_of_core ~loc core_type =
     let ts = List.map (type_of_core ~loc) types in
     tuple ~loc ts
   | _ ->
-    Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type;
+    (* Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type; *)
     (* todo:
        - types living in different modules
        - types with parameters
@@ -85,7 +85,12 @@ let object_ ~loc fields =
       [
         "type", `String "object";
         "properties", `Assoc [%e elist ~loc fields];
-        "required", `List [%e elist ~loc (List.map (estring ~loc) required)];
+        ( "required",
+          `List
+            [%e
+              elist ~loc
+                (let names = List.map (estring ~loc) required in
+                 List.map (fun name -> [%expr `String [%e name]]) names)] );
       ]]
 
 let derive_jsonschema ~ctxt ast =
@@ -98,9 +103,9 @@ let derive_jsonschema ~ctxt ast =
           match pcd_args with
           | Pcstr_record _ | Pcstr_tuple (_ :: _) ->
             (* todo: emit an error when a type can't be turned into a valid json schema *)
-            Format.printf "unsuported variant constructor with a payload: %a\n======\n"
-              Format.(pp_print_list Astlib.Pprintast.type_declaration)
-              (snd ast);
+            (* Format.printf "unsuported variant constructor with a payload: %a\n======\n"
+               Format.(pp_print_list Astlib.Pprintast.type_declaration)
+               (snd ast); *)
             false
           | Pcstr_tuple [] -> true)
         variants
@@ -114,8 +119,8 @@ let derive_jsonschema ~ctxt ast =
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
     let jsonschema_expr = create_value ~loc type_name (type_of_core ~loc core_type) in
     [ jsonschema_expr ]
-  | _, ast ->
-    Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast;
+  | _, _ast ->
+    (* Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast; *)
     [%str [%ocaml.error "Oops, jsonschema deriving does not support this type"]]
 
 let generator () = Deriving.Generator.V2.make (args ()) derive_jsonschema
