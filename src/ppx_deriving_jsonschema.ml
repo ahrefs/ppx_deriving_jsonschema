@@ -3,12 +3,29 @@ open Ast_builder.Default
 
 let deriver_name = "jsonschema"
 
+let jsonschema_key =
+  Attribute.declare "jsonschema.key" Attribute.Context.label_declaration
+    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    (fun x -> x)
+
+let jsonschema_variant_name =
+  Attribute.declare "jsonschema.name" Attribute.Context.constructor_declaration
+    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    (fun x -> x)
+
+let jsonschema_polymorphic_variant_name =
+  Attribute.declare "jsonschema.name" Attribute.Context.rtag
+    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    (fun x -> x)
+
 (* let default_attribute =
      Attribute.declare "ppx_deriving_yojson.of_yojson.default" Attribute.Context.label_declaration
        Ast_pattern.(single_expr_payload __)
        (fun expr -> expr)
+*)
 
-   let attributes = [ Attribute.T default_attribute ] *)
+let attributes =
+  [ Attribute.T jsonschema_key; Attribute.T jsonschema_variant_name; Attribute.T jsonschema_polymorphic_variant_name ]
 
 let args () = Deriving.Args.(empty)
 (* let args () = Deriving.Args.(empty +> arg "option1" (eint __) +> flag "flag") *)
@@ -62,26 +79,46 @@ let rec type_of_core ~loc core_type =
     array_ ~loc t
   | _ ->
   match core_type.ptyp_desc with
-  | Ptyp_constr (id, []) -> type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") [] (* type_ref ~loc type_name *)
+  | Ptyp_constr (id, []) ->
+    (* todo: support using references with [type_ref ~loc type_name] instead of inlining everything *)
+    type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") []
   | Ptyp_tuple types ->
     let ts = List.map (type_of_core ~loc) types in
     tuple ~loc ts
+  | Ptyp_variant (row_fields, _, _) ->
+    let constr_names =
+      List.map
+        (fun row_field ->
+          let name_overwrite = Attribute.get jsonschema_polymorphic_variant_name row_field in
+          match name_overwrite with
+          | Some name -> name
+          | None ->
+          match row_field with
+          | { prf_desc = Rtag (name, _, _); _ } -> name.txt
+          | { prf_desc = Rinherit _core_type; _ } ->
+            Format.asprintf "unsupported polymorphic variant type: %a" Astlib.Pprintast.core_type core_type (* todo: *))
+        row_fields
+    in
+    enum ~loc constr_names
   | _ ->
     (* Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type; *)
-    (* todo:
-       - types living in different modules
-       - types with parameters
-    *)
     [%expr
-      (* This type is unknown, placeholder to accept anything *)
+      (* todo: this type is unknown, placeholder to accept anything. Should create an error instead. *)
       `Assoc
-        [ "unsuported type", `String [%e estring ~loc (Format.asprintf "%a" Astlib.Pprintast.core_type core_type)] ]]
+        [
+          "unsuported core type", `String [%e estring ~loc (Format.asprintf "%a" Astlib.Pprintast.core_type core_type)];
+        ]]
 
 (* todo: add option to inline types instead of using definitions references *)
 let object_ ~loc fields =
   let fields, required =
     List.fold_left
-      (fun (fields, required) { pld_name = { txt = name; _ }; pld_type; _ } ->
+      (fun (fields, required) ({ pld_name = { txt = name; _ }; pld_type; _ } as field) ->
+        let name =
+          match Attribute.get jsonschema_key field with
+          | Some name -> name
+          | None -> name
+        in
         let type_def = type_of_core ~loc pld_type in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           if is_optional_type pld_type then required else name :: required ))
@@ -102,7 +139,11 @@ let derive_jsonschema ~ctxt ast =
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
     let variants =
       List.map
-        (fun { pcd_args; pcd_name = { txt = name; _ }; _ } ->
+        (fun ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
+          let name_overwrite = Attribute.get jsonschema_variant_name var in
+          match name_overwrite with
+          | Some name -> name
+          | None ->
           match pcd_args with
           | Pcstr_record _ | Pcstr_tuple (_ :: _) ->
             (* todo: emit an error when a type can't be turned into a valid json schema *)
@@ -125,7 +166,7 @@ let derive_jsonschema ~ctxt ast =
     (* Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast; *)
     [%str [%ocaml.error "Oops, jsonschema deriving does not support this type"]]
 
-let generator () = Deriving.Generator.V2.make (args ()) derive_jsonschema
+let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 (* let generator () = Deriving.Generator.V2.make_noarg derive_jsonschema *)
 
 let _ : Deriving.t = Deriving.add deriver_name ~str_type_decl:(generator ())

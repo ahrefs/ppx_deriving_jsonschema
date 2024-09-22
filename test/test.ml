@@ -30,16 +30,33 @@ let () = print_schema with_modules_jsonschema
 type kind =
   | Success
   | Error
-  | Skipped
+  | Skipped [@name "skipped"]
 [@@deriving jsonschema]
 
 let () = print_schema kind_jsonschema
+
+type poly_kind =
+  [ `Aaa
+  | `Bbb
+  | `Ccc [@name "ccc"]
+  ]
+[@@deriving jsonschema]
+
+let () = print_schema poly_kind_jsonschema
+
+type poly_inherit =
+  [ `New_one
+  | poly_kind
+  ]
+[@@deriving jsonschema]
+
+let () = print_schema poly_inherit_jsonschema
 
 type event = {
   date : float;
   kind_f : kind;
   comment : string;
-  opt : int option;
+  opt : int option; [@key "opt_int"]
   a : float array;
   l : string list;
   t : [ `Foo | `Bar | `Baz ];
@@ -106,3 +123,7 @@ let () = print_schema poly_jsonschema
 type 'param2 poly2 = C of 'param2 [@@deriving jsonschema]
 
 let () = print_schema poly2_jsonschema
+
+type tuple_with_variant = int * [ `A | `B [@name "second_cstr"] ] [@@deriving jsonschema]
+
+let () = print_schema tuple_with_variant_jsonschema
