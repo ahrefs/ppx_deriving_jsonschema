@@ -92,7 +92,8 @@ type event =
   opt: int option [@key "opt_int"];
   a: float array ;
   l: string list ;
-  t: [ `Foo  | `Bar  | `Baz ] }[@@deriving jsonschema]
+  t: [ `Foo  | `Bar  | `Baz ] ;
+  c: char }[@@deriving jsonschema]
 include
   struct
     let event_jsonschema =
@@ -100,11 +101,16 @@ include
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("t",
+             [("c",
                 (`Assoc
                    [("type", (`String "string"));
-                   ("enum",
-                     (`List [`String "Foo"; `String "Bar"; `String "Baz"]))]));
+                   ("minLength", (`Int 1));
+                   ("maxLength", (`Int 1))]));
+             ("t",
+               (`Assoc
+                  [("type", (`String "string"));
+                  ("enum",
+                    (`List [`String "Foo"; `String "Bar"; `String "Baz"]))]));
              ("l",
                (`Assoc
                   [("type", (`String "array"));
@@ -119,7 +125,8 @@ include
              ("date", (`Assoc [("type", (`String "number"))]))]));
         ("required",
           (`List
-             [`String "t";
+             [`String "c";
+             `String "t";
              `String "l";
              `String "a";
              `String "comment";
@@ -271,7 +278,8 @@ include
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("scores_ref", (`Assoc [("$ref", (`String "#/defs/numbers"))]));
+             [("scores_ref",
+                (`Assoc [("$ref", (`String "#/$defs/numbers"))]));
              ("player", (`Assoc [("type", (`String "string"))]))]));
         ("required", (`List [`String "scores_ref"; `String "player"]))]
       [@@warning "-32-39"]
@@ -280,3 +288,87 @@ let () =
   print_schema ~id:"https://ahrefs.com/schemas/player_scores"
     ~title:"Player scores" ~description:"Object representing player scores"
     ~definitions:[("numbers", numbers_jsonschema)] player_scores_jsonschema
+type address = {
+  street: string ;
+  city: string ;
+  zip: string }[@@deriving jsonschema]
+include
+  struct
+    let address_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("zip", (`Assoc [("type", (`String "string"))]));
+             ("city", (`Assoc [("type", (`String "string"))]));
+             ("street", (`Assoc [("type", (`String "string"))]))]));
+        ("required",
+          (`List [`String "zip"; `String "city"; `String "street"]))]
+      [@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type t = {
+  name: string ;
+  age: int ;
+  email: string option ;
+  address: address }[@@deriving jsonschema]
+include
+  struct
+    let t_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("address", address_jsonschema);
+             ("email", (`Assoc [("type", (`String "string"))]));
+             ("age", (`Assoc [("type", (`String "integer"))]));
+             ("name", (`Assoc [("type", (`String "string"))]))]));
+        ("required",
+          (`List [`String "address"; `String "age"; `String "name"]))]
+      [@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema t_jsonschema
+type tt =
+  {
+  name: string ;
+  age: int ;
+  email: string option ;
+  home_address: address [@ref "shared_address"];
+  work_address: address [@ref "shared_address"];
+  retreat_address: address [@ref "shared_address"]}[@@deriving jsonschema]
+include
+  struct
+    let tt_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("retreat_address",
+                (`Assoc [("$ref", (`String "#/$defs/shared_address"))]));
+             ("work_address",
+               (`Assoc [("$ref", (`String "#/$defs/shared_address"))]));
+             ("home_address",
+               (`Assoc [("$ref", (`String "#/$defs/shared_address"))]));
+             ("email", (`Assoc [("type", (`String "string"))]));
+             ("age", (`Assoc [("type", (`String "integer"))]));
+             ("name", (`Assoc [("type", (`String "string"))]))]));
+        ("required",
+          (`List
+             [`String "retreat_address";
+             `String "work_address";
+             `String "home_address";
+             `String "age";
+             `String "name"]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () =
+  print_schema ~definitions:[("shared_address", address_jsonschema)]
+    tt_jsonschema
+type c = char[@@deriving jsonschema]
+include
+  struct
+    let c_jsonschema =
+      `Assoc
+        [("type", (`String "string"));
+        ("minLength", (`Int 1));
+        ("maxLength", (`Int 1))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema c_jsonschema

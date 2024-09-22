@@ -29,6 +29,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "c": { "type": "string", "minLength": 1, "maxLength": 1 },
     "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
     "l": { "type": "array", "items": { "type": "string" } },
     "a": { "type": "array", "items": { "type": "number" } },
@@ -37,7 +38,7 @@
     "kind_f": { "type": "string", "enum": [ "Success", "Error", "skipped" ] },
     "date": { "type": "number" }
   },
-  "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+  "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -45,6 +46,7 @@
   "items": {
     "type": "object",
     "properties": {
+      "c": { "type": "string", "minLength": 1, "maxLength": 1 },
       "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
       "l": { "type": "array", "items": { "type": "string" } },
       "a": { "type": "array", "items": { "type": "number" } },
@@ -56,7 +58,7 @@
       },
       "date": { "type": "number" }
     },
-    "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+    "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
   }
 }
 {
@@ -67,6 +69,7 @@
     "items": {
       "type": "object",
       "properties": {
+        "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
         "l": { "type": "array", "items": { "type": "string" } },
         "a": { "type": "array", "items": { "type": "number" } },
@@ -78,7 +81,7 @@
         },
         "date": { "type": "number" }
       },
-      "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+      "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
     }
   }
 }
@@ -89,6 +92,7 @@
     {
       "type": "object",
       "properties": {
+        "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
         "l": { "type": "array", "items": { "type": "string" } },
         "a": { "type": "array", "items": { "type": "number" } },
@@ -100,7 +104,7 @@
         },
         "date": { "type": "number" }
       },
-      "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+      "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
     },
     { "type": "string" }
   ]
@@ -114,6 +118,7 @@
       {
         "type": "object",
         "properties": {
+          "c": { "type": "string", "minLength": 1, "maxLength": 1 },
           "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
           "l": { "type": "array", "items": { "type": "string" } },
           "a": { "type": "array", "items": { "type": "number" } },
@@ -125,7 +130,7 @@
           },
           "date": { "type": "number" }
         },
-        "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+        "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
       },
       { "type": "string" }
     ]
@@ -140,6 +145,7 @@
       {
         "type": "object",
         "properties": {
+          "c": { "type": "string", "minLength": 1, "maxLength": 1 },
           "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
           "l": { "type": "array", "items": { "type": "string" } },
           "a": { "type": "array", "items": { "type": "number" } },
@@ -151,7 +157,7 @@
           },
           "date": { "type": "number" }
         },
-        "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+        "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
       },
       { "type": "integer" }
     ]
@@ -165,6 +171,7 @@
     "items": {
       "type": "object",
       "properties": {
+        "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
         "l": { "type": "array", "items": { "type": "string" } },
         "a": { "type": "array", "items": { "type": "number" } },
@@ -176,7 +183,7 @@
         },
         "date": { "type": "number" }
       },
-      "required": [ "t", "l", "a", "comment", "kind_f", "date" ]
+      "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
     }
   }
 }
@@ -224,8 +231,59 @@
   "$defs": { "numbers": { "type": "array", "items": { "type": "integer" } } },
   "type": "object",
   "properties": {
-    "scores_ref": { "$ref": "#/defs/numbers" },
+    "scores_ref": { "$ref": "#/$defs/numbers" },
     "player": { "type": "string" }
   },
   "required": [ "scores_ref", "player" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "zip": { "type": "string" },
+        "city": { "type": "string" },
+        "street": { "type": "string" }
+      },
+      "required": [ "zip", "city", "street" ]
+    },
+    "email": { "type": "string" },
+    "age": { "type": "integer" },
+    "name": { "type": "string" }
+  },
+  "required": [ "address", "age", "name" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "shared_address": {
+      "type": "object",
+      "properties": {
+        "zip": { "type": "string" },
+        "city": { "type": "string" },
+        "street": { "type": "string" }
+      },
+      "required": [ "zip", "city", "street" ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "retreat_address": { "$ref": "#/$defs/shared_address" },
+    "work_address": { "$ref": "#/$defs/shared_address" },
+    "home_address": { "$ref": "#/$defs/shared_address" },
+    "email": { "type": "string" },
+    "age": { "type": "integer" },
+    "name": { "type": "string" }
+  },
+  "required": [
+    "retreat_address", "work_address", "home_address", "age", "name"
+  ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "minLength": 1,
+  "maxLength": 1
 }

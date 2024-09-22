@@ -60,6 +60,7 @@ type event = {
   a : float array;
   l : string list;
   t : [ `Foo | `Bar | `Baz ];
+  c : char;
 }
 [@@deriving jsonschema]
 
@@ -139,3 +140,36 @@ let () =
     ~description:"Object representing player scores"
     ~definitions:[ "numbers", numbers_jsonschema ]
     player_scores_jsonschema
+
+type address = {
+  street : string;
+  city : string;
+  zip : string;
+}
+[@@deriving jsonschema]
+
+type t = {
+  name : string;
+  age : int;
+  email : string option;
+  address : address;
+}
+[@@deriving jsonschema]
+
+let () = print_schema t_jsonschema
+
+type tt = {
+  name : string;
+  age : int;
+  email : string option;
+  home_address : address; [@ref "shared_address"]
+  work_address : address; [@ref "shared_address"]
+  retreat_address : address; [@ref "shared_address"]
+}
+[@@deriving jsonschema]
+
+let () = print_schema ~definitions:[ "shared_address", address_jsonschema ] tt_jsonschema
+
+type c = char [@@deriving jsonschema]
+
+let () = print_schema c_jsonschema

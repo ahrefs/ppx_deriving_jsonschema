@@ -40,18 +40,12 @@ let predefined_types = [ "string"; "int"; "float"; "bool" ]
 let is_predefined_type type_name = List.mem type_name predefined_types
 
 let type_ref ~loc type_name =
-  let name = estring ~loc ("#/defs/" ^ type_name) in
+  let name = estring ~loc ("#/$defs/" ^ type_name) in
   [%expr `Assoc [ "$ref", `String [%e name] ]]
 
-let type_def ~loc type_name =
-  let type_name =
-    match type_name with
-    | "int" -> "integer"
-    | "float" -> "number"
-    | "bool" -> "boolean"
-    | _ -> type_name
-  in
-  [%expr `Assoc [ "type", `String [%e estring ~loc type_name] ]]
+let type_def ~loc type_name = [%expr `Assoc [ "type", `String [%e estring ~loc type_name] ]]
+
+let char ~loc = [%expr `Assoc [ "type", `String "string"; "minLength", `Int 1; "maxLength", `Int 1 ]]
 
 let enum ~loc values =
   let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
@@ -73,10 +67,11 @@ let is_optional_type core_type =
 
 let rec type_of_core ~loc core_type =
   match core_type with
-  | [%type: int] -> type_def ~loc "int"
-  | [%type: float] -> type_def ~loc "float"
+  | [%type: int] | [%type: int32] | [%type: int64] -> type_def ~loc "integer"
+  | [%type: float] -> type_def ~loc "number"
   | [%type: string] -> type_def ~loc "string"
-  | [%type: bool] -> type_def ~loc "bool"
+  | [%type: bool] -> type_def ~loc "boolean"
+  | [%type: char] -> char ~loc
   | [%type: [%t? t] option] -> type_of_core ~loc t
   | [%type: [%t? t] list] | [%type: [%t? t] array] ->
     let t = type_of_core ~loc t in
