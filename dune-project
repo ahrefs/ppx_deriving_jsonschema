@@ -7,9 +7,13 @@
 (source
  (github ahrefs/ppx_deriving_jsonschema))
 
-(authors "ahrefs")
+(authors
+ "Louis Roché <louis.roche@ahrefs.com>"
+ "Ahrefs <github@ahrefs.com>")
 
-(maintainers "ahrefs")
+(maintainers
+ "Louis Roché <louis.roche@ahrefs.com>"
+ "Ahrefs <github@ahrefs.com>")
 
 (license MIT)
 
@@ -21,9 +25,11 @@
  (description
   "ppx_deriving_jsonschema is a ppx rewriter that generates jsonschema from ocaml types")
  (depends
-  ocaml
+  (ocaml
+   (>= "4.08.0"))
   dune
-  ppxlib
+  (ppxlib
+   (>= "0.24.0"))
   (yojson :with-test)
   (ocamlformat :with-dev-setup)
   (ocaml-lsp-server :with-dev-setup))
