@@ -216,3 +216,16 @@
     { "type": "string", "enum": [ "A", "second_cstr" ] }
   ]
 }
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ahrefs.com/schemas/player_scores",
+  "title": "Player scores",
+  "description": "Object representing player scores",
+  "$defs": { "numbers": { "type": "array", "items": { "type": "integer" } } },
+  "type": "object",
+  "properties": {
+    "scores_ref": { "$ref": "#/defs/numbers" },
+    "player": { "type": "string" }
+  },
+  "required": [ "scores_ref", "player" ]
+}

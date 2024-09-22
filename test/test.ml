@@ -1,7 +1,7 @@
 [@@@ocaml.warning "-37-69"]
 
-let print_schema s =
-  let s = Ppx_deriving_jsonschema_runtime.json_schema s in
+let print_schema ?definitions ?id ?title ?description s =
+  let s = Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title ?description s in
   let () = print_endline (Yojson.Basic.pretty_to_string s) in
   ()
 
@@ -127,3 +127,15 @@ let () = print_schema poly2_jsonschema
 type tuple_with_variant = int * [ `A | `B [@name "second_cstr"] ] [@@deriving jsonschema]
 
 let () = print_schema tuple_with_variant_jsonschema
+
+type player_scores = {
+  player : string;
+  scores : numbers; [@ref "numbers"] [@key "scores_ref"]
+}
+[@@deriving jsonschema]
+
+let () =
+  print_schema ~id:"https://ahrefs.com/schemas/player_scores" ~title:"Player scores"
+    ~description:"Object representing player scores"
+    ~definitions:[ "numbers", numbers_jsonschema ]
+    player_scores_jsonschema

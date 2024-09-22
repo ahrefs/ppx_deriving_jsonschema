@@ -1,6 +1,8 @@
 [@@@ocaml.warning "-37-69"]
-let print_schema s =
-  let s = Ppx_deriving_jsonschema_runtime.json_schema s in
+let print_schema ?definitions  ?id  ?title  ?description  s =
+  let s =
+    Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title
+      ?description s in
   let () = print_endline (Yojson.Basic.pretty_to_string s) in ()
 module Mod1 =
   struct
@@ -258,3 +260,23 @@ include
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema tuple_with_variant_jsonschema
+type player_scores =
+  {
+  player: string ;
+  scores: numbers [@ref "numbers"][@key "scores_ref"]}[@@deriving jsonschema]
+include
+  struct
+    let player_scores_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("scores_ref", (`Assoc [("$ref", (`String "#/defs/numbers"))]));
+             ("player", (`Assoc [("type", (`String "string"))]))]));
+        ("required", (`List [`String "scores_ref"; `String "player"]))]
+      [@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () =
+  print_schema ~id:"https://ahrefs.com/schemas/player_scores"
+    ~title:"Player scores" ~description:"Object representing player scores"
+    ~definitions:[("numbers", numbers_jsonschema)] player_scores_jsonschema

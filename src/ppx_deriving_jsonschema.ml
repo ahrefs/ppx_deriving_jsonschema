@@ -8,6 +8,11 @@ let jsonschema_key =
     Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
     (fun x -> x)
 
+let jsonschema_ref =
+  Attribute.declare "jsonschema.ref" Attribute.Context.label_declaration
+    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    (fun x -> x)
+
 let jsonschema_variant_name =
   Attribute.declare "jsonschema.name" Attribute.Context.constructor_declaration
     Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
@@ -18,14 +23,13 @@ let jsonschema_polymorphic_variant_name =
     Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
     (fun x -> x)
 
-(* let default_attribute =
-     Attribute.declare "ppx_deriving_yojson.of_yojson.default" Attribute.Context.label_declaration
-       Ast_pattern.(single_expr_payload __)
-       (fun expr -> expr)
-*)
-
 let attributes =
-  [ Attribute.T jsonschema_key; Attribute.T jsonschema_variant_name; Attribute.T jsonschema_polymorphic_variant_name ]
+  [
+    Attribute.T jsonschema_key;
+    Attribute.T jsonschema_ref;
+    Attribute.T jsonschema_variant_name;
+    Attribute.T jsonschema_polymorphic_variant_name;
+  ]
 
 let args () = Deriving.Args.(empty)
 (* let args () = Deriving.Args.(empty +> arg "option1" (eint __) +> flag "flag") *)
@@ -36,7 +40,7 @@ let predefined_types = [ "string"; "int"; "float"; "bool" ]
 let is_predefined_type type_name = List.mem type_name predefined_types
 
 let type_ref ~loc type_name =
-  let name = estring ~loc ("#/definitions/" ^ type_name) in
+  let name = estring ~loc ("#/defs/" ^ type_name) in
   [%expr `Assoc [ "$ref", `String [%e name] ]]
 
 let type_def ~loc type_name =
@@ -119,7 +123,11 @@ let object_ ~loc fields =
           | Some name -> name
           | None -> name
         in
-        let type_def = type_of_core ~loc pld_type in
+        let type_def =
+          match Attribute.get jsonschema_ref field with
+          | Some def -> type_ref ~loc def
+          | None -> type_of_core ~loc pld_type
+        in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           if is_optional_type pld_type then required else name :: required ))
       ([], []) fields
