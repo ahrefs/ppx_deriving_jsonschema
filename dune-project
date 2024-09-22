@@ -13,11 +13,11 @@
 
 (license MIT)
 
-(documentation https://github.com/ahrefs/ppx_deriving_jsonschema)
+(documentation "https://ahrefs.github.io/ppx_deriving_jsonschema/")
 
 (package
  (name ppx_deriving_jsonschema)
- (synopsis "jsonschema generator for ppx_deriving")
+ (synopsis "Jsonschema generator for ppx_deriving")
  (description
   "ppx_deriving_jsonschema is a ppx rewriter that generates jsonschema from ocaml types")
  (depends
