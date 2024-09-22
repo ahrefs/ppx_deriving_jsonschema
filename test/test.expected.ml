@@ -93,7 +93,11 @@ type event =
   a: float array ;
   l: string list ;
   t: [ `Foo  | `Bar  | `Baz ] ;
-  c: char }[@@deriving jsonschema]
+  c: char ;
+  bunch_of_bytes: bytes ;
+  string_ref: string ref ;
+  unit: unit ;
+  native_int: nativeint }[@@deriving jsonschema]
 include
   struct
     let event_jsonschema =
@@ -101,11 +105,15 @@ include
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("c",
-                (`Assoc
-                   [("type", (`String "string"));
-                   ("minLength", (`Int 1));
-                   ("maxLength", (`Int 1))]));
+             [("native_int", (`Assoc [("type", (`String "integer"))]));
+             ("unit", (`Assoc [("type", (`String "null"))]));
+             ("string_ref", (`Assoc [("type", (`String "string"))]));
+             ("bunch_of_bytes", (`Assoc [("type", (`String "string"))]));
+             ("c",
+               (`Assoc
+                  [("type", (`String "string"));
+                  ("minLength", (`Int 1));
+                  ("maxLength", (`Int 1))]));
              ("t",
                (`Assoc
                   [("type", (`String "string"));
@@ -125,7 +133,11 @@ include
              ("date", (`Assoc [("type", (`String "number"))]))]));
         ("required",
           (`List
-             [`String "c";
+             [`String "native_int";
+             `String "unit";
+             `String "string_ref";
+             `String "bunch_of_bytes";
+             `String "c";
              `String "t";
              `String "l";
              `String "a";

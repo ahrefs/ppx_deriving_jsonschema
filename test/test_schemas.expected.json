@@ -29,6 +29,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "native_int": { "type": "integer" },
+    "unit": { "type": "null" },
+    "string_ref": { "type": "string" },
+    "bunch_of_bytes": { "type": "string" },
     "c": { "type": "string", "minLength": 1, "maxLength": 1 },
     "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
     "l": { "type": "array", "items": { "type": "string" } },
@@ -38,7 +42,10 @@
     "kind_f": { "type": "string", "enum": [ "Success", "Error", "skipped" ] },
     "date": { "type": "number" }
   },
-  "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
+  "required": [
+    "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
+    "comment", "kind_f", "date"
+  ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -46,6 +53,10 @@
   "items": {
     "type": "object",
     "properties": {
+      "native_int": { "type": "integer" },
+      "unit": { "type": "null" },
+      "string_ref": { "type": "string" },
+      "bunch_of_bytes": { "type": "string" },
       "c": { "type": "string", "minLength": 1, "maxLength": 1 },
       "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
       "l": { "type": "array", "items": { "type": "string" } },
@@ -58,7 +69,10 @@
       },
       "date": { "type": "number" }
     },
-    "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
+    "required": [
+      "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
+      "a", "comment", "kind_f", "date"
+    ]
   }
 }
 {
@@ -69,6 +83,10 @@
     "items": {
       "type": "object",
       "properties": {
+        "native_int": { "type": "integer" },
+        "unit": { "type": "null" },
+        "string_ref": { "type": "string" },
+        "bunch_of_bytes": { "type": "string" },
         "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
         "l": { "type": "array", "items": { "type": "string" } },
@@ -81,7 +99,10 @@
         },
         "date": { "type": "number" }
       },
-      "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
+      "required": [
+        "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
+        "a", "comment", "kind_f", "date"
+      ]
     }
   }
 }
@@ -92,6 +113,10 @@
     {
       "type": "object",
       "properties": {
+        "native_int": { "type": "integer" },
+        "unit": { "type": "null" },
+        "string_ref": { "type": "string" },
+        "bunch_of_bytes": { "type": "string" },
         "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
         "l": { "type": "array", "items": { "type": "string" } },
@@ -104,7 +129,10 @@
         },
         "date": { "type": "number" }
       },
-      "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
+      "required": [
+        "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
+        "a", "comment", "kind_f", "date"
+      ]
     },
     { "type": "string" }
   ]
@@ -118,6 +146,10 @@
       {
         "type": "object",
         "properties": {
+          "native_int": { "type": "integer" },
+          "unit": { "type": "null" },
+          "string_ref": { "type": "string" },
+          "bunch_of_bytes": { "type": "string" },
           "c": { "type": "string", "minLength": 1, "maxLength": 1 },
           "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
           "l": { "type": "array", "items": { "type": "string" } },
@@ -130,7 +162,10 @@
           },
           "date": { "type": "number" }
         },
-        "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
+        "required": [
+          "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+          "l", "a", "comment", "kind_f", "date"
+        ]
       },
       { "type": "string" }
     ]
@@ -145,6 +180,10 @@
       {
         "type": "object",
         "properties": {
+          "native_int": { "type": "integer" },
+          "unit": { "type": "null" },
+          "string_ref": { "type": "string" },
+          "bunch_of_bytes": { "type": "string" },
           "c": { "type": "string", "minLength": 1, "maxLength": 1 },
           "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
           "l": { "type": "array", "items": { "type": "string" } },
@@ -157,7 +196,10 @@
           },
           "date": { "type": "number" }
         },
-        "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
+        "required": [
+          "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+          "l", "a", "comment", "kind_f", "date"
+        ]
       },
       { "type": "integer" }
     ]
@@ -171,6 +213,10 @@
     "items": {
       "type": "object",
       "properties": {
+        "native_int": { "type": "integer" },
+        "unit": { "type": "null" },
+        "string_ref": { "type": "string" },
+        "bunch_of_bytes": { "type": "string" },
         "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": { "type": "string", "enum": [ "Foo", "Bar", "Baz" ] },
         "l": { "type": "array", "items": { "type": "string" } },
@@ -183,7 +229,10 @@
         },
         "date": { "type": "number" }
       },
-      "required": [ "c", "t", "l", "a", "comment", "kind_f", "date" ]
+      "required": [
+        "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
+        "a", "comment", "kind_f", "date"
+      ]
     }
   }
 }

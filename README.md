@@ -56,9 +56,13 @@ Such a type will be turned into a JSON schema like this:
 
 #### Basic types
 
-Types `int`, `int32`, `int64`, `string`, `float`, `bool` are converted to their JSON equivalents.
+Types `int`, `int32`, `int64`, `nativeint`, `string`, `bytes`, `float`, `bool` are converted to their JSON equivalents.
 
 Type `char` is converted to `{ "type": "string",  "minLength": 1,  "maxLength": 1}`.
+
+Type `'a ref` is treated as `'a`.
+
+Type `unit` is converted to `{ "type": "null" }`.
 
 #### List and arrays
 

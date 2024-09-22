@@ -61,6 +61,10 @@ type event = {
   l : string list;
   t : [ `Foo | `Bar | `Baz ];
   c : char;
+  bunch_of_bytes : bytes;
+  string_ref : string ref;
+  unit : unit;
+  native_int : nativeint;
 }
 [@@deriving jsonschema]
 
