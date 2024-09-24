@@ -74,7 +74,7 @@ Tuples are converted to `{ "type": "array", "items": [...] }`.
 
 #### Variants and polymorphic variants
 
-Variants are converted to `{ "type": "string", "enum": [...] }`.
+Variants are converted to `{ "type": "string", "enum": [...] }` by default.
 
 if the JSON variant names differ from OCaml conventions, users can specify the corresponding JSON string explicitly using `[@name "constr"]`, for example:
 
@@ -83,6 +83,15 @@ type t =
 | Typ   [@name "type"]
 | Class [@name "class"]
 [@@deriving jsonschema]
+```
+
+If you want to use the same encoding as [ppx_deriving_json] and [ppx_yojson_conv], you can use the `~variant_as_array` flag:
+
+```ocaml
+type t =
+| Typ   [@name "type"]
+| Class [@name "class"]
+[@@deriving jsonschema ~variant_as_array]
 ```
 
 #### Records

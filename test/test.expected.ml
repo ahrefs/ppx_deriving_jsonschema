@@ -60,6 +60,24 @@ include
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema kind_jsonschema
+type kind_as_array =
+  | Success 
+  | Error 
+  | Skipped [@name "skipped"][@@deriving jsonschema ~variant_as_array]
+include
+  struct
+    let kind_as_array_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          (`Assoc
+             [("type", (`String "string"));
+             ("enum",
+               (`List [`String "Success"; `String "Error"; `String "skipped"]))]));
+        ("minContains", (`Int 1));
+        ("maxContains", (`Int 1))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema kind_as_array_jsonschema
 type poly_kind = [ `Aaa  | `Bbb  | `Ccc [@name "ccc"]][@@deriving jsonschema]
 include
   struct
@@ -70,6 +88,22 @@ include
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_kind_jsonschema
+type poly_kind_as_array = [ `Aaa  | `Bbb  | `Ccc [@name "ccc"]][@@deriving
+                                                                 jsonschema
+                                                                   ~variant_as_array]
+include
+  struct
+    let poly_kind_as_array_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          (`Assoc
+             [("type", (`String "string"));
+             ("enum", (`List [`String "Aaa"; `String "Bbb"; `String "ccc"]))]));
+        ("minContains", (`Int 1));
+        ("maxContains", (`Int 1))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema poly_kind_as_array_jsonschema
 type poly_inherit = [ `New_one  | poly_kind][@@deriving jsonschema]
 include
   struct

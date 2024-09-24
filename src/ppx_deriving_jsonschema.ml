@@ -1,6 +1,13 @@
 open Ppxlib
 open Ast_builder.Default
 
+type config = {
+  variant_as_array : bool;
+    (** Encode variants as arrays of string enum instead of a string enum.
+      Provides compatibility with the encoding used by the [ppx_deriving_json]
+      and [ppx_yojson_conv] extensions. *)
+}
+
 let deriver_name = "jsonschema"
 
 let jsonschema_key =
@@ -31,8 +38,8 @@ let attributes =
     Attribute.T jsonschema_polymorphic_variant_name;
   ]
 
-let args () = Deriving.Args.(empty)
-(* let args () = Deriving.Args.(empty +> arg "option1" (eint __) +> flag "flag") *)
+(* let args () = Deriving.Args.(empty) *)
+let args () = Deriving.Args.(empty +> flag "variant_as_array")
 
 let deps = []
 
@@ -49,9 +56,21 @@ let null ~loc = [%expr `Assoc [ "type", `String "null" ]]
 
 let char ~loc = [%expr `Assoc [ "type", `String "string"; "minLength", `Int 1; "maxLength", `Int 1 ]]
 
-let enum ~loc values =
-  let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
-  [%expr `Assoc [ "type", `String "string"; "enum", `List [%e elist ~loc values] ]]
+let enum ~loc ~config values =
+  match config.variant_as_array with
+  | true ->
+    let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
+    [%expr
+      `Assoc
+        [
+          "type", `String "array";
+          "items", `Assoc [ "type", `String "string"; "enum", `List [%e elist ~loc values] ];
+          "minContains", `Int 1;
+          "maxContains", `Int 1;
+        ]]
+  | false ->
+    let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
+    [%expr `Assoc [ "type", `String "string"; "enum", `List [%e elist ~loc values] ]]
 
 let array_ ~loc element_type = [%expr `Assoc [ "type", `String "array"; "items", [%e element_type] ]]
 
@@ -67,7 +86,7 @@ let is_optional_type core_type =
   | [%type: [%t? _] option] -> true
   | _ -> false
 
-let rec type_of_core ~loc core_type =
+let rec type_of_core ~loc ~config core_type =
   match core_type with
   | [%type: int] | [%type: int32] | [%type: int64] | [%type: nativeint] -> type_def ~loc "integer"
   | [%type: float] -> type_def ~loc "number"
@@ -75,10 +94,10 @@ let rec type_of_core ~loc core_type =
   | [%type: bool] -> type_def ~loc "boolean"
   | [%type: char] -> char ~loc
   | [%type: unit] -> null ~loc
-  | [%type: [%t? t] option] -> type_of_core ~loc t
-  | [%type: [%t? t] ref] -> type_of_core ~loc t
+  | [%type: [%t? t] option] -> type_of_core ~loc ~config t
+  | [%type: [%t? t] ref] -> type_of_core ~loc ~config t
   | [%type: [%t? t] list] | [%type: [%t? t] array] ->
-    let t = type_of_core ~loc t in
+    let t = type_of_core ~loc ~config t in
     array_ ~loc t
   | _ ->
   match core_type.ptyp_desc with
@@ -86,7 +105,7 @@ let rec type_of_core ~loc core_type =
     (* todo: support using references with [type_ref ~loc type_name] instead of inlining everything *)
     type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") []
   | Ptyp_tuple types ->
-    let ts = List.map (type_of_core ~loc) types in
+    let ts = List.map (type_of_core ~loc ~config) types in
     tuple ~loc ts
   | Ptyp_variant (row_fields, _, _) ->
     let constr_names =
@@ -102,7 +121,7 @@ let rec type_of_core ~loc core_type =
             Format.asprintf "unsupported polymorphic variant type: %a" Astlib.Pprintast.core_type core_type (* todo: *))
         row_fields
     in
-    enum ~loc constr_names
+    enum ~loc ~config constr_names
   | _ ->
     (* Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type; *)
     [%expr
@@ -113,7 +132,7 @@ let rec type_of_core ~loc core_type =
         ]]
 
 (* todo: add option to inline types instead of using definitions references *)
-let object_ ~loc fields =
+let object_ ~loc ~config fields =
   let fields, required =
     List.fold_left
       (fun (fields, required) ({ pld_name = { txt = name; _ }; pld_type; _ } as field) ->
@@ -125,7 +144,7 @@ let object_ ~loc fields =
         let type_def =
           match Attribute.get jsonschema_ref field with
           | Some def -> type_ref ~loc def
-          | None -> type_of_core ~loc pld_type
+          | None -> type_of_core ~loc ~config pld_type
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           if is_optional_type pld_type then required else name :: required ))
@@ -140,8 +159,9 @@ let object_ ~loc fields =
         "required", `List [%e elist ~loc required];
       ]]
 
-let derive_jsonschema ~ctxt ast =
+let derive_jsonschema ~ctxt ast variant_as_array =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
+  let config = { variant_as_array } in
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
     let variants =
@@ -161,13 +181,13 @@ let derive_jsonschema ~ctxt ast =
         variants
     in
     (* let names = List.map (fun { pcd_name = { txt = value; _ }; _ } -> value) variants in *)
-    let jsonschema_expr = create_value ~loc type_name (enum ~loc variants) in
+    let jsonschema_expr = create_value ~loc type_name (enum ~loc ~config variants) in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (object_ ~loc label_declarations) in
+    let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations) in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (type_of_core ~loc core_type) in
+    let jsonschema_expr = create_value ~loc type_name (type_of_core ~loc ~config core_type) in
     [ jsonschema_expr ]
   | _, _ast ->
     (* Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast; *)

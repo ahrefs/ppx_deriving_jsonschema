@@ -35,6 +35,14 @@ type kind =
 
 let () = print_schema kind_jsonschema
 
+type kind_as_array =
+  | Success
+  | Error
+  | Skipped [@name "skipped"]
+[@@deriving jsonschema ~variant_as_array]
+
+let () = print_schema kind_as_array_jsonschema
+
 type poly_kind =
   [ `Aaa
   | `Bbb
@@ -43,6 +51,15 @@ type poly_kind =
 [@@deriving jsonschema]
 
 let () = print_schema poly_kind_jsonschema
+
+type poly_kind_as_array =
+  [ `Aaa
+  | `Bbb
+  | `Ccc [@name "ccc"]
+  ]
+[@@deriving jsonschema ~variant_as_array]
+
+let () = print_schema poly_kind_as_array_jsonschema
 
 type poly_inherit =
   [ `New_one

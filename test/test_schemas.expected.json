@@ -14,8 +14,22 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": { "type": "string", "enum": [ "Success", "Error", "skipped" ] },
+  "minContains": 1,
+  "maxContains": 1
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "string",
   "enum": [ "Aaa", "Bbb", "ccc" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": { "type": "string", "enum": [ "Aaa", "Bbb", "ccc" ] },
+  "minContains": 1,
+  "maxContains": 1
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
