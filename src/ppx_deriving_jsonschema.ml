@@ -46,35 +46,67 @@ let deps = []
 let predefined_types = [ "string"; "int"; "float"; "bool" ]
 let is_predefined_type type_name = List.mem type_name predefined_types
 
-let type_ref ~loc type_name =
-  let name = estring ~loc ("#/$defs/" ^ type_name) in
-  [%expr `Assoc [ "$ref", `String [%e name] ]]
+module Schema = struct
+  let const ~loc value = [%expr `Assoc [ "const", `String [%e estring ~loc value] ]]
 
-let type_def ~loc type_name = [%expr `Assoc [ "type", `String [%e estring ~loc type_name] ]]
+  let type_ref ~loc type_name =
+    let name = estring ~loc ("#/$defs/" ^ type_name) in
+    [%expr `Assoc [ "$ref", `String [%e name] ]]
 
-let null ~loc = [%expr `Assoc [ "type", `String "null" ]]
+  let type_def ~loc type_name = [%expr `Assoc [ "type", `String [%e estring ~loc type_name] ]]
 
-let char ~loc = [%expr `Assoc [ "type", `String "string"; "minLength", `Int 1; "maxLength", `Int 1 ]]
+  let null ~loc = [%expr `Assoc [ "type", `String "null" ]]
 
-let enum ~loc ~config values =
-  match config.variant_as_array with
-  | true ->
-    let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
+  let char ~loc = [%expr `Assoc [ "type", `String "string"; "minLength", `Int 1; "maxLength", `Int 1 ]]
+
+  let oneOf ~loc values = [%expr `Assoc [ "oneOf", `List [%e elist ~loc values] ]]
+
+  let array_ ~loc ?min_items ?max_items element_type =
+    let fields =
+      List.filter_map
+        (fun x -> x)
+        [
+          Some [%expr "type", `String "array"];
+          Some [%expr "items", [%e element_type]];
+          (match min_items with
+          | Some min -> Some [%expr "minItems", `Int [%e eint ~loc min]]
+          | None -> None);
+          (match max_items with
+          | Some max -> Some [%expr "maxItems", `Int [%e eint ~loc max]]
+          | None -> None);
+        ]
+    in
+    [%expr `Assoc [%e elist ~loc fields]]
+
+  let tuple ~loc elements =
     [%expr
       `Assoc
         [
           "type", `String "array";
-          "items", `Assoc [ "type", `String "string"; "enum", `List [%e elist ~loc values] ];
-          "minContains", `Int 1;
-          "maxContains", `Int 1;
+          "prefixItems", `List [%e elist ~loc elements];
+          "unevaluatedItems", `Bool false;
+          "minItems", `Int [%e eint ~loc (List.length elements)];
+          "maxItems", `Int [%e eint ~loc (List.length elements)];
         ]]
-  | false ->
+
+  let enum ~loc typ values =
+    match typ with
+    | Some typ -> [%expr `Assoc [ "type", `String [%e estring ~loc typ]; "enum", `List [%e elist ~loc values] ]]
+    | None -> [%expr `Assoc [ "enum", `List [%e elist ~loc values] ]]
+
+  let enum_string ~loc values =
     let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
-    [%expr `Assoc [ "type", `String "string"; "enum", `List [%e elist ~loc values] ]]
+    enum ~loc (Some "string") values
+end
 
-let array_ ~loc element_type = [%expr `Assoc [ "type", `String "array"; "items", [%e element_type] ]]
+let variant_as_array ~loc values = Schema.array_ ~loc ~min_items:1 ~max_items:1 (Schema.enum_string ~loc values)
 
-let tuple ~loc elements = [%expr `Assoc [ "type", `String "array"; "items", `List [%e elist ~loc elements] ]]
+let variant_as_string ~loc values = Schema.enum_string ~loc values
+
+let variant ~loc ~config values =
+  match config.variant_as_array with
+  | true -> variant_as_array ~loc values
+  | false -> variant_as_string ~loc values
 
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
 
@@ -88,17 +120,17 @@ let is_optional_type core_type =
 
 let rec type_of_core ~loc ~config core_type =
   match core_type with
-  | [%type: int] | [%type: int32] | [%type: int64] | [%type: nativeint] -> type_def ~loc "integer"
-  | [%type: float] -> type_def ~loc "number"
-  | [%type: string] | [%type: bytes] -> type_def ~loc "string"
-  | [%type: bool] -> type_def ~loc "boolean"
-  | [%type: char] -> char ~loc
-  | [%type: unit] -> null ~loc
+  | [%type: int] | [%type: int32] | [%type: int64] | [%type: nativeint] -> Schema.type_def ~loc "integer"
+  | [%type: float] -> Schema.type_def ~loc "number"
+  | [%type: string] | [%type: bytes] -> Schema.type_def ~loc "string"
+  | [%type: bool] -> Schema.type_def ~loc "boolean"
+  | [%type: char] -> Schema.char ~loc
+  | [%type: unit] -> Schema.null ~loc
   | [%type: [%t? t] option] -> type_of_core ~loc ~config t
   | [%type: [%t? t] ref] -> type_of_core ~loc ~config t
   | [%type: [%t? t] list] | [%type: [%t? t] array] ->
     let t = type_of_core ~loc ~config t in
-    array_ ~loc t
+    Schema.array_ ~loc t
   | _ ->
   match core_type.ptyp_desc with
   | Ptyp_constr (id, []) ->
@@ -106,7 +138,7 @@ let rec type_of_core ~loc ~config core_type =
     type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") []
   | Ptyp_tuple types ->
     let ts = List.map (type_of_core ~loc ~config) types in
-    tuple ~loc ts
+    Schema.tuple ~loc ts
   | Ptyp_variant (row_fields, _, _) ->
     let constr_names =
       List.map
@@ -121,7 +153,7 @@ let rec type_of_core ~loc ~config core_type =
             Format.asprintf "unsupported polymorphic variant type: %a" Astlib.Pprintast.core_type core_type (* todo: *))
         row_fields
     in
-    enum ~loc ~config constr_names
+    variant ~loc ~config constr_names
   | _ ->
     (* Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type; *)
     [%expr
@@ -143,7 +175,7 @@ let object_ ~loc ~config fields =
         in
         let type_def =
           match Attribute.get jsonschema_ref field with
-          | Some def -> type_ref ~loc def
+          | Some def -> Schema.type_ref ~loc def
           | None -> type_of_core ~loc ~config pld_type
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
@@ -181,7 +213,7 @@ let derive_jsonschema ~ctxt ast variant_as_array =
         variants
     in
     (* let names = List.map (fun { pcd_name = { txt = value; _ }; _ } -> value) variants in *)
-    let jsonschema_expr = create_value ~loc type_name (enum ~loc ~config variants) in
+    let jsonschema_expr = create_value ~loc type_name (variant ~loc ~config variants) in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
     let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations) in

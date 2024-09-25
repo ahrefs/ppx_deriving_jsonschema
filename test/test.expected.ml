@@ -74,8 +74,8 @@ include
              [("type", (`String "string"));
              ("enum",
                (`List [`String "Success"; `String "Error"; `String "skipped"]))]));
-        ("minContains", (`Int 1));
-        ("maxContains", (`Int 1))][@@warning "-32-39"]
+        ("minItems", (`Int 1));
+        ("maxItems", (`Int 1))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema kind_as_array_jsonschema
 type poly_kind = [ `Aaa  | `Bbb  | `Ccc [@name "ccc"]][@@deriving jsonschema]
@@ -100,8 +100,8 @@ include
           (`Assoc
              [("type", (`String "string"));
              ("enum", (`List [`String "Aaa"; `String "Bbb"; `String "ccc"]))]));
-        ("minContains", (`Int 1));
-        ("maxContains", (`Int 1))][@@warning "-32-39"]
+        ("minItems", (`Int 1));
+        ("maxItems", (`Int 1))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_kind_as_array_jsonschema
 type poly_inherit = [ `New_one  | poly_kind][@@deriving jsonschema]
@@ -205,9 +205,11 @@ include
     let event_comment_jsonschema =
       `Assoc
         [("type", (`String "array"));
-        ("items",
-          (`List [event_jsonschema; `Assoc [("type", (`String "string"))]]))]
-      [@@warning "-32-39"]
+        ("prefixItems",
+          (`List [event_jsonschema; `Assoc [("type", (`String "string"))]]));
+        ("unevaluatedItems", (`Bool false));
+        ("minItems", (`Int 2));
+        ("maxItems", (`Int 2))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema event_comment_jsonschema
 type event_comments' = event_comment list[@@deriving jsonschema]
@@ -228,10 +230,12 @@ include
         ("items",
           (`Assoc
              [("type", (`String "array"));
-             ("items",
+             ("prefixItems",
                (`List
-                  [event_jsonschema; `Assoc [("type", (`String "integer"))]]))]))]
-      [@@warning "-32-39"]
+                  [event_jsonschema; `Assoc [("type", (`String "integer"))]]));
+             ("unevaluatedItems", (`Bool false));
+             ("minItems", (`Int 2));
+             ("maxItems", (`Int 2))]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema event_n_jsonschema
 type events_array = events array[@@deriving jsonschema]
@@ -304,13 +308,15 @@ include
     let tuple_with_variant_jsonschema =
       `Assoc
         [("type", (`String "array"));
-        ("items",
+        ("prefixItems",
           (`List
              [`Assoc [("type", (`String "integer"))];
              `Assoc
                [("type", (`String "string"));
-               ("enum", (`List [`String "A"; `String "second_cstr"]))]]))]
-      [@@warning "-32-39"]
+               ("enum", (`List [`String "A"; `String "second_cstr"]))]]));
+        ("unevaluatedItems", (`Bool false));
+        ("minItems", (`Int 2));
+        ("maxItems", (`Int 2))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema tuple_with_variant_jsonschema
 type player_scores =

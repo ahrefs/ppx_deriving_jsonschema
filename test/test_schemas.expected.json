@@ -16,8 +16,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "array",
   "items": { "type": "string", "enum": [ "Success", "Error", "skipped" ] },
-  "minContains": 1,
-  "maxContains": 1
+  "minItems": 1,
+  "maxItems": 1
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -28,8 +28,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "array",
   "items": { "type": "string", "enum": [ "Aaa", "Bbb", "ccc" ] },
-  "minContains": 1,
-  "maxContains": 1
+  "minItems": 1,
+  "maxItems": 1
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -123,7 +123,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "array",
-  "items": [
+  "prefixItems": [
     {
       "type": "object",
       "properties": {
@@ -149,14 +149,17 @@
       ]
     },
     { "type": "string" }
-  ]
+  ],
+  "unevaluatedItems": false,
+  "minItems": 2,
+  "maxItems": 2
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "array",
   "items": {
     "type": "array",
-    "items": [
+    "prefixItems": [
       {
         "type": "object",
         "properties": {
@@ -182,7 +185,10 @@
         ]
       },
       { "type": "string" }
-    ]
+    ],
+    "unevaluatedItems": false,
+    "minItems": 2,
+    "maxItems": 2
   }
 }
 {
@@ -190,7 +196,7 @@
   "type": "array",
   "items": {
     "type": "array",
-    "items": [
+    "prefixItems": [
       {
         "type": "object",
         "properties": {
@@ -216,7 +222,10 @@
         ]
       },
       { "type": "integer" }
-    ]
+    ],
+    "unevaluatedItems": false,
+    "minItems": 2,
+    "maxItems": 2
   }
 }
 {
@@ -281,10 +290,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "array",
-  "items": [
+  "prefixItems": [
     { "type": "integer" },
     { "type": "string", "enum": [ "A", "second_cstr" ] }
-  ]
+  ],
+  "unevaluatedItems": false,
+  "minItems": 2,
+  "maxItems": 2
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
