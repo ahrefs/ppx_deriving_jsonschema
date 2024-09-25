@@ -13,7 +13,7 @@ module Mod1 =
       struct
         let m_1_jsonschema =
           `Assoc
-            [("oneOf",
+            [("anyOf",
                (`List
                   [`Assoc [("const", (`String "A"))];
                   `Assoc [("const", (`String "B"))]]))][@@warning "-32-39"]
@@ -27,7 +27,7 @@ module Mod1 =
           struct
             let m_2_jsonschema =
               `Assoc
-                [("oneOf",
+                [("anyOf",
                    (`List
                       [`Assoc [("const", (`String "C"))];
                       `Assoc [("const", (`String "D"))]]))][@@warning
@@ -58,7 +58,7 @@ include
   struct
     let kind_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc [("const", (`String "Success"))];
               `Assoc [("const", (`String "Error"))];
@@ -73,7 +73,7 @@ include
   struct
     let kind_as_array_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc
                  [("type", (`String "array"));
@@ -103,7 +103,7 @@ include
   struct
     let poly_kind_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc [("const", (`String "Aaa"))];
               `Assoc [("const", (`String "Bbb"))];
@@ -117,7 +117,7 @@ include
   struct
     let poly_kind_as_array_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc
                  [("type", (`String "array"));
@@ -149,7 +149,7 @@ include
   struct
     let poly_kind_with_payload_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc [("const", (`String "Aaa"))];
               `Assoc [("const", (`String "Bbb"))];
@@ -164,7 +164,7 @@ include
   struct
     let poly_kind_with_payload_as_array_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc
                  [("type", (`String "array"));
@@ -207,7 +207,7 @@ include
   struct
     let poly_inherit_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc [("const", (`String "New_one"))];
               `Assoc [("const", (`String "Second_one"))];
@@ -222,7 +222,7 @@ include
   struct
     let poly_inherit_as_array_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc
                  [("type", (`String "array"));
@@ -275,7 +275,7 @@ include
                   ("maxLength", (`Int 1))]));
              ("t",
                (`Assoc
-                  [("oneOf",
+                  [("anyOf",
                      (`List
                         [`Assoc [("const", (`String "Foo"))];
                         `Assoc [("const", (`String "Bar"))];
@@ -419,7 +419,7 @@ type 'param2 poly2 =
 include
   struct
     let poly2_jsonschema =
-      `Assoc [("oneOf", (`List [`Assoc [("const", (`String "C"))]]))]
+      `Assoc [("anyOf", (`List [`Assoc [("const", (`String "C"))]]))]
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly2_jsonschema
@@ -429,7 +429,7 @@ include
   struct
     let poly2_as_array_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc
                  [("type", (`String "array"));
@@ -453,7 +453,7 @@ include
           (`List
              [`Assoc [("type", (`String "integer"))];
              `Assoc
-               [("oneOf",
+               [("anyOf",
                   (`List
                      [`Assoc [("const", (`String "A"))];
                      `Assoc [("const", (`String "second_cstr"))]]))]]));
@@ -576,7 +576,7 @@ include
   struct
     let variant_inline_record_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc
                  [("type", (`String "array"));
@@ -617,7 +617,7 @@ include
   struct
     let variant_with_payload_jsonschema =
       `Assoc
-        [("oneOf",
+        [("anyOf",
            (`List
               [`Assoc
                  [("type", (`String "array"));

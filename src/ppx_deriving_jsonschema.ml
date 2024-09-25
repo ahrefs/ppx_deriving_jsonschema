@@ -61,6 +61,8 @@ module Schema = struct
 
   let oneOf ~loc values = [%expr `Assoc [ "oneOf", `List [%e elist ~loc values] ]]
 
+  let anyOf ~loc values = [%expr `Assoc [ "anyOf", `List [%e elist ~loc values] ]]
+
   let array_ ~loc ?min_items ?max_items element_type =
     let fields =
       List.filter_map
@@ -100,26 +102,30 @@ module Schema = struct
 end
 
 let variant_as_string ~loc constrs =
-  Schema.oneOf ~loc
+  Schema.anyOf ~loc
     (List.map
        (function
          | `Tag (name, _typs) -> Schema.const ~loc name
          | `Inherit typ -> typ)
        constrs)
 
-let variant_as_array ~loc constrs = Schema.array_ ~loc ~min_items:1 ~max_items:1 (variant_as_string ~loc constrs)
-
-let variant ~loc ~config values =
-  match config.variant_as_array with
-  | true -> variant_as_array ~loc values
-  | false -> variant_as_string ~loc values
-
-let variant_with_payload ~loc constrs =
-  Schema.oneOf ~loc
+let variant_as_array ~loc constrs =
+  Schema.anyOf ~loc
     (List.map
        (function
          | `Tag (name, typs) -> Schema.tuple ~loc (Schema.const ~loc name :: typs)
          | `Inherit typ -> typ)
+       constrs)
+
+let variant ~loc ~config constrs =
+  Schema.anyOf ~loc
+    (List.map
+       (function
+         | `Inherit typ -> typ
+         | `Tag (name, typs) ->
+         match config.variant_as_array with
+         | true -> Schema.tuple ~loc (Schema.const ~loc name :: typs)
+         | false -> Schema.const ~loc name)
        constrs)
 
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
@@ -174,7 +180,7 @@ let rec type_of_core ~loc ~config core_type =
     (* todo: raise an error if encoding is as string and constructor has a payload *)
     let v =
       match config.variant_as_array with
-      | true -> variant_with_payload ~loc constrs
+      | true -> variant_as_array ~loc constrs
       | false -> variant_as_string ~loc constrs
     in
     v
@@ -215,9 +221,9 @@ let object_ ~loc ~config fields =
         "required", `List [%e elist ~loc required];
       ]]
 
-let derive_jsonschema ~ctxt ast variant_as_array =
+let derive_jsonschema ~ctxt ast flag_variant_as_array =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
-  let config = { variant_as_array } in
+  let config = { variant_as_array = flag_variant_as_array } in
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
     let variants =
@@ -239,8 +245,8 @@ let derive_jsonschema ~ctxt ast variant_as_array =
     in
     let v =
       (* todo: raise an error if encoding is as string and constructor has a payload *)
-      match variant_as_array with
-      | true -> variant_with_payload ~loc variants
+      match config.variant_as_array with
+      | true -> variant_as_array ~loc variants
       | false -> variant_as_string ~loc variants
     in
     let jsonschema_expr = create_value ~loc type_name v in

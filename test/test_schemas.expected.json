@@ -2,20 +2,20 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "m2": { "oneOf": [ { "const": "C" }, { "const": "D" } ] },
-    "m": { "oneOf": [ { "const": "A" }, { "const": "B" } ] }
+    "m2": { "anyOf": [ { "const": "C" }, { "const": "D" } ] },
+    "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] }
   },
   "required": [ "m2", "m" ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
   ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "array",
       "prefixItems": [ { "const": "Success" } ],
@@ -41,11 +41,11 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
+  "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "array",
       "prefixItems": [ { "const": "Aaa" } ],
@@ -71,11 +71,11 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
+  "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "array",
       "prefixItems": [ { "const": "Aaa" }, { "type": "integer" } ],
@@ -110,17 +110,17 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     { "const": "New_one" },
     { "const": "Second_one" },
     {
-      "oneOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
+      "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
     }
   ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "array",
       "prefixItems": [ { "const": "New_one" } ],
@@ -136,7 +136,7 @@
       "maxItems": 2
     },
     {
-      "oneOf": [
+      "anyOf": [
         {
           "type": "array",
           "prefixItems": [ { "const": "Aaa" } ],
@@ -172,14 +172,14 @@
     "bunch_of_bytes": { "type": "string" },
     "c": { "type": "string", "minLength": 1, "maxLength": 1 },
     "t": {
-      "oneOf": [ { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" } ]
+      "anyOf": [ { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" } ]
     },
     "l": { "type": "array", "items": { "type": "string" } },
     "a": { "type": "array", "items": { "type": "number" } },
     "opt_int": { "type": "integer" },
     "comment": { "type": "string" },
     "kind_f": {
-      "oneOf": [
+      "anyOf": [
         { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
       ]
     },
@@ -202,7 +202,7 @@
       "bunch_of_bytes": { "type": "string" },
       "c": { "type": "string", "minLength": 1, "maxLength": 1 },
       "t": {
-        "oneOf": [
+        "anyOf": [
           { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
         ]
       },
@@ -211,7 +211,7 @@
       "opt_int": { "type": "integer" },
       "comment": { "type": "string" },
       "kind_f": {
-        "oneOf": [
+        "anyOf": [
           { "const": "Success" },
           { "const": "Error" },
           { "const": "skipped" }
@@ -239,7 +239,7 @@
         "bunch_of_bytes": { "type": "string" },
         "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": {
-          "oneOf": [
+          "anyOf": [
             { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
           ]
         },
@@ -248,7 +248,7 @@
         "opt_int": { "type": "integer" },
         "comment": { "type": "string" },
         "kind_f": {
-          "oneOf": [
+          "anyOf": [
             { "const": "Success" },
             { "const": "Error" },
             { "const": "skipped" }
@@ -276,7 +276,7 @@
         "bunch_of_bytes": { "type": "string" },
         "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": {
-          "oneOf": [
+          "anyOf": [
             { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
           ]
         },
@@ -285,7 +285,7 @@
         "opt_int": { "type": "integer" },
         "comment": { "type": "string" },
         "kind_f": {
-          "oneOf": [
+          "anyOf": [
             { "const": "Success" },
             { "const": "Error" },
             { "const": "skipped" }
@@ -319,7 +319,7 @@
           "bunch_of_bytes": { "type": "string" },
           "c": { "type": "string", "minLength": 1, "maxLength": 1 },
           "t": {
-            "oneOf": [
+            "anyOf": [
               { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
             ]
           },
@@ -328,7 +328,7 @@
           "opt_int": { "type": "integer" },
           "comment": { "type": "string" },
           "kind_f": {
-            "oneOf": [
+            "anyOf": [
               { "const": "Success" },
               { "const": "Error" },
               { "const": "skipped" }
@@ -363,7 +363,7 @@
           "bunch_of_bytes": { "type": "string" },
           "c": { "type": "string", "minLength": 1, "maxLength": 1 },
           "t": {
-            "oneOf": [
+            "anyOf": [
               { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
             ]
           },
@@ -372,7 +372,7 @@
           "opt_int": { "type": "integer" },
           "comment": { "type": "string" },
           "kind_f": {
-            "oneOf": [
+            "anyOf": [
               { "const": "Success" },
               { "const": "Error" },
               { "const": "skipped" }
@@ -406,7 +406,7 @@
         "bunch_of_bytes": { "type": "string" },
         "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": {
-          "oneOf": [
+          "anyOf": [
             { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
           ]
         },
@@ -415,7 +415,7 @@
         "opt_int": { "type": "integer" },
         "comment": { "type": "string" },
         "kind_f": {
-          "oneOf": [
+          "anyOf": [
             { "const": "Success" },
             { "const": "Error" },
             { "const": "skipped" }
@@ -442,7 +442,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "properties": { "m": { "oneOf": [ { "const": "A" }, { "const": "B" } ] } },
+  "properties": { "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] } },
   "required": [ "m" ]
 }
 {
@@ -453,11 +453,11 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [ { "const": "C" } ]
+  "anyOf": [ { "const": "C" } ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "array",
       "prefixItems": [
@@ -474,7 +474,7 @@
   "type": "array",
   "prefixItems": [
     { "type": "integer" },
-    { "oneOf": [ { "const": "A" }, { "const": "second_cstr" } ] }
+    { "anyOf": [ { "const": "A" }, { "const": "second_cstr" } ] }
   ],
   "unevaluatedItems": false,
   "minItems": 2,
@@ -546,7 +546,7 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "array",
       "prefixItems": [
@@ -579,7 +579,7 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "array",
       "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
