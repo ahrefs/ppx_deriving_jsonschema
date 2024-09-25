@@ -13,8 +13,10 @@ module Mod1 =
       struct
         let m_1_jsonschema =
           `Assoc
-            [("type", (`String "string"));
-            ("enum", (`List [`String "A"; `String "B"]))][@@warning "-32-39"]
+            [("oneOf",
+               (`List
+                  [`Assoc [("const", (`String "A"))];
+                  `Assoc [("const", (`String "B"))]]))][@@warning "-32-39"]
       end[@@ocaml.doc "@inline"][@@merlin.hide ]
     module Mod2 =
       struct
@@ -25,9 +27,11 @@ module Mod1 =
           struct
             let m_2_jsonschema =
               `Assoc
-                [("type", (`String "string"));
-                ("enum", (`List [`String "C"; `String "D"]))][@@warning
-                                                               "-32-39"]
+                [("oneOf",
+                   (`List
+                      [`Assoc [("const", (`String "C"))];
+                      `Assoc [("const", (`String "D"))]]))][@@warning
+                                                             "-32-39"]
           end[@@ocaml.doc "@inline"][@@merlin.hide ]
       end
   end
@@ -54,10 +58,11 @@ include
   struct
     let kind_jsonschema =
       `Assoc
-        [("type", (`String "string"));
-        ("enum",
-          (`List [`String "Success"; `String "Error"; `String "skipped"]))]
-      [@@warning "-32-39"]
+        [("oneOf",
+           (`List
+              [`Assoc [("const", (`String "Success"))];
+              `Assoc [("const", (`String "Error"))];
+              `Assoc [("const", (`String "skipped"))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema kind_jsonschema
 type kind_as_array =
@@ -98,9 +103,11 @@ include
   struct
     let poly_kind_jsonschema =
       `Assoc
-        [("type", (`String "string"));
-        ("enum", (`List [`String "Aaa"; `String "Bbb"; `String "ccc"]))]
-      [@@warning "-32-39"]
+        [("oneOf",
+           (`List
+              [`Assoc [("const", (`String "Aaa"))];
+              `Assoc [("const", (`String "Bbb"))];
+              `Assoc [("const", (`String "ccc"))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_kind_jsonschema
 type poly_kind_as_array = [ `Aaa  | `Bbb  | `Ccc [@name "ccc"]][@@deriving
@@ -142,9 +149,11 @@ include
   struct
     let poly_kind_with_payload_jsonschema =
       `Assoc
-        [("type", (`String "string"));
-        ("enum", (`List [`String "Aaa"; `String "Bbb"; `String "ccc"]))]
-      [@@warning "-32-39"]
+        [("oneOf",
+           (`List
+              [`Assoc [("const", (`String "Aaa"))];
+              `Assoc [("const", (`String "Bbb"))];
+              `Assoc [("const", (`String "ccc"))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_kind_with_payload_jsonschema
 type poly_kind_with_payload_as_array =
@@ -192,19 +201,48 @@ include
                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_kind_with_payload_as_array_jsonschema
-type poly_inherit = [ `New_one  | poly_kind][@@deriving jsonschema]
+type poly_inherit = [ `New_one  | `Second_one of int  | poly_kind][@@deriving
+                                                                    jsonschema]
 include
   struct
     let poly_inherit_jsonschema =
       `Assoc
-        [("type", (`String "string"));
-        ("enum",
-          (`List
-             [`String "New_one";
-             `String "unsupported polymorphic variant inheritance: poly_kind"]))]
-      [@@warning "-32-39"]
+        [("oneOf",
+           (`List
+              [`Assoc [("const", (`String "New_one"))];
+              `Assoc [("const", (`String "Second_one"))];
+              poly_kind_jsonschema]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_inherit_jsonschema
+type poly_inherit_as_array =
+  [ `New_one  | `Second_one of int  | poly_kind_as_array][@@deriving
+                                                           jsonschema
+                                                             ~variant_as_array]
+include
+  struct
+    let poly_inherit_as_array_jsonschema =
+      `Assoc
+        [("oneOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List [`Assoc [("const", (`String "New_one"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 1));
+                 ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "Second_one"))];
+                     `Assoc [("type", (`String "integer"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))];
+              poly_kind_as_array_jsonschema]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema poly_inherit_as_array_jsonschema
 type event =
   {
   date: float ;
@@ -237,9 +275,11 @@ include
                   ("maxLength", (`Int 1))]));
              ("t",
                (`Assoc
-                  [("type", (`String "string"));
-                  ("enum",
-                    (`List [`String "Foo"; `String "Bar"; `String "Baz"]))]));
+                  [("oneOf",
+                     (`List
+                        [`Assoc [("const", (`String "Foo"))];
+                        `Assoc [("const", (`String "Bar"))];
+                        `Assoc [("const", (`String "Baz"))]]))]));
              ("l",
                (`Assoc
                   [("type", (`String "array"));
@@ -379,10 +419,29 @@ type 'param2 poly2 =
 include
   struct
     let poly2_jsonschema =
-      `Assoc [("type", (`String "string")); ("enum", (`List [`String "C"]))]
+      `Assoc [("oneOf", (`List [`Assoc [("const", (`String "C"))]]))]
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly2_jsonschema
+type 'param2 poly2_as_array =
+  | C of 'param2 [@@deriving jsonschema ~variant_as_array]
+include
+  struct
+    let poly2_as_array_jsonschema =
+      `Assoc
+        [("oneOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "C"))];
+                      `Assoc [("unsuported core type", (`String "'param2"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema poly2_as_array_jsonschema
 type tuple_with_variant = (int * [ `A  | `B [@name "second_cstr"]])[@@deriving
                                                                     jsonschema]
 include
@@ -394,8 +453,10 @@ include
           (`List
              [`Assoc [("type", (`String "integer"))];
              `Assoc
-               [("type", (`String "string"));
-               ("enum", (`List [`String "A"; `String "second_cstr"]))]]));
+               [("oneOf",
+                  (`List
+                     [`Assoc [("const", (`String "A"))];
+                     `Assoc [("const", (`String "second_cstr"))]]))]]));
         ("unevaluatedItems", (`Bool false));
         ("minItems", (`Int 2));
         ("maxItems", (`Int 2))][@@warning "-32-39"]

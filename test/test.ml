@@ -81,11 +81,21 @@ let () = print_schema poly_kind_with_payload_as_array_jsonschema
 
 type poly_inherit =
   [ `New_one
+  | `Second_one of int
   | poly_kind
   ]
 [@@deriving jsonschema]
 
 let () = print_schema poly_inherit_jsonschema
+
+type poly_inherit_as_array =
+  [ `New_one
+  | `Second_one of int
+  | poly_kind_as_array
+  ]
+[@@deriving jsonschema ~variant_as_array]
+
+let () = print_schema poly_inherit_as_array_jsonschema
 
 type event = {
   date : float;
@@ -163,6 +173,10 @@ let () = print_schema poly_jsonschema
 type 'param2 poly2 = C of 'param2 [@@deriving jsonschema]
 
 let () = print_schema poly2_jsonschema
+
+type 'param2 poly2_as_array = C of 'param2 [@@deriving jsonschema ~variant_as_array]
+
+let () = print_schema poly2_as_array_jsonschema
 
 type tuple_with_variant = int * [ `A | `B [@name "second_cstr"] ] [@@deriving jsonschema]
 

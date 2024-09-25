@@ -99,17 +99,28 @@ module Schema = struct
     enum ~loc (Some "string") values
 end
 
-let variant_as_array ~loc values = Schema.array_ ~loc ~min_items:1 ~max_items:1 (Schema.enum_string ~loc values)
+let variant_as_string ~loc constrs =
+  Schema.oneOf ~loc
+    (List.map
+       (function
+         | `Tag (name, _typs) -> Schema.const ~loc name
+         | `Inherit typ -> typ)
+       constrs)
 
-let variant_as_string ~loc values = Schema.enum_string ~loc values
-
-let variant_with_payload ~loc constrs =
-  Schema.oneOf ~loc (List.map (fun (name, typs) -> Schema.tuple ~loc (Schema.const ~loc name :: typs)) constrs)
+let variant_as_array ~loc constrs = Schema.array_ ~loc ~min_items:1 ~max_items:1 (variant_as_string ~loc constrs)
 
 let variant ~loc ~config values =
   match config.variant_as_array with
   | true -> variant_as_array ~loc values
   | false -> variant_as_string ~loc values
+
+let variant_with_payload ~loc constrs =
+  Schema.oneOf ~loc
+    (List.map
+       (function
+         | `Tag (name, typs) -> Schema.tuple ~loc (Schema.const ~loc name :: typs)
+         | `Inherit typ -> typ)
+       constrs)
 
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
 
@@ -154,21 +165,17 @@ let rec type_of_core ~loc ~config core_type =
               | None -> name.txt
             in
             let typs = List.map (type_of_core ~loc ~config) typs in
-            name, typs
+            `Tag (name, typs)
           | { prf_desc = Rinherit core_type; _ } ->
-            (* let typs = [ type_of_core ~loc ~config core_type ] in *)
-            let name =
-              Format.asprintf "unsupported polymorphic variant inheritance: %a" Astlib.Pprintast.core_type
-                core_type (* todo: *)
-            in
-            name, [])
+            let typ = type_of_core ~loc ~config core_type in
+            `Inherit typ)
         row_fields
     in
     (* todo: raise an error if encoding is as string and constructor has a payload *)
     let v =
       match config.variant_as_array with
       | true -> variant_with_payload ~loc constrs
-      | false -> variant_as_string ~loc (List.map fst constrs)
+      | false -> variant_as_string ~loc constrs
     in
     v
   | _ ->
@@ -224,17 +231,17 @@ let derive_jsonschema ~ctxt ast variant_as_array =
           match pcd_args with
           | Pcstr_record label_declarations ->
             let typs = [ object_ ~loc ~config label_declarations ] in
-            name, typs
+            `Tag (name, typs)
           | Pcstr_tuple typs ->
             let types = List.map (type_of_core ~loc ~config) typs in
-            name, types)
+            `Tag (name, types))
         variants
     in
     let v =
       (* todo: raise an error if encoding is as string and constructor has a payload *)
       match variant_as_array with
       | true -> variant_with_payload ~loc variants
-      | false -> variant_as_string ~loc (List.map fst variants)
+      | false -> variant_as_string ~loc variants
     in
     let jsonschema_expr = create_value ~loc type_name v in
     [ jsonschema_expr ]
