@@ -1365,3 +1365,122 @@ include
         }
       ]
     } |}]]
+type t1 =
+  | Typ 
+  | Class of string [@@deriving jsonschema]
+include
+  struct
+    let t1_jsonschema =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc [("const", (`String "Typ"))];
+              `Assoc [("const", (`String "Class"))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "t1" =
+    print_schema t1_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "Typ" }, { "const": "Class" } ]
+    } |}]]
+type t2 =
+  | Typ 
+  | Class of string [@@deriving jsonschema ~variant_as_array]
+include
+  struct
+    let t2_jsonschema =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List [`Assoc [("const", (`String "Typ"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 1));
+                 ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "Class"))];
+                     `Assoc [("type", (`String "string"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "t2" =
+    print_schema t2_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Typ" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Class" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    } |}]]
+type t3 =
+  | Typ [@name "type"]
+  | Class of string [@name "class"][@@deriving jsonschema]
+include
+  struct
+    let t3_jsonschema =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc [("const", (`String "type"))];
+              `Assoc [("const", (`String "class"))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "t3" =
+    print_schema t3_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "type" }, { "const": "class" } ]
+    } |}]]
+type t4 = (int * string)[@@deriving jsonschema]
+include
+  struct
+    let t4_jsonschema =
+      `Assoc
+        [("type", (`String "array"));
+        ("prefixItems",
+          (`List
+             [`Assoc [("type", (`String "integer"))];
+             `Assoc [("type", (`String "string"))]]));
+        ("unevaluatedItems", (`Bool false));
+        ("minItems", (`Int 2));
+        ("maxItems", (`Int 2))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "t4" =
+    print_schema t4_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "prefixItems": [ { "type": "integer" }, { "type": "string" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    } |}]]

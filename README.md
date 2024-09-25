@@ -70,28 +70,81 @@ OCaml lists and arrays are converted to `{ "type": "array", "items": { "type": "
 
 #### Tuples
 
-Tuples are converted to `{ "type": "array", "items": [...] }`.
+Tuples are converted to `{ "type": "array", "prefixItems": [...] }`.
+
+```ocaml
+type t = int * string [@@deriving jsonschema]
+```
+
+```json
+{
+  "type": "array",
+  "prefixItems": [ { "type": "integer" }, { "type": "string" } ],
+  "unevaluatedItems": false,
+  "minItems": 2,
+  "maxItems": 2
+}
+```
 
 #### Variants and polymorphic variants
 
-Variants are converted to `{ "type": "string", "enum": [...] }` by default.
-
-if the JSON variant names differ from OCaml conventions, users can specify the corresponding JSON string explicitly using `[@name "constr"]`, for example:
+By default, variants are converted to `"anyOf": [{ "const": "..." }, ...]`. This means that while the constructor names are represented as strings, any associated payload is not included.
 
 ```ocaml
 type t =
-| Typ   [@name "type"]
-| Class [@name "class"]
+| Typ
+| Class of string
 [@@deriving jsonschema]
 ```
 
-If you want to use the same encoding as [ppx_deriving_json] and [ppx_yojson_conv], you can use the `~variant_as_array` flag:
+```json
+{ "anyOf": [ { "const": "Typ" }, { "const": "Class" } ] }
+```
+
+To include the payload in the encoding, the `~variant_as_array` flag should be used. This flag also ensures compatibility with [ppx_deriving_json] and [ppx_yojson_conv]. In this case each constructor is represented like a tuple.
+
+```ocaml
+type t =
+| Typ
+| Class of string
+[@@deriving jsonschema ~variant_as_array]
+```
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Typ" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Class" }, { "type": "string" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
+If the JSON variant names differ from OCaml conventions, it is possible to specify the corresponding JSON string explicitly using `[@name "constr"]`, for example:
 
 ```ocaml
 type t =
 | Typ   [@name "type"]
-| Class [@name "class"]
-[@@deriving jsonschema ~variant_as_array]
+| Class of string [@name "class"]
+[@@deriving jsonschema]
+```
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [ { "const": "type" }, { "const": "class" } ]
+}
 ```
 
 #### Records

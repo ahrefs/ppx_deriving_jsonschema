@@ -940,3 +940,75 @@ let%expect_test "variant_with_payload" =
         }
       ]
     } |}]
+
+type t1 =
+  | Typ
+  | Class of string
+[@@deriving jsonschema]
+
+let%expect_test "t1" =
+  print_schema t1_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "Typ" }, { "const": "Class" } ]
+    } |}]
+
+type t2 =
+  | Typ
+  | Class of string
+[@@deriving jsonschema ~variant_as_array]
+
+let%expect_test "t2" =
+  print_schema t2_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Typ" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Class" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    } |}]
+
+type t3 =
+  | Typ [@name "type"]
+  | Class of string [@name "class"]
+[@@deriving jsonschema]
+
+let%expect_test "t3" =
+  print_schema t3_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "type" }, { "const": "class" } ]
+    } |}]
+
+type t4 = int * string [@@deriving jsonschema]
+
+let%expect_test "t4" =
+  print_schema t4_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "prefixItems": [ { "type": "integer" }, { "type": "string" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    } |}]
