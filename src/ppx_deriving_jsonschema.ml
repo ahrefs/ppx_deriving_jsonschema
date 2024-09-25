@@ -138,7 +138,8 @@ let is_optional_type core_type =
   | [%type: [%t? _] option] -> true
   | _ -> false
 
-let rec type_of_core ~loc ~config core_type =
+let rec type_of_core ~config core_type =
+  let loc = core_type.ptyp_loc in
   match core_type with
   | [%type: int] | [%type: int32] | [%type: int64] | [%type: nativeint] -> Schema.type_def ~loc "integer"
   | [%type: float] -> Schema.type_def ~loc "number"
@@ -146,10 +147,10 @@ let rec type_of_core ~loc ~config core_type =
   | [%type: bool] -> Schema.type_def ~loc "boolean"
   | [%type: char] -> Schema.char ~loc
   | [%type: unit] -> Schema.null ~loc
-  | [%type: [%t? t] option] -> type_of_core ~loc ~config t
-  | [%type: [%t? t] ref] -> type_of_core ~loc ~config t
+  | [%type: [%t? t] option] -> type_of_core ~config t
+  | [%type: [%t? t] ref] -> type_of_core ~config t
   | [%type: [%t? t] list] | [%type: [%t? t] array] ->
-    let t = type_of_core ~loc ~config t in
+    let t = type_of_core ~config t in
     Schema.array_ ~loc t
   | _ ->
   match core_type.ptyp_desc with
@@ -157,7 +158,7 @@ let rec type_of_core ~loc ~config core_type =
     (* todo: support using references with [type_ref ~loc type_name] instead of inlining everything *)
     type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") []
   | Ptyp_tuple types ->
-    let ts = List.map (type_of_core ~loc ~config) types in
+    let ts = List.map (type_of_core ~config) types in
     Schema.tuple ~loc ts
   | Ptyp_variant (row_fields, _, _) ->
     let constrs =
@@ -170,10 +171,10 @@ let rec type_of_core ~loc ~config core_type =
               | Some name -> name
               | None -> name.txt
             in
-            let typs = List.map (type_of_core ~loc ~config) typs in
+            let typs = List.map (type_of_core ~config) typs in
             `Tag (name, typs)
           | { prf_desc = Rinherit core_type; _ } ->
-            let typ = type_of_core ~loc ~config core_type in
+            let typ = type_of_core ~config core_type in
             `Inherit typ)
         row_fields
     in
@@ -185,34 +186,28 @@ let rec type_of_core ~loc ~config core_type =
     in
     v
   | _ ->
-    (* Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type; *)
-    [%expr
-      (* todo: this type is unknown, placeholder to accept anything. Should create an error instead. *)
-      `Assoc
-        [
-          "unsuported core type", `String [%e estring ~loc (Format.asprintf "%a" Astlib.Pprintast.core_type core_type)];
-        ]]
+    let msg = Format.asprintf "ppx_deriving_jsonschema: unsupported type %a" Astlib.Pprintast.core_type core_type in
+    [%expr [%ocaml.error [%e estring ~loc msg]]]
 
-(* todo: add option to inline types instead of using definitions references *)
 let object_ ~loc ~config fields =
   let fields, required =
     List.fold_left
-      (fun (fields, required) ({ pld_name = { txt = name; _ }; pld_type; _ } as field) ->
+      (fun (fields, required) ({ pld_name; pld_type; pld_loc = _loc; _ } as field) ->
         let name =
           match Attribute.get jsonschema_key field with
           | Some name -> name
-          | None -> name
+          | None -> pld_name.txt
         in
         let type_def =
           match Attribute.get jsonschema_ref field with
           | Some def -> Schema.type_ref ~loc def
-          | None -> type_of_core ~loc ~config pld_type
+          | None -> type_of_core ~config pld_type
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
-          if is_optional_type pld_type then required else name :: required ))
+          if is_optional_type pld_type then required else { txt = name; loc } :: required ))
       ([], []) fields
   in
-  let required = List.map (fun name -> [%expr `String [%e estring ~loc name]]) required in
+  let required = List.map (fun { txt = name; loc } -> [%expr `String [%e estring ~loc name]]) required in
   [%expr
     `Assoc
       [
@@ -239,7 +234,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_array =
             let typs = [ object_ ~loc ~config label_declarations ] in
             `Tag (name, typs)
           | Pcstr_tuple typs ->
-            let types = List.map (type_of_core ~loc ~config) typs in
+            let types = List.map (type_of_core ~config) typs in
             `Tag (name, types))
         variants
     in
@@ -255,11 +250,11 @@ let derive_jsonschema ~ctxt ast flag_variant_as_array =
     let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations) in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (type_of_core ~loc ~config core_type) in
+    let jsonschema_expr = create_value ~loc type_name (type_of_core ~config core_type) in
     [ jsonschema_expr ]
   | _, _ast ->
     (* Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast; *)
-    [%str [%ocaml.error "Oops, jsonschema deriving does not support this type"]]
+    [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 (* let generator () = Deriving.Generator.V2.make_noarg derive_jsonschema *)

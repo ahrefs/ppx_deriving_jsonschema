@@ -31,6 +31,7 @@
   (ppxlib
    (>= "0.24.0"))
   (yojson :with-test)
+  (ppx_expect :with-test)
   (ocamlformat :with-dev-setup)
   (ocaml-lsp-server :with-dev-setup))
  (tags

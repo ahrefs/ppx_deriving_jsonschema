@@ -1,141 +1,53 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "m2": { "anyOf": [ { "const": "C" }, { "const": "D" } ] },
-    "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] }
-  },
-  "required": [ "m2", "m" ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
+  "oneOf": [
     {
-      "type": "array",
-      "prefixItems": [ { "const": "Success" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "m2": { "anyOf": [ { "const": "C" }, { "const": "D" } ] },
+        "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] }
+      },
+      "required": [ "m2", "m" ]
     },
     {
-      "type": "array",
-      "prefixItems": [ { "const": "Error" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
+      ]
     },
     {
-      "type": "array",
-      "prefixItems": [ { "const": "skipped" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
-    }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "Aaa" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
-    },
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "Bbb" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
-    },
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "ccc" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
-    }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "Aaa" }, { "type": "integer" } ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
-    },
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "Bbb" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
-    },
-    {
-      "type": "array",
-      "prefixItems": [
-        { "const": "ccc" },
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
         {
           "type": "array",
-          "prefixItems": [ { "type": "string" }, { "type": "boolean" } ],
+          "prefixItems": [ { "const": "Success" } ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Error" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "skipped" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
         }
-      ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
-    }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    { "const": "New_one" },
-    { "const": "Second_one" },
+      ]
+    },
     {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
-    }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "New_one" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
     },
     {
-      "type": "array",
-      "prefixItems": [ { "const": "Second_one" }, { "type": "integer" } ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
-    },
-    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
         {
           "type": "array",
@@ -159,469 +71,552 @@
           "maxItems": 1
         }
       ]
-    }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "native_int": { "type": "integer" },
-    "unit": { "type": "null" },
-    "string_ref": { "type": "string" },
-    "bunch_of_bytes": { "type": "string" },
-    "c": { "type": "string", "minLength": 1, "maxLength": 1 },
-    "t": {
-      "anyOf": [ { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" } ]
     },
-    "l": { "type": "array", "items": { "type": "string" } },
-    "a": { "type": "array", "items": { "type": "number" } },
-    "opt_int": { "type": "integer" },
-    "comment": { "type": "string" },
-    "kind_f": {
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
-        { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
-      ]
-    },
-    "date": { "type": "number" }
-  },
-  "required": [
-    "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
-    "comment", "kind_f", "date"
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": {
-    "type": "object",
-    "properties": {
-      "native_int": { "type": "integer" },
-      "unit": { "type": "null" },
-      "string_ref": { "type": "string" },
-      "bunch_of_bytes": { "type": "string" },
-      "c": { "type": "string", "minLength": 1, "maxLength": 1 },
-      "t": {
-        "anyOf": [
-          { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
-        ]
-      },
-      "l": { "type": "array", "items": { "type": "string" } },
-      "a": { "type": "array", "items": { "type": "number" } },
-      "opt_int": { "type": "integer" },
-      "comment": { "type": "string" },
-      "kind_f": {
-        "anyOf": [
-          { "const": "Success" },
-          { "const": "Error" },
-          { "const": "skipped" }
-        ]
-      },
-      "date": { "type": "number" }
-    },
-    "required": [
-      "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-      "a", "comment", "kind_f", "date"
-    ]
-  }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": {
-    "type": "array",
-    "items": {
-      "type": "object",
-      "properties": {
-        "native_int": { "type": "integer" },
-        "unit": { "type": "null" },
-        "string_ref": { "type": "string" },
-        "bunch_of_bytes": { "type": "string" },
-        "c": { "type": "string", "minLength": 1, "maxLength": 1 },
-        "t": {
-          "anyOf": [
-            { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
-          ]
-        },
-        "l": { "type": "array", "items": { "type": "string" } },
-        "a": { "type": "array", "items": { "type": "number" } },
-        "opt_int": { "type": "integer" },
-        "comment": { "type": "string" },
-        "kind_f": {
-          "anyOf": [
-            { "const": "Success" },
-            { "const": "Error" },
-            { "const": "skipped" }
-          ]
-        },
-        "date": { "type": "number" }
-      },
-      "required": [
-        "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-        "a", "comment", "kind_f", "date"
-      ]
-    }
-  }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "prefixItems": [
-    {
-      "type": "object",
-      "properties": {
-        "native_int": { "type": "integer" },
-        "unit": { "type": "null" },
-        "string_ref": { "type": "string" },
-        "bunch_of_bytes": { "type": "string" },
-        "c": { "type": "string", "minLength": 1, "maxLength": 1 },
-        "t": {
-          "anyOf": [
-            { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
-          ]
-        },
-        "l": { "type": "array", "items": { "type": "string" } },
-        "a": { "type": "array", "items": { "type": "number" } },
-        "opt_int": { "type": "integer" },
-        "comment": { "type": "string" },
-        "kind_f": {
-          "anyOf": [
-            { "const": "Success" },
-            { "const": "Error" },
-            { "const": "skipped" }
-          ]
-        },
-        "date": { "type": "number" }
-      },
-      "required": [
-        "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-        "a", "comment", "kind_f", "date"
-      ]
-    },
-    { "type": "string" }
-  ],
-  "unevaluatedItems": false,
-  "minItems": 2,
-  "maxItems": 2
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": {
-    "type": "array",
-    "prefixItems": [
-      {
-        "type": "object",
-        "properties": {
-          "native_int": { "type": "integer" },
-          "unit": { "type": "null" },
-          "string_ref": { "type": "string" },
-          "bunch_of_bytes": { "type": "string" },
-          "c": { "type": "string", "minLength": 1, "maxLength": 1 },
-          "t": {
-            "anyOf": [
-              { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
-            ]
-          },
-          "l": { "type": "array", "items": { "type": "string" } },
-          "a": { "type": "array", "items": { "type": "number" } },
-          "opt_int": { "type": "integer" },
-          "comment": { "type": "string" },
-          "kind_f": {
-            "anyOf": [
-              { "const": "Success" },
-              { "const": "Error" },
-              { "const": "skipped" }
-            ]
-          },
-          "date": { "type": "number" }
-        },
-        "required": [
-          "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-          "l", "a", "comment", "kind_f", "date"
-        ]
-      },
-      { "type": "string" }
-    ],
-    "unevaluatedItems": false,
-    "minItems": 2,
-    "maxItems": 2
-  }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": {
-    "type": "array",
-    "prefixItems": [
-      {
-        "type": "object",
-        "properties": {
-          "native_int": { "type": "integer" },
-          "unit": { "type": "null" },
-          "string_ref": { "type": "string" },
-          "bunch_of_bytes": { "type": "string" },
-          "c": { "type": "string", "minLength": 1, "maxLength": 1 },
-          "t": {
-            "anyOf": [
-              { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
-            ]
-          },
-          "l": { "type": "array", "items": { "type": "string" } },
-          "a": { "type": "array", "items": { "type": "number" } },
-          "opt_int": { "type": "integer" },
-          "comment": { "type": "string" },
-          "kind_f": {
-            "anyOf": [
-              { "const": "Success" },
-              { "const": "Error" },
-              { "const": "skipped" }
-            ]
-          },
-          "date": { "type": "number" }
-        },
-        "required": [
-          "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-          "l", "a", "comment", "kind_f", "date"
-        ]
-      },
-      { "type": "integer" }
-    ],
-    "unevaluatedItems": false,
-    "minItems": 2,
-    "maxItems": 2
-  }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": {
-    "type": "array",
-    "items": {
-      "type": "object",
-      "properties": {
-        "native_int": { "type": "integer" },
-        "unit": { "type": "null" },
-        "string_ref": { "type": "string" },
-        "bunch_of_bytes": { "type": "string" },
-        "c": { "type": "string", "minLength": 1, "maxLength": 1 },
-        "t": {
-          "anyOf": [
-            { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
-          ]
-        },
-        "l": { "type": "array", "items": { "type": "string" } },
-        "a": { "type": "array", "items": { "type": "number" } },
-        "opt_int": { "type": "integer" },
-        "comment": { "type": "string" },
-        "kind_f": {
-          "anyOf": [
-            { "const": "Success" },
-            { "const": "Error" },
-            { "const": "skipped" }
-          ]
-        },
-        "date": { "type": "number" }
-      },
-      "required": [
-        "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-        "a", "comment", "kind_f", "date"
-      ]
-    }
-  }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": { "type": "integer" }
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "integer"
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": { "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] } },
-  "required": [ "m" ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": { "f": { "unsuported core type": "'param" } },
-  "required": [ "f" ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [ { "const": "C" } ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    {
-      "type": "array",
-      "prefixItems": [
-        { "const": "C" }, { "unsuported core type": "'param2" }
-      ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
-    }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "prefixItems": [
-    { "type": "integer" },
-    { "anyOf": [ { "const": "A" }, { "const": "second_cstr" } ] }
-  ],
-  "unevaluatedItems": false,
-  "minItems": 2,
-  "maxItems": 2
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ahrefs.com/schemas/player_scores",
-  "title": "Player scores",
-  "description": "Object representing player scores",
-  "$defs": { "numbers": { "type": "array", "items": { "type": "integer" } } },
-  "type": "object",
-  "properties": {
-    "scores_ref": { "$ref": "#/$defs/numbers" },
-    "player": { "type": "string" }
-  },
-  "required": [ "scores_ref", "player" ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "address": {
-      "type": "object",
-      "properties": {
-        "zip": { "type": "string" },
-        "city": { "type": "string" },
-        "street": { "type": "string" }
-      },
-      "required": [ "zip", "city", "street" ]
-    },
-    "email": { "type": "string" },
-    "age": { "type": "integer" },
-    "name": { "type": "string" }
-  },
-  "required": [ "address", "age", "name" ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$defs": {
-    "shared_address": {
-      "type": "object",
-      "properties": {
-        "zip": { "type": "string" },
-        "city": { "type": "string" },
-        "street": { "type": "string" }
-      },
-      "required": [ "zip", "city", "street" ]
-    }
-  },
-  "type": "object",
-  "properties": {
-    "retreat_address": { "$ref": "#/$defs/shared_address" },
-    "work_address": { "$ref": "#/$defs/shared_address" },
-    "home_address": { "$ref": "#/$defs/shared_address" },
-    "email": { "type": "string" },
-    "age": { "type": "integer" },
-    "name": { "type": "string" }
-  },
-  "required": [
-    "retreat_address", "work_address", "home_address", "age", "name"
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "string",
-  "minLength": 1,
-  "maxLength": 1
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    {
-      "type": "array",
-      "prefixItems": [
-        { "const": "A" },
         {
-          "type": "object",
-          "properties": { "a": { "type": "integer" } },
-          "required": [ "a" ]
-        }
-      ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
-    },
-    {
-      "type": "array",
-      "prefixItems": [
-        { "const": "B" },
+          "type": "array",
+          "prefixItems": [ { "const": "Aaa" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
         {
-          "type": "object",
-          "properties": { "b": { "type": "string" } },
-          "required": [ "b" ]
-        }
-      ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
-    }
-  ]
-}
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "anyOf": [
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
-    },
-    {
-      "type": "array",
-      "prefixItems": [ { "const": "B" } ],
-      "unevaluatedItems": false,
-      "minItems": 1,
-      "maxItems": 1
-    },
-    {
-      "type": "array",
-      "prefixItems": [
-        { "const": "C" }, { "type": "integer" }, { "type": "string" }
-      ],
-      "unevaluatedItems": false,
-      "minItems": 3,
-      "maxItems": 3
-    },
-    {
-      "type": "array",
-      "prefixItems": [
-        { "const": "D" },
+          "type": "array",
+          "prefixItems": [ { "const": "Bbb" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
         {
           "type": "array",
           "prefixItems": [
-            { "type": "integer" },
-            { "type": "string" },
-            { "type": "boolean" }
+            { "const": "ccc" },
+            {
+              "type": "array",
+              "prefixItems": [ { "type": "string" }, { "type": "boolean" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "const": "New_one" },
+        { "const": "Second_one" },
+        {
+          "anyOf": [
+            { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" }
+          ]
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "New_one" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Second_one" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Aaa" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Bbb" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "ccc" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "native_int": { "type": "integer" },
+        "unit": { "type": "null" },
+        "string_ref": { "type": "string" },
+        "bunch_of_bytes": { "type": "string" },
+        "c": { "type": "string", "minLength": 1, "maxLength": 1 },
+        "t": {
+          "anyOf": [
+            { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+          ]
+        },
+        "l": { "type": "array", "items": { "type": "string" } },
+        "a": { "type": "array", "items": { "type": "number" } },
+        "opt_int": { "type": "integer" },
+        "comment": { "type": "string" },
+        "kind_f": {
+          "anyOf": [
+            { "const": "Success" },
+            { "const": "Error" },
+            { "const": "skipped" }
+          ]
+        },
+        "date": { "type": "number" }
+      },
+      "required": [
+        "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
+        "a", "comment", "kind_f", "date"
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "native_int": { "type": "integer" },
+          "unit": { "type": "null" },
+          "string_ref": { "type": "string" },
+          "bunch_of_bytes": { "type": "string" },
+          "c": { "type": "string", "minLength": 1, "maxLength": 1 },
+          "t": {
+            "anyOf": [
+              { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+            ]
+          },
+          "l": { "type": "array", "items": { "type": "string" } },
+          "a": { "type": "array", "items": { "type": "number" } },
+          "opt_int": { "type": "integer" },
+          "comment": { "type": "string" },
+          "kind_f": {
+            "anyOf": [
+              { "const": "Success" },
+              { "const": "Error" },
+              { "const": "skipped" }
+            ]
+          },
+          "date": { "type": "number" }
+        },
+        "required": [
+          "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+          "l", "a", "comment", "kind_f", "date"
+        ]
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "native_int": { "type": "integer" },
+            "unit": { "type": "null" },
+            "string_ref": { "type": "string" },
+            "bunch_of_bytes": { "type": "string" },
+            "c": { "type": "string", "minLength": 1, "maxLength": 1 },
+            "t": {
+              "anyOf": [
+                { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+              ]
+            },
+            "l": { "type": "array", "items": { "type": "string" } },
+            "a": { "type": "array", "items": { "type": "number" } },
+            "opt_int": { "type": "integer" },
+            "comment": { "type": "string" },
+            "kind_f": {
+              "anyOf": [
+                { "const": "Success" },
+                { "const": "Error" },
+                { "const": "skipped" }
+              ]
+            },
+            "date": { "type": "number" }
+          },
+          "required": [
+            "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+            "l", "a", "comment", "kind_f", "date"
+          ]
+        }
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "object",
+          "properties": {
+            "native_int": { "type": "integer" },
+            "unit": { "type": "null" },
+            "string_ref": { "type": "string" },
+            "bunch_of_bytes": { "type": "string" },
+            "c": { "type": "string", "minLength": 1, "maxLength": 1 },
+            "t": {
+              "anyOf": [
+                { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+              ]
+            },
+            "l": { "type": "array", "items": { "type": "string" } },
+            "a": { "type": "array", "items": { "type": "number" } },
+            "opt_int": { "type": "integer" },
+            "comment": { "type": "string" },
+            "kind_f": {
+              "anyOf": [
+                { "const": "Success" },
+                { "const": "Error" },
+                { "const": "skipped" }
+              ]
+            },
+            "date": { "type": "number" }
+          },
+          "required": [
+            "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+            "l", "a", "comment", "kind_f", "date"
+          ]
+        },
+        { "type": "string" }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "object",
+            "properties": {
+              "native_int": { "type": "integer" },
+              "unit": { "type": "null" },
+              "string_ref": { "type": "string" },
+              "bunch_of_bytes": { "type": "string" },
+              "c": { "type": "string", "minLength": 1, "maxLength": 1 },
+              "t": {
+                "anyOf": [
+                  { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+                ]
+              },
+              "l": { "type": "array", "items": { "type": "string" } },
+              "a": { "type": "array", "items": { "type": "number" } },
+              "opt_int": { "type": "integer" },
+              "comment": { "type": "string" },
+              "kind_f": {
+                "anyOf": [
+                  { "const": "Success" },
+                  { "const": "Error" },
+                  { "const": "skipped" }
+                ]
+              },
+              "date": { "type": "number" }
+            },
+            "required": [
+              "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+              "l", "a", "comment", "kind_f", "date"
+            ]
+          },
+          { "type": "string" }
+        ],
+        "unevaluatedItems": false,
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "object",
+            "properties": {
+              "native_int": { "type": "integer" },
+              "unit": { "type": "null" },
+              "string_ref": { "type": "string" },
+              "bunch_of_bytes": { "type": "string" },
+              "c": { "type": "string", "minLength": 1, "maxLength": 1 },
+              "t": {
+                "anyOf": [
+                  { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+                ]
+              },
+              "l": { "type": "array", "items": { "type": "string" } },
+              "a": { "type": "array", "items": { "type": "number" } },
+              "opt_int": { "type": "integer" },
+              "comment": { "type": "string" },
+              "kind_f": {
+                "anyOf": [
+                  { "const": "Success" },
+                  { "const": "Error" },
+                  { "const": "skipped" }
+                ]
+              },
+              "date": { "type": "number" }
+            },
+            "required": [
+              "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+              "l", "a", "comment", "kind_f", "date"
+            ]
+          },
+          { "type": "integer" }
+        ],
+        "unevaluatedItems": false,
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "native_int": { "type": "integer" },
+            "unit": { "type": "null" },
+            "string_ref": { "type": "string" },
+            "bunch_of_bytes": { "type": "string" },
+            "c": { "type": "string", "minLength": 1, "maxLength": 1 },
+            "t": {
+              "anyOf": [
+                { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+              ]
+            },
+            "l": { "type": "array", "items": { "type": "string" } },
+            "a": { "type": "array", "items": { "type": "number" } },
+            "opt_int": { "type": "integer" },
+            "comment": { "type": "string" },
+            "kind_f": {
+              "anyOf": [
+                { "const": "Success" },
+                { "const": "Error" },
+                { "const": "skipped" }
+              ]
+            },
+            "date": { "type": "number" }
+          },
+          "required": [
+            "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
+            "l", "a", "comment", "kind_f", "date"
+          ]
+        }
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": { "type": "integer" }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "integer"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] }
+      },
+      "required": [ "m" ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "C" } ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "prefixItems": [
+        { "type": "integer" },
+        { "anyOf": [ { "const": "A" }, { "const": "second_cstr" } ] }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://ahrefs.com/schemas/player_scores",
+      "title": "Player scores",
+      "description": "Object representing player scores",
+      "$defs": {
+        "numbers": { "type": "array", "items": { "type": "integer" } }
+      },
+      "type": "object",
+      "properties": {
+        "scores_ref": { "$ref": "#/$defs/numbers" },
+        "player": { "type": "string" }
+      },
+      "required": [ "scores_ref", "player" ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "object",
+          "properties": {
+            "zip": { "type": "string" },
+            "city": { "type": "string" },
+            "street": { "type": "string" }
+          },
+          "required": [ "zip", "city", "street" ]
+        },
+        "email": { "type": "string" },
+        "age": { "type": "integer" },
+        "name": { "type": "string" }
+      },
+      "required": [ "address", "age", "name" ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "shared_address": {
+          "type": "object",
+          "properties": {
+            "zip": { "type": "string" },
+            "city": { "type": "string" },
+            "street": { "type": "string" }
+          },
+          "required": [ "zip", "city", "street" ]
+        }
+      },
+      "type": "object",
+      "properties": {
+        "retreat_address": { "$ref": "#/$defs/shared_address" },
+        "work_address": { "$ref": "#/$defs/shared_address" },
+        "home_address": { "$ref": "#/$defs/shared_address" },
+        "email": { "type": "string" },
+        "age": { "type": "integer" },
+        "name": { "type": "string" }
+      },
+      "required": [
+        "retreat_address", "work_address", "home_address", "age", "name"
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "object",
+              "properties": { "a": { "type": "integer" } },
+              "required": [ "a" ]
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "B" },
+            {
+              "type": "object",
+              "properties": { "b": { "type": "string" } },
+              "required": [ "b" ]
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "B" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "C" }, { "type": "integer" }, { "type": "string" }
           ],
           "unevaluatedItems": false,
           "minItems": 3,
           "maxItems": 3
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "D" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
         }
-      ],
-      "unevaluatedItems": false,
-      "minItems": 2,
-      "maxItems": 2
+      ]
     }
   ]
 }

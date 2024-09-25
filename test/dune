@@ -16,19 +16,25 @@
  (action
   (diff test.expected.ml test.actual.ml)))
 
-(executable
+(library
  (name test)
  (modules test)
  (libraries yojson)
+ (inline_tests)
  (preprocess
-  (pps ppx_deriving_jsonschema)))
+  (pps ppx_deriving_jsonschema ppx_expect)))
+
+(executable
+ (name generate_schemas)
+ (modules generate_schemas)
+ (libraries test))
 
 (rule
  (targets test_schemas.actual.json)
  (action
   (with-stdout-to
    %{targets}
-   (run ./test.exe))))
+   (run ./generate_schemas.exe))))
 
 (rule
  (alias runtest)
