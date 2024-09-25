@@ -14,10 +14,29 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": { "type": "string", "enum": [ "Success", "Error", "skipped" ] },
-  "minItems": 1,
-  "maxItems": 1
+  "oneOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Success" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Error" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "skipped" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    }
+  ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -26,17 +45,75 @@
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "array",
-  "items": { "type": "string", "enum": [ "Aaa", "Bbb", "ccc" ] },
-  "minItems": 1,
-  "maxItems": 1
+  "oneOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Aaa" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Bbb" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "ccc" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    }
+  ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "enum": [ "Aaa", "Bbb", "ccc" ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Aaa" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Bbb" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "ccc" },
+        {
+          "type": "array",
+          "prefixItems": [ { "type": "string" }, { "type": "boolean" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "string",
   "enum": [
-    "New_one",
-    "unsupported polymorphic variant type: [ `New_one  | poly_kind]"
+    "New_one", "unsupported polymorphic variant inheritance: poly_kind"
   ]
 }
 {
@@ -283,9 +360,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "string",
-  "enum": [
-    "unsuported variant constructor with a payload: \n| C of 'param2\n"
-  ]
+  "enum": [ "C" ]
 }
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -361,4 +436,85 @@
   "type": "string",
   "minLength": 1,
   "maxLength": 1
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "A" },
+        {
+          "type": "object",
+          "properties": { "a": { "type": "integer" } },
+          "required": [ "a" ]
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "B" },
+        {
+          "type": "object",
+          "properties": { "b": { "type": "string" } },
+          "required": [ "b" ]
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "B" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "C" }, { "type": "integer" }, { "type": "string" }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "D" },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
 }

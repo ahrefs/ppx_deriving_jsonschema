@@ -103,6 +103,9 @@ let variant_as_array ~loc values = Schema.array_ ~loc ~min_items:1 ~max_items:1 
 
 let variant_as_string ~loc values = Schema.enum_string ~loc values
 
+let variant_with_payload ~loc constrs =
+  Schema.oneOf ~loc (List.map (fun (name, typs) -> Schema.tuple ~loc (Schema.const ~loc name :: typs)) constrs)
+
 let variant ~loc ~config values =
   match config.variant_as_array with
   | true -> variant_as_array ~loc values
@@ -140,20 +143,34 @@ let rec type_of_core ~loc ~config core_type =
     let ts = List.map (type_of_core ~loc ~config) types in
     Schema.tuple ~loc ts
   | Ptyp_variant (row_fields, _, _) ->
-    let constr_names =
+    let constrs =
       List.map
         (fun row_field ->
-          let name_overwrite = Attribute.get jsonschema_polymorphic_variant_name row_field in
-          match name_overwrite with
-          | Some name -> name
-          | None ->
           match row_field with
-          | { prf_desc = Rtag (name, _, _); _ } -> name.txt
-          | { prf_desc = Rinherit _core_type; _ } ->
-            Format.asprintf "unsupported polymorphic variant type: %a" Astlib.Pprintast.core_type core_type (* todo: *))
+          | { prf_desc = Rtag (name, _, typs); _ } ->
+            let name =
+              match Attribute.get jsonschema_polymorphic_variant_name row_field with
+              | Some name -> name
+              | None -> name.txt
+            in
+            let typs = List.map (type_of_core ~loc ~config) typs in
+            name, typs
+          | { prf_desc = Rinherit core_type; _ } ->
+            (* let typs = [ type_of_core ~loc ~config core_type ] in *)
+            let name =
+              Format.asprintf "unsupported polymorphic variant inheritance: %a" Astlib.Pprintast.core_type
+                core_type (* todo: *)
+            in
+            name, [])
         row_fields
     in
-    variant ~loc ~config constr_names
+    (* todo: raise an error if encoding is as string and constructor has a payload *)
+    let v =
+      match config.variant_as_array with
+      | true -> variant_with_payload ~loc constrs
+      | false -> variant_as_string ~loc (List.map fst constrs)
+    in
+    v
   | _ ->
     (* Format.printf "unsuported core type: %a\n------\n" Astlib.Pprintast.core_type core_type; *)
     [%expr
@@ -199,21 +216,27 @@ let derive_jsonschema ~ctxt ast variant_as_array =
     let variants =
       List.map
         (fun ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
-          let name_overwrite = Attribute.get jsonschema_variant_name var in
-          match name_overwrite with
-          | Some name -> name
-          | None ->
+          let name =
+            match Attribute.get jsonschema_variant_name var with
+            | Some name -> name
+            | None -> name
+          in
           match pcd_args with
-          | Pcstr_record _ | Pcstr_tuple (_ :: _) ->
-            (* todo: emit an error when a type can't be turned into a valid json schema *)
-            Format.asprintf "unsuported variant constructor with a payload: %a"
-              Format.(pp_print_list Astlib.Pprintast.type_declaration)
-              (snd ast)
-          | Pcstr_tuple [] -> name)
+          | Pcstr_record label_declarations ->
+            let typs = [ object_ ~loc ~config label_declarations ] in
+            name, typs
+          | Pcstr_tuple typs ->
+            let types = List.map (type_of_core ~loc ~config) typs in
+            name, types)
         variants
     in
-    (* let names = List.map (fun { pcd_name = { txt = value; _ }; _ } -> value) variants in *)
-    let jsonschema_expr = create_value ~loc type_name (variant ~loc ~config variants) in
+    let v =
+      (* todo: raise an error if encoding is as string and constructor has a payload *)
+      match variant_as_array with
+      | true -> variant_with_payload ~loc variants
+      | false -> variant_as_string ~loc (List.map fst variants)
+    in
+    let jsonschema_expr = create_value ~loc type_name v in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
     let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations) in

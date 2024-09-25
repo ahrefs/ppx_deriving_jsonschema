@@ -61,6 +61,24 @@ type poly_kind_as_array =
 
 let () = print_schema poly_kind_as_array_jsonschema
 
+type poly_kind_with_payload =
+  [ `Aaa of int
+  | `Bbb
+  | `Ccc of string * bool [@name "ccc"]
+  ]
+[@@deriving jsonschema]
+
+let () = print_schema poly_kind_with_payload_jsonschema
+
+type poly_kind_with_payload_as_array =
+  [ `Aaa of int
+  | `Bbb
+  | `Ccc of string * bool [@name "ccc"]
+  ]
+[@@deriving jsonschema ~variant_as_array]
+
+let () = print_schema poly_kind_with_payload_as_array_jsonschema
+
 type poly_inherit =
   [ `New_one
   | poly_kind
@@ -194,3 +212,19 @@ let () = print_schema ~definitions:[ "shared_address", address_jsonschema ] tt_j
 type c = char [@@deriving jsonschema]
 
 let () = print_schema c_jsonschema
+
+type variant_inline_record =
+  | A of { a : int }
+  | B of { b : string }
+[@@deriving jsonschema ~variant_as_array]
+
+let () = print_schema variant_inline_record_jsonschema
+
+type variant_with_payload =
+  | A of int
+  | B
+  | C of int * string
+  | D of (int * string * bool)
+[@@deriving jsonschema ~variant_as_array]
+
+let () = print_schema variant_with_payload_jsonschema

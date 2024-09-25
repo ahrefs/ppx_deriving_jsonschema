@@ -68,14 +68,29 @@ include
   struct
     let kind_as_array_jsonschema =
       `Assoc
-        [("type", (`String "array"));
-        ("items",
-          (`Assoc
-             [("type", (`String "string"));
-             ("enum",
-               (`List [`String "Success"; `String "Error"; `String "skipped"]))]));
-        ("minItems", (`Int 1));
-        ("maxItems", (`Int 1))][@@warning "-32-39"]
+        [("oneOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List [`Assoc [("const", (`String "Success"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 1));
+                 ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List [`Assoc [("const", (`String "Error"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 1));
+                ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List [`Assoc [("const", (`String "skipped"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 1));
+                ("maxItems", (`Int 1))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema kind_as_array_jsonschema
 type poly_kind = [ `Aaa  | `Bbb  | `Ccc [@name "ccc"]][@@deriving jsonschema]
@@ -95,15 +110,88 @@ include
   struct
     let poly_kind_as_array_jsonschema =
       `Assoc
-        [("type", (`String "array"));
-        ("items",
-          (`Assoc
-             [("type", (`String "string"));
-             ("enum", (`List [`String "Aaa"; `String "Bbb"; `String "ccc"]))]));
-        ("minItems", (`Int 1));
-        ("maxItems", (`Int 1))][@@warning "-32-39"]
+        [("oneOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List [`Assoc [("const", (`String "Aaa"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 1));
+                 ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List [`Assoc [("const", (`String "Bbb"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 1));
+                ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List [`Assoc [("const", (`String "ccc"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 1));
+                ("maxItems", (`Int 1))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_kind_as_array_jsonschema
+type poly_kind_with_payload =
+  [ `Aaa of int  | `Bbb  | `Ccc of (string * bool) [@name "ccc"]][@@deriving
+                                                                   jsonschema]
+include
+  struct
+    let poly_kind_with_payload_jsonschema =
+      `Assoc
+        [("type", (`String "string"));
+        ("enum", (`List [`String "Aaa"; `String "Bbb"; `String "ccc"]))]
+      [@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema poly_kind_with_payload_jsonschema
+type poly_kind_with_payload_as_array =
+  [ `Aaa of int  | `Bbb  | `Ccc of (string * bool) [@name "ccc"]][@@deriving
+                                                                   jsonschema
+                                                                    ~variant_as_array]
+include
+  struct
+    let poly_kind_with_payload_as_array_jsonschema =
+      `Assoc
+        [("oneOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "Aaa"))];
+                      `Assoc [("type", (`String "integer"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List [`Assoc [("const", (`String "Bbb"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 1));
+                ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "ccc"))];
+                     `Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List
+                            [`Assoc [("type", (`String "string"))];
+                            `Assoc [("type", (`String "boolean"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 2));
+                       ("maxItems", (`Int 2))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema poly_kind_with_payload_as_array_jsonschema
 type poly_inherit = [ `New_one  | poly_kind][@@deriving jsonschema]
 include
   struct
@@ -113,8 +201,7 @@ include
         ("enum",
           (`List
              [`String "New_one";
-             `String
-               "unsupported polymorphic variant type: [ `New_one  | poly_kind]"]))]
+             `String "unsupported polymorphic variant inheritance: poly_kind"]))]
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly_inherit_jsonschema
@@ -292,12 +379,7 @@ type 'param2 poly2 =
 include
   struct
     let poly2_jsonschema =
-      `Assoc
-        [("type", (`String "string"));
-        ("enum",
-          (`List
-             [`String
-                "unsuported variant constructor with a payload: \n| C of 'param2\n"]))]
+      `Assoc [("type", (`String "string")); ("enum", (`List [`String "C"]))]
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema poly2_jsonschema
@@ -424,3 +506,100 @@ include
         ("maxLength", (`Int 1))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 let () = print_schema c_jsonschema
+type variant_inline_record =
+  | A of {
+  a: int } 
+  | B of {
+  b: string } [@@deriving jsonschema ~variant_as_array]
+include
+  struct
+    let variant_inline_record_jsonschema =
+      `Assoc
+        [("oneOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "A"))];
+                      `Assoc
+                        [("type", (`String "object"));
+                        ("properties",
+                          (`Assoc
+                             [("a", (`Assoc [("type", (`String "integer"))]))]));
+                        ("required", (`List [`String "a"]))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "B"))];
+                     `Assoc
+                       [("type", (`String "object"));
+                       ("properties",
+                         (`Assoc
+                            [("b", (`Assoc [("type", (`String "string"))]))]));
+                       ("required", (`List [`String "b"]))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema variant_inline_record_jsonschema
+type variant_with_payload =
+  | A of int 
+  | B 
+  | C of int * string 
+  | D of (int * string * bool) [@@deriving jsonschema ~variant_as_array]
+include
+  struct
+    let variant_with_payload_jsonschema =
+      `Assoc
+        [("oneOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "A"))];
+                      `Assoc [("type", (`String "integer"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems", (`List [`Assoc [("const", (`String "B"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 1));
+                ("maxItems", (`Int 1))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "C"))];
+                     `Assoc [("type", (`String "integer"))];
+                     `Assoc [("type", (`String "string"))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 3));
+                ("maxItems", (`Int 3))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "D"))];
+                     `Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List
+                            [`Assoc [("type", (`String "integer"))];
+                            `Assoc [("type", (`String "string"))];
+                            `Assoc [("type", (`String "boolean"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 3));
+                       ("maxItems", (`Int 3))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let () = print_schema variant_with_payload_jsonschema
