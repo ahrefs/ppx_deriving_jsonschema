@@ -2,32 +2,32 @@ open Ppxlib
 open Ast_builder.Default
 
 type config = {
-  variant_as_array : bool;
-    (** Encode variants as arrays of string enum instead of a string enum.
-      Provides compatibility with the encoding used by the [ppx_deriving_json]
-      and [ppx_yojson_conv] extensions. *)
+  variant_as_string : bool;
+    (** Encode variants as string instead of string array.
+        This option breaks compatibility with yojson derivers and
+        doesn't support constructors with a payload. *)
 }
 
 let deriver_name = "jsonschema"
 
 let jsonschema_key =
   Attribute.declare "jsonschema.key" Attribute.Context.label_declaration
-    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
 let jsonschema_ref =
   Attribute.declare "jsonschema.ref" Attribute.Context.label_declaration
-    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
 let jsonschema_variant_name =
   Attribute.declare "jsonschema.name" Attribute.Context.constructor_declaration
-    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
 let jsonschema_polymorphic_variant_name =
   Attribute.declare "jsonschema.name" Attribute.Context.rtag
-    Ast_pattern.(pstr (pstr_eval (estring __) nil ^:: nil))
+    Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
 let attributes =
@@ -39,7 +39,7 @@ let attributes =
   ]
 
 (* let args () = Deriving.Args.(empty) *)
-let args () = Deriving.Args.(empty +> flag "variant_as_array")
+let args () = Deriving.Args.(empty +> flag "variant_as_string")
 
 let deps = []
 
@@ -123,9 +123,9 @@ let variant ~loc ~config constrs =
        (function
          | `Inherit typ -> typ
          | `Tag (name, typs) ->
-         match config.variant_as_array with
-         | true -> Schema.tuple ~loc (Schema.const ~loc name :: typs)
-         | false -> Schema.const ~loc name)
+         match config.variant_as_string with
+         | true -> Schema.const ~loc name
+         | false -> Schema.tuple ~loc (Schema.const ~loc name :: typs))
        constrs)
 
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
@@ -168,7 +168,7 @@ let rec type_of_core ~config core_type =
           | { prf_desc = Rtag (name, _, typs); _ } ->
             let name =
               match Attribute.get jsonschema_polymorphic_variant_name row_field with
-              | Some name -> name
+              | Some name -> name.txt
               | None -> name.txt
             in
             let typs = List.map (type_of_core ~config) typs in
@@ -180,9 +180,9 @@ let rec type_of_core ~config core_type =
     in
     (* todo: raise an error if encoding is as string and constructor has a payload *)
     let v =
-      match config.variant_as_array with
-      | true -> variant_as_array ~loc constrs
-      | false -> variant_as_string ~loc constrs
+      match config.variant_as_string with
+      | true -> variant_as_string ~loc constrs
+      | false -> variant_as_array ~loc constrs
     in
     v
   | _ ->
@@ -195,12 +195,12 @@ let object_ ~loc ~config fields =
       (fun (fields, required) ({ pld_name; pld_type; pld_loc = _loc; _ } as field) ->
         let name =
           match Attribute.get jsonschema_key field with
-          | Some name -> name
+          | Some name -> name.txt
           | None -> pld_name.txt
         in
         let type_def =
           match Attribute.get jsonschema_ref field with
-          | Some def -> Schema.type_ref ~loc def
+          | Some def -> Schema.type_ref ~loc def.txt
           | None -> type_of_core ~config pld_type
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
@@ -216,9 +216,9 @@ let object_ ~loc ~config fields =
         "required", `List [%e elist ~loc required];
       ]]
 
-let derive_jsonschema ~ctxt ast flag_variant_as_array =
+let derive_jsonschema ~ctxt ast flag_variant_as_string =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
-  let config = { variant_as_array = flag_variant_as_array } in
+  let config = { variant_as_string = flag_variant_as_string } in
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
     let variants =
@@ -226,7 +226,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_array =
         (fun ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
           let name =
             match Attribute.get jsonschema_variant_name var with
-            | Some name -> name
+            | Some name -> name.txt
             | None -> name
           in
           match pcd_args with
@@ -240,9 +240,9 @@ let derive_jsonschema ~ctxt ast flag_variant_as_array =
     in
     let v =
       (* todo: raise an error if encoding is as string and constructor has a payload *)
-      match config.variant_as_array with
-      | true -> variant_as_array ~loc variants
-      | false -> variant_as_string ~loc variants
+      match config.variant_as_string with
+      | true -> variant_as_string ~loc variants
+      | false -> variant_as_array ~loc variants
     in
     let jsonschema_expr = create_value ~loc type_name v in
     [ jsonschema_expr ]

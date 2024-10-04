@@ -2,7 +2,10 @@
 
 `ppx_deriving_jsonschema` is a PPX syntax extension that generates JSON schema from OCaml types.
 
-The conversion aims to be compatible with the existing json derivers.
+The conversion aims to be compatible with the existing json derivers:
+- https://github.com/melange-community/melange-json
+- https://github.com/ocaml-ppx/ppx_deriving_yojson
+- https://github.com/janestreet/ppx_yojson_conv
 
 ## Installation
 
@@ -88,20 +91,7 @@ type t = int * string [@@deriving jsonschema]
 
 #### Variants and polymorphic variants
 
-By default, variants are converted to `"anyOf": [{ "const": "..." }, ...]`. This means that while the constructor names are represented as strings, any associated payload is not included.
-
-```ocaml
-type t =
-| Typ
-| Class of string
-[@@deriving jsonschema]
-```
-
-```json
-{ "anyOf": [ { "const": "Typ" }, { "const": "Class" } ] }
-```
-
-To include the payload in the encoding, the `~variant_as_array` flag should be used. This flag also ensures compatibility with [ppx_deriving_json] and [ppx_yojson_conv]. In this case each constructor is represented like a tuple.
+By default, constructors in variants are represented as a list with one string, which is the name of the contructor. Constructors with arguments are represented as lists, the first element being the constructor name, the rest being its arguments. It reproduces the representation of `ppx_deriving_yojson` and `ppx_yojson_conv`. For example:
 
 ```ocaml
 type t =
@@ -131,13 +121,26 @@ type t =
 }
 ```
 
+A `~variant_as_string` flag is exposed to obtain a more natural representation `"anyOf": [{ "const": "..." }, ...]`. This representation does _not_ support payloads. It reproduces the representation of `melange-json` for [enumeration like variants](https://github.com/melange-community/melange-json?tab=readme-ov-file#enumeration-like-variants). For example:
+
+```ocaml
+type t =
+| Typ
+| Class of string
+[@@deriving jsonschema ~variant_as_string]
+```
+
+```json
+{ "anyOf": [ { "const": "Typ" }, { "const": "Class" } ] }
+```
+
 If the JSON variant names differ from OCaml conventions, it is possible to specify the corresponding JSON string explicitly using `[@name "constr"]`, for example:
 
 ```ocaml
 type t =
 | Typ   [@name "type"]
 | Class of string [@name "class"]
-[@@deriving jsonschema]
+[@@deriving jsonschema ~variant_as_string]
 ```
 
 ```json

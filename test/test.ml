@@ -17,9 +17,24 @@ module Mod1 = struct
       {|
       {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "anyOf": [ { "const": "A" }, { "const": "B" } ]
+        "anyOf": [
+          {
+            "type": "array",
+            "prefixItems": [ { "const": "A" } ],
+            "unevaluatedItems": false,
+            "minItems": 1,
+            "maxItems": 1
+          },
+          {
+            "type": "array",
+            "prefixItems": [ { "const": "B" } ],
+            "unevaluatedItems": false,
+            "minItems": 1,
+            "maxItems": 1
+          }
+        ]
       }
-    |}]
+      |}]
 
   module Mod2 = struct
     type m_2 =
@@ -33,9 +48,24 @@ module Mod1 = struct
         {|
         {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "anyOf": [ { "const": "C" }, { "const": "D" } ]
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "C" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "D" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
         }
-      |}]
+        |}]
   end
 end
 
@@ -53,11 +83,46 @@ let%expect_test "with_modules" =
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "m2": { "anyOf": [ { "const": "C" }, { "const": "D" } ] },
-        "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] }
+        "m2": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "C" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "D" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "m": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
       },
       "required": [ "m2", "m" ]
-    } |}]
+    }
+    |}]
 
 type kind =
   | Success
@@ -67,23 +132,6 @@ type kind =
 
 let%expect_test "kind" =
   print_schema kind_jsonschema;
-  [%expect
-    {|
-    {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "anyOf": [
-        { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
-      ]
-    } |}]
-
-type kind_as_array =
-  | Success
-  | Error
-  | Skipped [@name "skipped"]
-[@@deriving jsonschema ~variant_as_array]
-
-let%expect_test "kind_as_array" =
-  print_schema kind_as_array_jsonschema;
   [%expect
     {|
     {
@@ -111,7 +159,26 @@ let%expect_test "kind_as_array" =
           "maxItems": 1
         }
       ]
-    } |}]
+    }
+    |}]
+
+type kind_as_string =
+  | Success
+  | Error
+  | Skipped [@name "skipped"]
+[@@deriving jsonschema ~variant_as_string]
+
+let%expect_test "kind_as_string" =
+  print_schema kind_as_string_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
+      ]
+    }
+    |}]
 
 type poly_kind =
   [ `Aaa
@@ -122,22 +189,6 @@ type poly_kind =
 
 let%expect_test "poly_kind" =
   print_schema poly_kind_jsonschema;
-  [%expect
-    {|
-    {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
-    } |}]
-
-type poly_kind_as_array =
-  [ `Aaa
-  | `Bbb
-  | `Ccc [@name "ccc"]
-  ]
-[@@deriving jsonschema ~variant_as_array]
-
-let%expect_test "poly_kind_as_array" =
-  print_schema poly_kind_as_array_jsonschema;
   [%expect
     {|
     {
@@ -165,7 +216,25 @@ let%expect_test "poly_kind_as_array" =
           "maxItems": 1
         }
       ]
-    } |}]
+    }
+    |}]
+
+type poly_kind_as_string =
+  [ `Aaa
+  | `Bbb
+  | `Ccc [@name "ccc"]
+  ]
+[@@deriving jsonschema ~variant_as_string]
+
+let%expect_test "poly_kind_as_string" =
+  print_schema poly_kind_as_string_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
+    }
+    |}]
 
 type poly_kind_with_payload =
   [ `Aaa of int
@@ -176,22 +245,6 @@ type poly_kind_with_payload =
 
 let%expect_test "poly_kind_with_payload" =
   print_schema poly_kind_with_payload_jsonschema;
-  [%expect
-    {|
-    {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
-    } |}]
-
-type poly_kind_with_payload_as_array =
-  [ `Aaa of int
-  | `Bbb
-  | `Ccc of string * bool [@name "ccc"]
-  ]
-[@@deriving jsonschema ~variant_as_array]
-
-let%expect_test "poly_kind_with_payload_as_array" =
-  print_schema poly_kind_with_payload_as_array_jsonschema;
   [%expect
     {|
     {
@@ -228,7 +281,25 @@ let%expect_test "poly_kind_with_payload_as_array" =
           "maxItems": 2
         }
       ]
-    } |}]
+    }
+    |}]
+
+type poly_kind_with_payload_as_string =
+  [ `Aaa of int
+  | `Bbb
+  | `Ccc of string * bool [@name "ccc"]
+  ]
+[@@deriving jsonschema ~variant_as_string]
+
+let%expect_test "poly_kind_with_payload_as_string" =
+  print_schema poly_kind_with_payload_as_string_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
+    }
+    |}]
 
 type poly_inherit =
   [ `New_one
@@ -239,28 +310,6 @@ type poly_inherit =
 
 let%expect_test "poly_inherit" =
   print_schema poly_inherit_jsonschema;
-  [%expect
-    {|
-    {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "anyOf": [
-        { "const": "New_one" },
-        { "const": "Second_one" },
-        {
-          "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
-        }
-      ]
-    } |}]
-
-type poly_inherit_as_array =
-  [ `New_one
-  | `Second_one of int
-  | poly_kind_as_array
-  ]
-[@@deriving jsonschema ~variant_as_array]
-
-let%expect_test "poly_inherit_as_array" =
-  print_schema poly_inherit_as_array_jsonschema;
   [%expect
     {|
     {
@@ -306,7 +355,31 @@ let%expect_test "poly_inherit_as_array" =
           ]
         }
       ]
-    } |}]
+    }
+    |}]
+
+type poly_inherit_as_string =
+  [ `New_one
+  | `Second_one of int
+  | poly_kind_as_string
+  ]
+[@@deriving jsonschema ~variant_as_string]
+
+let%expect_test "poly_inherit_as_string" =
+  print_schema poly_inherit_as_string_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "const": "New_one" },
+        { "const": "Second_one" },
+        {
+          "anyOf": [ { "const": "Aaa" }, { "const": "Bbb" }, { "const": "ccc" } ]
+        }
+      ]
+    }
+    |}]
 
 type event = {
   date : float;
@@ -338,7 +411,29 @@ let%expect_test "event" =
         "bunch_of_bytes": { "type": "string" },
         "c": { "type": "string", "minLength": 1, "maxLength": 1 },
         "t": {
-          "anyOf": [ { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" } ]
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Foo" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Bar" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Baz" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
         },
         "l": { "type": "array", "items": { "type": "string" } },
         "a": { "type": "array", "items": { "type": "number" } },
@@ -346,7 +441,27 @@ let%expect_test "event" =
         "comment": { "type": "string" },
         "kind_f": {
           "anyOf": [
-            { "const": "Success" }, { "const": "Error" }, { "const": "skipped" }
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Success" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Error" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "skipped" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
           ]
         },
         "date": { "type": "number" }
@@ -355,7 +470,8 @@ let%expect_test "event" =
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
         "comment", "kind_f", "date"
       ]
-    } |}]
+    }
+    |}]
 
 (* type recursive_record = {
      a : int;
@@ -391,7 +507,27 @@ let%expect_test "events" =
           "c": { "type": "string", "minLength": 1, "maxLength": 1 },
           "t": {
             "anyOf": [
-              { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+              {
+                "type": "array",
+                "prefixItems": [ { "const": "Foo" } ],
+                "unevaluatedItems": false,
+                "minItems": 1,
+                "maxItems": 1
+              },
+              {
+                "type": "array",
+                "prefixItems": [ { "const": "Bar" } ],
+                "unevaluatedItems": false,
+                "minItems": 1,
+                "maxItems": 1
+              },
+              {
+                "type": "array",
+                "prefixItems": [ { "const": "Baz" } ],
+                "unevaluatedItems": false,
+                "minItems": 1,
+                "maxItems": 1
+              }
             ]
           },
           "l": { "type": "array", "items": { "type": "string" } },
@@ -400,9 +536,27 @@ let%expect_test "events" =
           "comment": { "type": "string" },
           "kind_f": {
             "anyOf": [
-              { "const": "Success" },
-              { "const": "Error" },
-              { "const": "skipped" }
+              {
+                "type": "array",
+                "prefixItems": [ { "const": "Success" } ],
+                "unevaluatedItems": false,
+                "minItems": 1,
+                "maxItems": 1
+              },
+              {
+                "type": "array",
+                "prefixItems": [ { "const": "Error" } ],
+                "unevaluatedItems": false,
+                "minItems": 1,
+                "maxItems": 1
+              },
+              {
+                "type": "array",
+                "prefixItems": [ { "const": "skipped" } ],
+                "unevaluatedItems": false,
+                "minItems": 1,
+                "maxItems": 1
+              }
             ]
           },
           "date": { "type": "number" }
@@ -412,7 +566,8 @@ let%expect_test "events" =
           "a", "comment", "kind_f", "date"
         ]
       }
-    } |}]
+    }
+    |}]
 
 type eventss = event list list [@@deriving jsonschema]
 
@@ -435,7 +590,27 @@ let%expect_test "eventss" =
             "c": { "type": "string", "minLength": 1, "maxLength": 1 },
             "t": {
               "anyOf": [
-                { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Foo" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Bar" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Baz" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                }
               ]
             },
             "l": { "type": "array", "items": { "type": "string" } },
@@ -444,9 +619,27 @@ let%expect_test "eventss" =
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
-                { "const": "Success" },
-                { "const": "Error" },
-                { "const": "skipped" }
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Success" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Error" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "skipped" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                }
               ]
             },
             "date": { "type": "number" }
@@ -457,7 +650,8 @@ let%expect_test "eventss" =
           ]
         }
       }
-    } |}]
+    }
+    |}]
 
 type event_comment = event * string [@@deriving jsonschema]
 
@@ -479,7 +673,27 @@ let%expect_test "event_comment" =
             "c": { "type": "string", "minLength": 1, "maxLength": 1 },
             "t": {
               "anyOf": [
-                { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Foo" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Bar" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Baz" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                }
               ]
             },
             "l": { "type": "array", "items": { "type": "string" } },
@@ -488,9 +702,27 @@ let%expect_test "event_comment" =
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
-                { "const": "Success" },
-                { "const": "Error" },
-                { "const": "skipped" }
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Success" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Error" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "skipped" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                }
               ]
             },
             "date": { "type": "number" }
@@ -505,7 +737,8 @@ let%expect_test "event_comment" =
       "unevaluatedItems": false,
       "minItems": 2,
       "maxItems": 2
-    } |}]
+    }
+    |}]
 
 type event_comments' = event_comment list [@@deriving jsonschema]
 
@@ -529,7 +762,27 @@ let%expect_test "event_comments'" =
               "c": { "type": "string", "minLength": 1, "maxLength": 1 },
               "t": {
                 "anyOf": [
-                  { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Foo" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Bar" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Baz" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  }
                 ]
               },
               "l": { "type": "array", "items": { "type": "string" } },
@@ -538,9 +791,27 @@ let%expect_test "event_comments'" =
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
-                  { "const": "Success" },
-                  { "const": "Error" },
-                  { "const": "skipped" }
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Success" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Error" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "skipped" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  }
                 ]
               },
               "date": { "type": "number" }
@@ -556,7 +827,8 @@ let%expect_test "event_comments'" =
         "minItems": 2,
         "maxItems": 2
       }
-    } |}]
+    }
+    |}]
 
 type event_n = (event * int) list [@@deriving jsonschema]
 
@@ -580,7 +852,27 @@ let%expect_test "event_n" =
               "c": { "type": "string", "minLength": 1, "maxLength": 1 },
               "t": {
                 "anyOf": [
-                  { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Foo" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Bar" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Baz" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  }
                 ]
               },
               "l": { "type": "array", "items": { "type": "string" } },
@@ -589,9 +881,27 @@ let%expect_test "event_n" =
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
-                  { "const": "Success" },
-                  { "const": "Error" },
-                  { "const": "skipped" }
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Success" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "Error" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [ { "const": "skipped" } ],
+                    "unevaluatedItems": false,
+                    "minItems": 1,
+                    "maxItems": 1
+                  }
                 ]
               },
               "date": { "type": "number" }
@@ -607,7 +917,8 @@ let%expect_test "event_n" =
         "minItems": 2,
         "maxItems": 2
       }
-    } |}]
+    }
+    |}]
 
 type events_array = events array [@@deriving jsonschema]
 
@@ -630,7 +941,27 @@ let%expect_test "events_array" =
             "c": { "type": "string", "minLength": 1, "maxLength": 1 },
             "t": {
               "anyOf": [
-                { "const": "Foo" }, { "const": "Bar" }, { "const": "Baz" }
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Foo" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Bar" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Baz" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                }
               ]
             },
             "l": { "type": "array", "items": { "type": "string" } },
@@ -639,9 +970,27 @@ let%expect_test "events_array" =
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
-                { "const": "Success" },
-                { "const": "Error" },
-                { "const": "skipped" }
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Success" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "Error" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [ { "const": "skipped" } ],
+                  "unevaluatedItems": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                }
               ]
             },
             "date": { "type": "number" }
@@ -652,7 +1001,8 @@ let%expect_test "events_array" =
           ]
         }
       }
-    } |}]
+    }
+    |}]
 
 type numbers = int list [@@deriving jsonschema]
 
@@ -685,11 +1035,32 @@ let%expect_test "using_m" =
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "properties": { "m": { "anyOf": [ { "const": "A" }, { "const": "B" } ] } },
+      "properties": {
+        "m": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
       "required": [ "m" ]
-    } |}]
+    }
+    |}]
 
-type 'param2 poly2 = C of 'param2 [@@deriving jsonschema]
+(* This type won't work without ~variant_as_string because of the polymorphic payload. *)
+type 'param2 poly2 = C of 'param2 [@@deriving jsonschema ~variant_as_string]
 
 let%expect_test "poly2" =
   print_schema poly2_jsonschema;
@@ -711,12 +1082,30 @@ let%expect_test "tuple_with_variant" =
       "type": "array",
       "prefixItems": [
         { "type": "integer" },
-        { "anyOf": [ { "const": "A" }, { "const": "second_cstr" } ] }
+        {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "second_cstr" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
       ],
       "unevaluatedItems": false,
       "minItems": 2,
       "maxItems": 2
-    } |}]
+    }
+    |}]
 
 type player_scores = {
   player : string;
@@ -841,7 +1230,7 @@ let%expect_test "c" =
 type variant_inline_record =
   | A of { a : int }
   | B of { b : string }
-[@@deriving jsonschema ~variant_as_array]
+[@@deriving jsonschema ~variant_as_string]
 
 let%expect_test "variant_inline_record" =
   print_schema variant_inline_record_jsonschema;
@@ -849,44 +1238,16 @@ let%expect_test "variant_inline_record" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "anyOf": [
-        {
-          "type": "array",
-          "prefixItems": [
-            { "const": "A" },
-            {
-              "type": "object",
-              "properties": { "a": { "type": "integer" } },
-              "required": [ "a" ]
-            }
-          ],
-          "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
-        },
-        {
-          "type": "array",
-          "prefixItems": [
-            { "const": "B" },
-            {
-              "type": "object",
-              "properties": { "b": { "type": "string" } },
-              "required": [ "b" ]
-            }
-          ],
-          "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
-        }
-      ]
-    } |}]
+      "anyOf": [ { "const": "A" }, { "const": "B" } ]
+    }
+    |}]
 
 type variant_with_payload =
   | A of int
   | B
   | C of int * string
   | D of (int * string * bool)
-[@@deriving jsonschema ~variant_as_array]
+[@@deriving jsonschema ~variant_as_string]
 
 let%expect_test "variant_with_payload" =
   print_schema variant_with_payload_jsonschema;
@@ -895,51 +1256,10 @@ let%expect_test "variant_with_payload" =
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
-        {
-          "type": "array",
-          "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
-          "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
-        },
-        {
-          "type": "array",
-          "prefixItems": [ { "const": "B" } ],
-          "unevaluatedItems": false,
-          "minItems": 1,
-          "maxItems": 1
-        },
-        {
-          "type": "array",
-          "prefixItems": [
-            { "const": "C" }, { "type": "integer" }, { "type": "string" }
-          ],
-          "unevaluatedItems": false,
-          "minItems": 3,
-          "maxItems": 3
-        },
-        {
-          "type": "array",
-          "prefixItems": [
-            { "const": "D" },
-            {
-              "type": "array",
-              "prefixItems": [
-                { "type": "integer" },
-                { "type": "string" },
-                { "type": "boolean" }
-              ],
-              "unevaluatedItems": false,
-              "minItems": 3,
-              "maxItems": 3
-            }
-          ],
-          "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
-        }
+        { "const": "A" }, { "const": "B" }, { "const": "C" }, { "const": "D" }
       ]
-    } |}]
+    }
+    |}]
 
 type t1 =
   | Typ
@@ -948,20 +1268,6 @@ type t1 =
 
 let%expect_test "t1" =
   print_schema t1_jsonschema;
-  [%expect
-    {|
-    {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "anyOf": [ { "const": "Typ" }, { "const": "Class" } ]
-    } |}]
-
-type t2 =
-  | Typ
-  | Class of string
-[@@deriving jsonschema ~variant_as_array]
-
-let%expect_test "t2" =
-  print_schema t2_jsonschema;
   [%expect
     {|
     {
@@ -982,7 +1288,23 @@ let%expect_test "t2" =
           "maxItems": 2
         }
       ]
-    } |}]
+    }
+    |}]
+
+type t2 =
+  | Typ
+  | Class of string
+[@@deriving jsonschema ~variant_as_string]
+
+let%expect_test "t2" =
+  print_schema t2_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "Typ" }, { "const": "Class" } ]
+    }
+    |}]
 
 type t3 =
   | Typ [@name "type"]
@@ -995,8 +1317,24 @@ let%expect_test "t3" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "anyOf": [ { "const": "type" }, { "const": "class" } ]
-    } |}]
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "type" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "class" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
 
 type t4 = int * string [@@deriving jsonschema]
 
@@ -1012,3 +1350,170 @@ let%expect_test "t4" =
       "minItems": 2,
       "maxItems": 2
     } |}]
+
+type t5 = [ `A of int * string * bool ] [@@deriving jsonschema]
+
+let%expect_test "t5" =
+  print_schema t5_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+type t6 = [ `A of (int * string * bool) * float ] [@@deriving jsonschema]
+
+let%expect_test "t6" =
+  print_schema t6_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    { "type": "integer" },
+                    { "type": "string" },
+                    { "type": "boolean" }
+                  ],
+                  "unevaluatedItems": false,
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                { "type": "number" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+type t7 = A of int * string * bool [@@deriving jsonschema]
+
+let%expect_test "t7" =
+  print_schema t7_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    }
+    |}]
+
+type t8 = A of (int * string * bool) [@@deriving jsonschema]
+
+let%expect_test "t8" =
+  print_schema t8_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+type t9 = A of (int * string * bool) * float [@@deriving jsonschema]
+
+let%expect_test "t9" =
+  print_schema t9_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            { "type": "number" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    }
+    |}]

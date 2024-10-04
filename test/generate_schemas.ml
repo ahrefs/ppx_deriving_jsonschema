@@ -5,13 +5,13 @@ let schemas =
   [
     json_schema with_modules_jsonschema;
     json_schema kind_jsonschema;
-    json_schema kind_as_array_jsonschema;
+    json_schema kind_as_string_jsonschema;
     json_schema poly_kind_jsonschema;
-    json_schema poly_kind_as_array_jsonschema;
+    json_schema poly_kind_as_string_jsonschema;
     json_schema poly_kind_with_payload_jsonschema;
-    json_schema poly_kind_with_payload_as_array_jsonschema;
+    json_schema poly_kind_with_payload_as_string_jsonschema;
     json_schema poly_inherit_jsonschema;
-    json_schema poly_inherit_as_array_jsonschema;
+    json_schema poly_inherit_as_string_jsonschema;
     json_schema event_jsonschema;
     json_schema events_jsonschema;
     json_schema eventss_jsonschema;
