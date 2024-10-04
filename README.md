@@ -121,6 +121,62 @@ type t =
 }
 ```
 
+Note that the implicit tuple in a polymorphic variant is flattened. This can be disabled using the `~polymorphic_variant_tuple` flag.
+
+```ocaml
+type a = [ `A of int * string * bool ] [@@deriving jsonschema]
+```
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "A" },
+        { "type": "integer" },
+        { "type": "string" },
+        { "type": "boolean" }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 4,
+      "maxItems": 4
+    }
+  ]
+}
+```
+
+```ocaml
+type b = [ `B of int * string * bool ] [@@deriving jsonschema ~polymorphic_variant_tuple]
+```
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "B" },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
 A `~variant_as_string` flag is exposed to obtain a more natural representation `"anyOf": [{ "const": "..." }, ...]`. This representation does _not_ support payloads. It reproduces the representation of `melange-json` for [enumeration like variants](https://github.com/melange-community/melange-json?tab=readme-ov-file#enumeration-like-variants). For example:
 
 ```ocaml

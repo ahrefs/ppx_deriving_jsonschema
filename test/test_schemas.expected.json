@@ -126,18 +126,11 @@
         {
           "type": "array",
           "prefixItems": [
-            { "const": "ccc" },
-            {
-              "type": "array",
-              "prefixItems": [ { "type": "string" }, { "type": "boolean" } ],
-              "unevaluatedItems": false,
-              "minItems": 2,
-              "maxItems": 2
-            }
+            { "const": "ccc" }, { "type": "string" }, { "type": "boolean" }
           ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 3,
+          "maxItems": 3
         }
       ]
     },

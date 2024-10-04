@@ -6,6 +6,9 @@ type config = {
     (** Encode variants as string instead of string array.
         This option breaks compatibility with yojson derivers and
         doesn't support constructors with a payload. *)
+  polymorphic_variant_tuple : bool;
+    (** Preserve the implicit tuple in a polymorphic variant.
+        This option breaks compatibility with yojson derivers. *)
 }
 
 let deriver_name = "jsonschema"
@@ -39,7 +42,7 @@ let attributes =
   ]
 
 (* let args () = Deriving.Args.(empty) *)
-let args () = Deriving.Args.(empty +> flag "variant_as_string")
+let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple")
 
 let deps = []
 
@@ -164,18 +167,37 @@ let rec type_of_core ~config core_type =
     let constrs =
       List.map
         (fun row_field ->
-          match row_field with
-          | { prf_desc = Rtag (name, _, typs); _ } ->
+          match row_field.prf_desc with
+          | Rtag (name, true, []) ->
             let name =
               match Attribute.get jsonschema_polymorphic_variant_name row_field with
               | Some name -> name.txt
               | None -> name.txt
             in
+            `Tag (name, [])
+          | Rtag (name, false, [ typ ]) ->
+            let name =
+              match Attribute.get jsonschema_polymorphic_variant_name row_field with
+              | Some name -> name.txt
+              | None -> name.txt
+            in
+            let typs =
+              match config.polymorphic_variant_tuple with
+              | true -> [ typ ]
+              | false ->
+              match typ.ptyp_desc with
+              | Ptyp_tuple tps -> tps
+              | _ -> [ typ ]
+            in
             let typs = List.map (type_of_core ~config) typs in
             `Tag (name, typs)
-          | { prf_desc = Rinherit core_type; _ } ->
+          | Rtag (_, true, [ _ ]) | Rtag (_, _, _ :: _ :: _) ->
+            Location.raise_errorf ~loc "ppx_deriving_jsonschema: polymorphic_variant/Rtag/&"
+          | Rinherit core_type ->
             let typ = type_of_core ~config core_type in
-            `Inherit typ)
+            `Inherit typ
+          (* impossible?*)
+          | Rtag (_, false, []) -> assert false)
         row_fields
     in
     (* todo: raise an error if encoding is as string and constructor has a payload *)
@@ -216,9 +238,11 @@ let object_ ~loc ~config fields =
         "required", `List [%e elist ~loc required];
       ]]
 
-let derive_jsonschema ~ctxt ast flag_variant_as_string =
+let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
-  let config = { variant_as_string = flag_variant_as_string } in
+  let config =
+    { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
+  in
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
     let variants =

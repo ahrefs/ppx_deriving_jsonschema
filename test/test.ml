@@ -267,18 +267,11 @@ let%expect_test "poly_kind_with_payload" =
         {
           "type": "array",
           "prefixItems": [
-            { "const": "ccc" },
-            {
-              "type": "array",
-              "prefixItems": [ { "type": "string" }, { "type": "boolean" } ],
-              "unevaluatedItems": false,
-              "minItems": 2,
-              "maxItems": 2
-            }
+            { "const": "ccc" }, { "type": "string" }, { "type": "boolean" }
           ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 3,
+          "maxItems": 3
         }
       ]
     }
@@ -1364,21 +1357,13 @@ let%expect_test "t5" =
           "type": "array",
           "prefixItems": [
             { "const": "A" },
-            {
-              "type": "array",
-              "prefixItems": [
-                { "type": "integer" },
-                { "type": "string" },
-                { "type": "boolean" }
-              ],
-              "unevaluatedItems": false,
-              "minItems": 3,
-              "maxItems": 3
-            }
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
           ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 4,
+          "maxItems": 4
         }
       ]
     }
@@ -1400,27 +1385,19 @@ let%expect_test "t6" =
             {
               "type": "array",
               "prefixItems": [
-                {
-                  "type": "array",
-                  "prefixItems": [
-                    { "type": "integer" },
-                    { "type": "string" },
-                    { "type": "boolean" }
-                  ],
-                  "unevaluatedItems": false,
-                  "minItems": 3,
-                  "maxItems": 3
-                },
-                { "type": "number" }
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
               ],
               "unevaluatedItems": false,
-              "minItems": 2,
-              "maxItems": 2
-            }
+              "minItems": 3,
+              "maxItems": 3
+            },
+            { "type": "number" }
           ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 3,
+          "maxItems": 3
         }
       ]
     }
@@ -1513,6 +1490,62 @@ let%expect_test "t9" =
           "unevaluatedItems": false,
           "minItems": 3,
           "maxItems": 3
+        }
+      ]
+    }
+    |}]
+
+type t10 = [ `A of int * string * bool ] [@@deriving jsonschema]
+
+let%expect_test "t10" =
+  print_schema t10_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    }
+    |}]
+
+type t11 = [ `B of int * string * bool ] [@@deriving jsonschema ~polymorphic_variant_tuple]
+
+let%expect_test "t11" =
+  print_schema t11_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "B" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
         }
       ]
     }

@@ -375,18 +375,11 @@ include
                 ("prefixItems",
                   (`List
                      [`Assoc [("const", (`String "ccc"))];
-                     `Assoc
-                       [("type", (`String "array"));
-                       ("prefixItems",
-                         (`List
-                            [`Assoc [("type", (`String "string"))];
-                            `Assoc [("type", (`String "boolean"))]]));
-                       ("unevaluatedItems", (`Bool false));
-                       ("minItems", (`Int 2));
-                       ("maxItems", (`Int 2))]]));
+                     `Assoc [("type", (`String "string"))];
+                     `Assoc [("type", (`String "boolean"))]]));
                 ("unevaluatedItems", (`Bool false));
-                ("minItems", (`Int 2));
-                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                ("minItems", (`Int 3));
+                ("maxItems", (`Int 3))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_kind_with_payload" =
@@ -413,18 +406,11 @@ include
         {
           "type": "array",
           "prefixItems": [
-            { "const": "ccc" },
-            {
-              "type": "array",
-              "prefixItems": [ { "type": "string" }, { "type": "boolean" } ],
-              "unevaluatedItems": false,
-              "minItems": 2,
-              "maxItems": 2
-            }
+            { "const": "ccc" }, { "type": "string" }, { "type": "boolean" }
           ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 3,
+          "maxItems": 3
         }
       ]
     }
@@ -1835,19 +1821,12 @@ include
                  ("prefixItems",
                    (`List
                       [`Assoc [("const", (`String "A"))];
-                      `Assoc
-                        [("type", (`String "array"));
-                        ("prefixItems",
-                          (`List
-                             [`Assoc [("type", (`String "integer"))];
-                             `Assoc [("type", (`String "string"))];
-                             `Assoc [("type", (`String "boolean"))]]));
-                        ("unevaluatedItems", (`Bool false));
-                        ("minItems", (`Int 3));
-                        ("maxItems", (`Int 3))]]));
+                      `Assoc [("type", (`String "integer"))];
+                      `Assoc [("type", (`String "string"))];
+                      `Assoc [("type", (`String "boolean"))]]));
                  ("unevaluatedItems", (`Bool false));
-                 ("minItems", (`Int 2));
-                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                 ("minItems", (`Int 4));
+                 ("maxItems", (`Int 4))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t5" =
@@ -1861,21 +1840,13 @@ include
           "type": "array",
           "prefixItems": [
             { "const": "A" },
-            {
-              "type": "array",
-              "prefixItems": [
-                { "type": "integer" },
-                { "type": "string" },
-                { "type": "boolean" }
-              ],
-              "unevaluatedItems": false,
-              "minItems": 3,
-              "maxItems": 3
-            }
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
           ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 4,
+          "maxItems": 4
         }
       ]
     }
@@ -1896,23 +1867,16 @@ include
                         [("type", (`String "array"));
                         ("prefixItems",
                           (`List
-                             [`Assoc
-                                [("type", (`String "array"));
-                                ("prefixItems",
-                                  (`List
-                                     [`Assoc [("type", (`String "integer"))];
-                                     `Assoc [("type", (`String "string"))];
-                                     `Assoc [("type", (`String "boolean"))]]));
-                                ("unevaluatedItems", (`Bool false));
-                                ("minItems", (`Int 3));
-                                ("maxItems", (`Int 3))];
-                             `Assoc [("type", (`String "number"))]]));
+                             [`Assoc [("type", (`String "integer"))];
+                             `Assoc [("type", (`String "string"))];
+                             `Assoc [("type", (`String "boolean"))]]));
                         ("unevaluatedItems", (`Bool false));
-                        ("minItems", (`Int 2));
-                        ("maxItems", (`Int 2))]]));
+                        ("minItems", (`Int 3));
+                        ("maxItems", (`Int 3))];
+                      `Assoc [("type", (`String "number"))]]));
                  ("unevaluatedItems", (`Bool false));
-                 ("minItems", (`Int 2));
-                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                 ("minItems", (`Int 3));
+                 ("maxItems", (`Int 3))]]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t6" =
@@ -1929,27 +1893,19 @@ include
             {
               "type": "array",
               "prefixItems": [
-                {
-                  "type": "array",
-                  "prefixItems": [
-                    { "type": "integer" },
-                    { "type": "string" },
-                    { "type": "boolean" }
-                  ],
-                  "unevaluatedItems": false,
-                  "minItems": 3,
-                  "maxItems": 3
-                },
-                { "type": "number" }
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
               ],
               "unevaluatedItems": false,
-              "minItems": 2,
-              "maxItems": 2
-            }
+              "minItems": 3,
+              "maxItems": 3
+            },
+            { "type": "number" }
           ],
           "unevaluatedItems": false,
-          "minItems": 2,
-          "maxItems": 2
+          "minItems": 3,
+          "maxItems": 3
         }
       ]
     }
@@ -2111,6 +2067,107 @@ include
           "unevaluatedItems": false,
           "minItems": 3,
           "maxItems": 3
+        }
+      ]
+    }
+    |}]]
+type t10 = [ `A of (int * string * bool) ][@@deriving jsonschema]
+include
+  struct
+    let t10_jsonschema =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "A"))];
+                      `Assoc [("type", (`String "integer"))];
+                      `Assoc [("type", (`String "string"))];
+                      `Assoc [("type", (`String "boolean"))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 4));
+                 ("maxItems", (`Int 4))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "t10" =
+    print_schema t10_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    }
+    |}]]
+type t11 = [ `B of (int * string * bool) ][@@deriving
+                                            jsonschema
+                                              ~polymorphic_variant_tuple]
+include
+  struct
+    let t11_jsonschema =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "B"))];
+                      `Assoc
+                        [("type", (`String "array"));
+                        ("prefixItems",
+                          (`List
+                             [`Assoc [("type", (`String "integer"))];
+                             `Assoc [("type", (`String "string"))];
+                             `Assoc [("type", (`String "boolean"))]]));
+                        ("unevaluatedItems", (`Bool false));
+                        ("minItems", (`Int 3));
+                        ("maxItems", (`Int 3))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "t11" =
+    print_schema t11_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "B" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
         }
       ]
     }
