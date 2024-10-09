@@ -11,7 +11,7 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-latest
+          - ubuntu-22.04
           # - windows-latest
         ocaml-version:
           - 4.14

@@ -24,18 +24,17 @@ jobs:
       id-token: write
       pages: write
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout tree
         uses: actions/checkout@v4
 
       - name: Set-up OCaml
-        uses: ocaml/setup-ocaml@v2
+        uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: "5.1"
+          ocaml-compiler: "5.2"
           dune-cache: true
-          opam-depext-flags: "--with-doc"
           allow-prerelease-opam: true
 
       - name: Install dependencies
