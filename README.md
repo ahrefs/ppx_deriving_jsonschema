@@ -97,7 +97,7 @@ By default, constructors in variants are represented as a list with one string, 
 type t =
 | Typ
 | Class of string
-[@@deriving jsonschema ~variant_as_array]
+[@@deriving jsonschema]
 ```
 
 ```json
