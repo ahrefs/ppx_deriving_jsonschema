@@ -1499,7 +1499,8 @@ type t10 = [ `A of int * string * bool ] [@@deriving jsonschema]
 
 let%expect_test "t10" =
   print_schema t10_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
@@ -1523,7 +1524,8 @@ type t11 = [ `B of int * string * bool ] [@@deriving jsonschema ~polymorphic_var
 
 let%expect_test "t11" =
   print_schema t11_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
