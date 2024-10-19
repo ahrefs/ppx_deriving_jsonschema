@@ -1,3 +1,7 @@
+# 0.0.3
+
+- make the default format compatible with the deriving ppxes
+
 # 0.0.2
 
 - add support for nativeint, bytes, ref, unit
