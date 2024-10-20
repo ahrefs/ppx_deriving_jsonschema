@@ -177,7 +177,7 @@ type b = [ `B of int * string * bool ] [@@deriving jsonschema ~polymorphic_varia
 }
 ```
 
-A `~variant_as_string` flag is exposed to obtain a more natural representation `"anyOf": [{ "const": "..." }, ...]`. This representation does _not_ support payloads. It reproduces the representation of `melange-json` for [enumeration like variants](https://github.com/melange-community/melange-json?tab=readme-ov-file#enumeration-like-variants). For example:
+A `~variant_as_string` flag is exposed to obtain a more natural representation `"anyOf": [{ "const": "..." }, ...]`. This representation does _not_ support payloads. For example:
 
 ```ocaml
 type t =
