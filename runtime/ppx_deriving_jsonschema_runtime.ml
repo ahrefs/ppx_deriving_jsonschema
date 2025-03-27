@@ -1,6 +1,6 @@
 let schema_version = "https://json-schema.org/draft/2020-12/schema"
 
-let json_schema ?id ?title ?description ?definitions types =
+let json_schema ?id ?title ?description ?definitions ?(strict = true) types =
   match types with
   | `Assoc types ->
     let metadata =
@@ -8,6 +8,7 @@ let json_schema ?id ?title ?description ?definitions types =
         (fun x -> x)
         [
           Some ("$schema", `String schema_version);
+          Some ("strict", `Bool strict);
           (match id with
           | None -> None
           | Some id -> Some ("$id", `String id));
