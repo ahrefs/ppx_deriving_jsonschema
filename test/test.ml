@@ -1569,3 +1569,49 @@ let%expect_test "t11" =
       ]
     }
     |}]
+
+type allow_additional_properties = { allow : bool } [@@deriving jsonschema ~allow_additional_properties]
+
+let%expect_test "allow_additional_properties" =
+  print_schema allow_additional_properties_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "allow": { "type": "boolean" } },
+      "required": [ "allow" ],
+      "additionalProperties": true
+    }
+    |}]
+
+type obj2 = { x : int } [@@deriving jsonschema]
+type obj1 = { obj2 : obj2 } [@@deriving jsonschema]
+type nested_obj = { obj1 : obj1 } [@@deriving jsonschema]
+
+let%expect_test "nested_obj" =
+  print_schema nested_obj_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "obj1": {
+          "type": "object",
+          "properties": {
+            "obj2": {
+              "type": "object",
+              "properties": { "x": { "type": "integer" } },
+              "required": [ "x" ],
+              "additionalProperties": false
+            }
+          },
+          "required": [ "obj2" ],
+          "additionalProperties": false
+        }
+      },
+      "required": [ "obj1" ],
+      "additionalProperties": false
+    }
+    |}]

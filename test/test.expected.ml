@@ -168,7 +168,8 @@ include
           ]
         }
       },
-      "required": [ "m2", "m" ]
+      "required": [ "m2", "m" ],
+      "additionalProperties": false
     }
     |}]]
 type kind =
@@ -700,7 +701,8 @@ include
       "required": [
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
         "comment", "kind_f", "date"
-      ]
+      ],
+      "additionalProperties": false
     }
     |}]]
 type events = event list[@@deriving jsonschema]
@@ -785,7 +787,8 @@ include
         "required": [
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
           "a", "comment", "kind_f", "date"
-        ]
+        ],
+        "additionalProperties": false
       }
     }
     |}]]
@@ -876,7 +879,8 @@ include
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -969,7 +973,8 @@ include
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         },
         { "type": "string" }
       ],
@@ -1064,7 +1069,8 @@ include
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "string" }
         ],
@@ -1168,7 +1174,8 @@ include
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "integer" }
         ],
@@ -1262,7 +1269,8 @@ include
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -1340,7 +1348,8 @@ include
           ]
         }
       },
-      "required": [ "m" ]
+      "required": [ "m" ],
+      "additionalProperties": false
     }
     |}]]
 type 'param2 poly2 =
@@ -1460,8 +1469,10 @@ include
         "scores_ref": { "$ref": "#/$defs/numbers" },
         "player": { "type": "string" }
       },
-      "required": [ "scores_ref", "player" ]
-    } |}]]
+      "required": [ "scores_ref", "player" ],
+      "additionalProperties": false
+    }
+    |}]]
 type address = {
   street: string ;
   city: string ;
@@ -1516,14 +1527,17 @@ include
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         },
         "email": { "type": "string" },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
-      "required": [ "address", "age", "name" ]
-    } |}]]
+      "required": [ "address", "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]]
 type tt =
   {
   name: string ;
@@ -1573,7 +1587,8 @@ include
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         }
       },
       "type": "object",
@@ -1587,8 +1602,10 @@ include
       },
       "required": [
         "retreat_address", "work_address", "home_address", "age", "name"
-      ]
-    } |}]]
+      ],
+      "additionalProperties": false
+    }
+    |}]]
 type c = char[@@deriving jsonschema]
 include
   struct
@@ -2173,5 +2190,81 @@ include
           "maxItems": 2
         }
       ]
+    }
+    |}]]
+type allow_additional_properties = {
+  allow: bool }[@@deriving jsonschema ~allow_additional_properties]
+include
+  struct
+    let allow_additional_properties_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc [("allow", (`Assoc [("type", (`String "boolean"))]))]));
+        ("required", (`List [`String "allow"]));
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "allow_additional_properties" =
+    print_schema allow_additional_properties_jsonschema; [%expect {||}]]
+type obj2 = {
+  x: int }[@@deriving jsonschema]
+include
+  struct
+    let obj2_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List [`String "x"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type obj1 = {
+  obj2: obj2 }[@@deriving jsonschema]
+include
+  struct
+    let obj1_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties", (`Assoc [("obj2", obj2_jsonschema)]));
+        ("required", (`List [`String "obj2"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type nested_obj = {
+  obj1: obj1 }[@@deriving jsonschema]
+include
+  struct
+    let nested_obj_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties", (`Assoc [("obj1", obj1_jsonschema)]));
+        ("required", (`List [`String "obj1"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "nested_obj" =
+    print_schema nested_obj_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "obj1": {
+          "type": "object",
+          "properties": {
+            "obj2": {
+              "type": "object",
+              "properties": { "x": { "type": "integer" } },
+              "required": [ "x" ],
+              "additionalProperties": false
+            }
+          },
+          "required": [ "obj2" ],
+          "additionalProperties": false
+        }
+      },
+      "required": [ "obj1" ],
+      "additionalProperties": false
     }
     |}]]
