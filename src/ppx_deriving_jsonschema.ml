@@ -43,7 +43,9 @@ let attributes =
   ]
 
 (* let args () = Deriving.Args.(empty) *)
-let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "allow_additional_properties")
+let args () =
+  Deriving.Args.(
+    empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "allow_additional_properties")
 
 let deps = []
 
@@ -237,7 +239,7 @@ let object_ ~loc ~config fields =
         "type", `String "object";
         "properties", `Assoc [%e elist ~loc fields];
         "required", `List [%e elist ~loc required];
-        "additionalProperties", `Bool [%e ebool ~loc config.allow_additional_properties]
+        "additionalProperties", `Bool [%e ebool ~loc config.allow_additional_properties];
       ]]
 
 let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple flag_additional_properties =
