@@ -9,6 +9,7 @@ type config = {
   polymorphic_variant_tuple : bool;
     (** Preserve the implicit tuple in a polymorphic variant.
         This option breaks compatibility with yojson derivers. *)
+  allow_additional_properties : bool;  (** annotate objects with additioanlProperties:true field *)
 }
 
 let deriver_name = "jsonschema"
@@ -42,7 +43,7 @@ let attributes =
   ]
 
 (* let args () = Deriving.Args.(empty) *)
-let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple")
+let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "allow_additional_properties")
 
 let deps = []
 
@@ -236,12 +237,17 @@ let object_ ~loc ~config fields =
         "type", `String "object";
         "properties", `Assoc [%e elist ~loc fields];
         "required", `List [%e elist ~loc required];
+        "additionalProperties", `Bool [%e ebool ~loc config.allow_additional_properties]
       ]]
 
-let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
+let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple flag_additional_properties =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   let config =
-    { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
+    {
+      variant_as_string = flag_variant_as_string;
+      polymorphic_variant_tuple = flag_polymorphic_variant_tuple;
+      allow_additional_properties = flag_additional_properties;
+    }
   in
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
