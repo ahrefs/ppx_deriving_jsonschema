@@ -119,8 +119,8 @@ include
         ("properties",
           (`Assoc
              [("m2", Mod1.Mod2.m_2_jsonschema); ("m", Mod1.m_1_jsonschema)]));
-        ("required", (`List [`String "m2"; `String "m"]))][@@warning
-                                                            "-32-39"]
+        ("required", (`List [`String "m2"; `String "m"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "with_modules" =
@@ -624,7 +624,8 @@ include
              `String "a";
              `String "comment";
              `String "kind_f";
-             `String "date"]))][@@warning "-32-39"]
+             `String "date"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "event" =
@@ -1308,7 +1309,8 @@ include
       `Assoc
         [("type", (`String "object"));
         ("properties", (`Assoc [("m", Mod1.m_1_jsonschema)]));
-        ("required", (`List [`String "m"]))][@@warning "-32-39"]
+        ("required", (`List [`String "m"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "using_m" =
@@ -1437,8 +1439,8 @@ include
              [("scores_ref",
                 (`Assoc [("$ref", (`String "#/$defs/numbers"))]));
              ("player", (`Assoc [("type", (`String "string"))]))]));
-        ("required", (`List [`String "scores_ref"; `String "player"]))]
-      [@@warning "-32-39"]
+        ("required", (`List [`String "scores_ref"; `String "player"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "player_scores" =
@@ -1475,8 +1477,8 @@ include
              ("city", (`Assoc [("type", (`String "string"))]));
              ("street", (`Assoc [("type", (`String "string"))]))]));
         ("required",
-          (`List [`String "zip"; `String "city"; `String "street"]))]
-      [@@warning "-32-39"]
+          (`List [`String "zip"; `String "city"; `String "street"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type t = {
   name: string ;
@@ -1495,8 +1497,8 @@ include
              ("age", (`Assoc [("type", (`String "integer"))]));
              ("name", (`Assoc [("type", (`String "string"))]))]));
         ("required",
-          (`List [`String "address"; `String "age"; `String "name"]))]
-      [@@warning "-32-39"]
+          (`List [`String "address"; `String "age"; `String "name"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t" =
@@ -1552,7 +1554,8 @@ include
              `String "work_address";
              `String "home_address";
              `String "age";
-             `String "name"]))][@@warning "-32-39"]
+             `String "name"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "tt" =

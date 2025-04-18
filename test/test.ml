@@ -120,7 +120,8 @@ let%expect_test "with_modules" =
           ]
         }
       },
-      "required": [ "m2", "m" ]
+      "required": [ "m2", "m" ],
+      "additionalProperties": false
     }
     |}]
 
@@ -462,7 +463,8 @@ let%expect_test "event" =
       "required": [
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
         "comment", "kind_f", "date"
-      ]
+      ],
+      "additionalProperties": false
     }
     |}]
 
@@ -557,7 +559,8 @@ let%expect_test "events" =
         "required": [
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
           "a", "comment", "kind_f", "date"
-        ]
+        ],
+        "additionalProperties": false
       }
     }
     |}]
@@ -640,7 +643,8 @@ let%expect_test "eventss" =
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -723,7 +727,8 @@ let%expect_test "event_comment" =
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         },
         { "type": "string" }
       ],
@@ -812,7 +817,8 @@ let%expect_test "event_comments'" =
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "string" }
         ],
@@ -902,7 +908,8 @@ let%expect_test "event_n" =
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "integer" }
         ],
@@ -991,7 +998,8 @@ let%expect_test "events_array" =
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -1048,7 +1056,8 @@ let%expect_test "using_m" =
           ]
         }
       },
-      "required": [ "m" ]
+      "required": [ "m" ],
+      "additionalProperties": false
     }
     |}]
 
@@ -1124,8 +1133,10 @@ let%expect_test "player_scores" =
         "scores_ref": { "$ref": "#/$defs/numbers" },
         "player": { "type": "string" }
       },
-      "required": [ "scores_ref", "player" ]
-    } |}]
+      "required": [ "scores_ref", "player" ],
+      "additionalProperties": false
+    }
+    |}]
 
 type address = {
   street : string;
@@ -1157,14 +1168,17 @@ let%expect_test "t" =
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         },
         "email": { "type": "string" },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
-      "required": [ "address", "age", "name" ]
-    } |}]
+      "required": [ "address", "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]
 
 type tt = {
   name : string;
@@ -1190,7 +1204,8 @@ let%expect_test "tt" =
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         }
       },
       "type": "object",
@@ -1204,8 +1219,10 @@ let%expect_test "tt" =
       },
       "required": [
         "retreat_address", "work_address", "home_address", "age", "name"
-      ]
-    } |}]
+      ],
+      "additionalProperties": false
+    }
+    |}]
 
 type c = char [@@deriving jsonschema]
 
