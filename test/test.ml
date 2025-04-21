@@ -1253,7 +1253,10 @@ let%expect_test "variant_inline_record" =
     |}]
 
 type inline_record_with_extra_fields =
-  | User of { name : string; email : string } [@jsonschema.allow_extra_fields]
+  | User of {
+      name : string;
+      email : string;
+    } [@jsonschema.allow_extra_fields]
   | Guest of { ip : string }
 [@@deriving jsonschema]
 

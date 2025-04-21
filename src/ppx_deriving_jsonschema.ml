@@ -279,11 +279,8 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
           match pcd_args with
           | Pcstr_record label_declarations ->
             let has_allow_extra_fields = Attribute.get constructor_allow_extra_fields var |> Option.is_some in
-            let inline_config = 
-              if has_allow_extra_fields then
-                { config with allow_extra_properties = true }
-              else
-                config
+            let inline_config =
+              if has_allow_extra_fields then { config with allow_extra_properties = true } else config
             in
             let typs = [ object_ ~loc ~config:inline_config label_declarations ] in
             `Tag (name, typs)
