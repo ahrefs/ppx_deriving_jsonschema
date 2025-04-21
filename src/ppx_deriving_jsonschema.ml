@@ -259,10 +259,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     | _ -> false
   in
   let config =
-    {
-      variant_as_string = flag_variant_as_string;
-      polymorphic_variant_tuple = flag_polymorphic_variant_tuple;
-    }
+    { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
   in
   match ast with
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
@@ -276,8 +273,8 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
           in
           match pcd_args with
           | Pcstr_record label_declarations ->
-            let allow_extra_fields =  Attribute.get cd_jsonschema_allow_extra_fields var |> Option.is_some in
-            let typs = [ object_ ~loc ~config label_declarations allow_extra_fields] in
+            let allow_extra_fields = Attribute.get cd_jsonschema_allow_extra_fields var |> Option.is_some in
+            let typs = [ object_ ~loc ~config label_declarations allow_extra_fields ] in
             `Tag (name, typs)
           | Pcstr_tuple typs ->
             let types = List.map (type_of_core ~config) typs in
