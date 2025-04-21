@@ -119,8 +119,8 @@ include
         ("properties",
           (`Assoc
              [("m2", Mod1.Mod2.m_2_jsonschema); ("m", Mod1.m_1_jsonschema)]));
-        ("required", (`List [`String "m2"; `String "m"]))][@@warning
-                                                            "-32-39"]
+        ("required", (`List [`String "m2"; `String "m"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "with_modules" =
@@ -168,7 +168,8 @@ include
           ]
         }
       },
-      "required": [ "m2", "m" ]
+      "required": [ "m2", "m" ],
+      "additionalProperties": false
     }
     |}]]
 type kind =
@@ -624,7 +625,8 @@ include
              `String "a";
              `String "comment";
              `String "kind_f";
-             `String "date"]))][@@warning "-32-39"]
+             `String "date"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "event" =
@@ -699,7 +701,8 @@ include
       "required": [
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
         "comment", "kind_f", "date"
-      ]
+      ],
+      "additionalProperties": false
     }
     |}]]
 type events = event list[@@deriving jsonschema]
@@ -784,7 +787,8 @@ include
         "required": [
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
           "a", "comment", "kind_f", "date"
-        ]
+        ],
+        "additionalProperties": false
       }
     }
     |}]]
@@ -875,7 +879,8 @@ include
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -968,7 +973,8 @@ include
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         },
         { "type": "string" }
       ],
@@ -1063,7 +1069,8 @@ include
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "string" }
         ],
@@ -1167,7 +1174,8 @@ include
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "integer" }
         ],
@@ -1261,7 +1269,8 @@ include
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -1308,7 +1317,8 @@ include
       `Assoc
         [("type", (`String "object"));
         ("properties", (`Assoc [("m", Mod1.m_1_jsonschema)]));
-        ("required", (`List [`String "m"]))][@@warning "-32-39"]
+        ("required", (`List [`String "m"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "using_m" =
@@ -1338,7 +1348,8 @@ include
           ]
         }
       },
-      "required": [ "m" ]
+      "required": [ "m" ],
+      "additionalProperties": false
     }
     |}]]
 type 'param2 poly2 =
@@ -1437,8 +1448,8 @@ include
              [("scores_ref",
                 (`Assoc [("$ref", (`String "#/$defs/numbers"))]));
              ("player", (`Assoc [("type", (`String "string"))]))]));
-        ("required", (`List [`String "scores_ref"; `String "player"]))]
-      [@@warning "-32-39"]
+        ("required", (`List [`String "scores_ref"; `String "player"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "player_scores" =
@@ -1458,8 +1469,10 @@ include
         "scores_ref": { "$ref": "#/$defs/numbers" },
         "player": { "type": "string" }
       },
-      "required": [ "scores_ref", "player" ]
-    } |}]]
+      "required": [ "scores_ref", "player" ],
+      "additionalProperties": false
+    }
+    |}]]
 type address = {
   street: string ;
   city: string ;
@@ -1475,8 +1488,8 @@ include
              ("city", (`Assoc [("type", (`String "string"))]));
              ("street", (`Assoc [("type", (`String "string"))]))]));
         ("required",
-          (`List [`String "zip"; `String "city"; `String "street"]))]
-      [@@warning "-32-39"]
+          (`List [`String "zip"; `String "city"; `String "street"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type t = {
   name: string ;
@@ -1495,8 +1508,8 @@ include
              ("age", (`Assoc [("type", (`String "integer"))]));
              ("name", (`Assoc [("type", (`String "string"))]))]));
         ("required",
-          (`List [`String "address"; `String "age"; `String "name"]))]
-      [@@warning "-32-39"]
+          (`List [`String "address"; `String "age"; `String "name"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t" =
@@ -1514,14 +1527,17 @@ include
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         },
         "email": { "type": "string" },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
-      "required": [ "address", "age", "name" ]
-    } |}]]
+      "required": [ "address", "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]]
 type tt =
   {
   name: string ;
@@ -1552,7 +1568,8 @@ include
              `String "work_address";
              `String "home_address";
              `String "age";
-             `String "name"]))][@@warning "-32-39"]
+             `String "name"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "tt" =
@@ -1570,7 +1587,8 @@ include
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         }
       },
       "type": "object",
@@ -1584,8 +1602,10 @@ include
       },
       "required": [
         "retreat_address", "work_address", "home_address", "age", "name"
-      ]
-    } |}]]
+      ],
+      "additionalProperties": false
+    }
+    |}]]
 type c = char[@@deriving jsonschema]
 include
   struct
@@ -1628,6 +1648,97 @@ include
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [ { "const": "A" }, { "const": "B" } ]
+    }
+    |}]]
+type inline_record_with_extra_fields =
+  | User of {
+  name: string ;
+  email: string } [@jsonschema.allow_extra_fields ]
+  | Guest of {
+  ip: string } [@@deriving jsonschema]
+include
+  struct
+    let inline_record_with_extra_fields_jsonschema =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "User"))];
+                      `Assoc
+                        [("type", (`String "object"));
+                        ("properties",
+                          (`Assoc
+                             [("email",
+                                (`Assoc [("type", (`String "string"))]));
+                             ("name",
+                               (`Assoc [("type", (`String "string"))]))]));
+                        ("required",
+                          (`List [`String "email"; `String "name"]));
+                        ("additionalProperties", (`Bool true))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "Guest"))];
+                     `Assoc
+                       [("type", (`String "object"));
+                       ("properties",
+                         (`Assoc
+                            [("ip", (`Assoc [("type", (`String "string"))]))]));
+                       ("required", (`List [`String "ip"]));
+                       ("additionalProperties", (`Bool false))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "inline_record_with_extra_fields" =
+    print_schema inline_record_with_extra_fields_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "User" },
+            {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string" },
+                "name": { "type": "string" }
+              },
+              "required": [ "email", "name" ],
+              "additionalProperties": true
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Guest" },
+            {
+              "type": "object",
+              "properties": { "ip": { "type": "string" } },
+              "required": [ "ip" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
     }
     |}]]
 type variant_with_payload =
@@ -2172,3 +2283,103 @@ include
       ]
     }
     |}]]
+type obj2 = {
+  x: int }[@@deriving jsonschema][@@jsonschema.allow_extra_fields ]
+include
+  struct
+    let obj2_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List [`String "x"]));
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type obj1 = {
+  obj2: obj2 }[@@deriving jsonschema]
+include
+  struct
+    let obj1_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties", (`Assoc [("obj2", obj2_jsonschema)]));
+        ("required", (`List [`String "obj2"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type nested_obj = {
+  obj1: obj1 }[@@deriving jsonschema][@@allow_extra_fields ]
+include
+  struct
+    let nested_obj_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties", (`Assoc [("obj1", obj1_jsonschema)]));
+        ("required", (`List [`String "obj1"]));
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "nested_obj" =
+    print_schema nested_obj_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "obj1": {
+          "type": "object",
+          "properties": {
+            "obj2": {
+              "type": "object",
+              "properties": { "x": { "type": "integer" } },
+              "required": [ "x" ],
+              "additionalProperties": true
+            }
+          },
+          "required": [ "obj2" ],
+          "additionalProperties": false
+        }
+      },
+      "required": [ "obj1" ],
+      "additionalProperties": true
+    }
+    |}]]
+open Melange_json.Primitives
+type x_without_extra = {
+  x: int }[@@deriving (json, jsonschema)][@@allow_extra_fields ]
+include
+  struct
+    [%%ocaml.error
+      "Ppxlib.Deriving: 'json' is not a supported type deriving generator"]
+    let x_without_extra_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List [`String "x"]));
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type x_with_extra = {
+  x: int ;
+  y: int }[@@deriving (json, jsonschema)][@@allow_extra_fields ]
+include
+  struct
+    [%%ocaml.error
+      "Ppxlib.Deriving: 'json' is not a supported type deriving generator"]
+    let x_with_extra_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("y", (`Assoc [("type", (`String "integer"))]));
+             ("x", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List [`String "y"; `String "x"]));
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "extra_fields" =
+    let _check_deseralization_ok =
+      ({ x = 1; y = 1 } |> x_with_extra_to_json) |> x_without_extra_of_json in
+    print_schema x_without_extra_jsonschema;
+    [%expect
+      "\n {\n   \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n   \"type\": \"object\",\n   \"properties\": { \"x\": { \"type\": \"integer\" } },\n   \"required\": [ \"x\" ],\n   \"additionalProperties\": true\n }\n "]]

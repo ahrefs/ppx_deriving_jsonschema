@@ -120,7 +120,8 @@ let%expect_test "with_modules" =
           ]
         }
       },
-      "required": [ "m2", "m" ]
+      "required": [ "m2", "m" ],
+      "additionalProperties": false
     }
     |}]
 
@@ -462,7 +463,8 @@ let%expect_test "event" =
       "required": [
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
         "comment", "kind_f", "date"
-      ]
+      ],
+      "additionalProperties": false
     }
     |}]
 
@@ -557,7 +559,8 @@ let%expect_test "events" =
         "required": [
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
           "a", "comment", "kind_f", "date"
-        ]
+        ],
+        "additionalProperties": false
       }
     }
     |}]
@@ -640,7 +643,8 @@ let%expect_test "eventss" =
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -723,7 +727,8 @@ let%expect_test "event_comment" =
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         },
         { "type": "string" }
       ],
@@ -812,7 +817,8 @@ let%expect_test "event_comments'" =
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "string" }
         ],
@@ -902,7 +908,8 @@ let%expect_test "event_n" =
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "comment", "kind_f", "date"
-            ]
+            ],
+            "additionalProperties": false
           },
           { "type": "integer" }
         ],
@@ -991,7 +998,8 @@ let%expect_test "events_array" =
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
             "a", "comment", "kind_f", "date"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -1048,7 +1056,8 @@ let%expect_test "using_m" =
           ]
         }
       },
-      "required": [ "m" ]
+      "required": [ "m" ],
+      "additionalProperties": false
     }
     |}]
 
@@ -1124,8 +1133,10 @@ let%expect_test "player_scores" =
         "scores_ref": { "$ref": "#/$defs/numbers" },
         "player": { "type": "string" }
       },
-      "required": [ "scores_ref", "player" ]
-    } |}]
+      "required": [ "scores_ref", "player" ],
+      "additionalProperties": false
+    }
+    |}]
 
 type address = {
   street : string;
@@ -1157,14 +1168,17 @@ let%expect_test "t" =
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         },
         "email": { "type": "string" },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
-      "required": [ "address", "age", "name" ]
-    } |}]
+      "required": [ "address", "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]
 
 type tt = {
   name : string;
@@ -1190,7 +1204,8 @@ let%expect_test "tt" =
             "city": { "type": "string" },
             "street": { "type": "string" }
           },
-          "required": [ "zip", "city", "street" ]
+          "required": [ "zip", "city", "street" ],
+          "additionalProperties": false
         }
       },
       "type": "object",
@@ -1204,8 +1219,10 @@ let%expect_test "tt" =
       },
       "required": [
         "retreat_address", "work_address", "home_address", "age", "name"
-      ]
-    } |}]
+      ],
+      "additionalProperties": false
+    }
+    |}]
 
 type c = char [@@deriving jsonschema]
 
@@ -1232,6 +1249,58 @@ let%expect_test "variant_inline_record" =
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [ { "const": "A" }, { "const": "B" } ]
+    }
+    |}]
+
+type inline_record_with_extra_fields =
+  | User of {
+      name : string;
+      email : string;
+    } [@jsonschema.allow_extra_fields]
+  | Guest of { ip : string }
+[@@deriving jsonschema]
+
+let%expect_test "inline_record_with_extra_fields" =
+  print_schema inline_record_with_extra_fields_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "User" },
+            {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string" },
+                "name": { "type": "string" }
+              },
+              "required": [ "email", "name" ],
+              "additionalProperties": true
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Guest" },
+            {
+              "type": "object",
+              "properties": { "ip": { "type": "string" } },
+              "required": [ "ip" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
     }
     |}]
 
@@ -1552,3 +1621,57 @@ let%expect_test "t11" =
       ]
     }
     |}]
+
+type obj2 = { x : int } [@@deriving jsonschema] [@@jsonschema.allow_extra_fields]
+type obj1 = { obj2 : obj2 } [@@deriving jsonschema]
+type nested_obj = { obj1 : obj1 } [@@deriving jsonschema] [@@allow_extra_fields]
+
+let%expect_test "nested_obj" =
+  print_schema nested_obj_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "obj1": {
+          "type": "object",
+          "properties": {
+            "obj2": {
+              "type": "object",
+              "properties": { "x": { "type": "integer" } },
+              "required": [ "x" ],
+              "additionalProperties": true
+            }
+          },
+          "required": [ "obj2" ],
+          "additionalProperties": false
+        }
+      },
+      "required": [ "obj1" ],
+      "additionalProperties": true
+    }
+    |}]
+
+open Melange_json.Primitives
+
+type x_without_extra = { x : int } [@@deriving json, jsonschema] [@@allow_extra_fields]
+type x_with_extra = {
+  x : int;
+  y : int;
+}
+[@@deriving json, jsonschema] [@@allow_extra_fields]
+
+let%expect_test "extra_fields" =
+  let _check_deseralization_ok = { x = 1; y = 1 } |> x_with_extra_to_json |> x_without_extra_of_json in
+  print_schema x_without_extra_jsonschema;
+  [%expect
+    "\n\
+    \ {\n\
+    \   \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n\
+    \   \"type\": \"object\",\n\
+    \   \"properties\": { \"x\": { \"type\": \"integer\" } },\n\
+    \   \"required\": [ \"x\" ],\n\
+    \   \"additionalProperties\": true\n\
+    \ }\n\
+    \ "]

@@ -30,6 +30,8 @@
   dune
   (ppxlib
    (>= "0.24.0"))
+  (melange-json :with-test)
+  (melange-json-native :with-test)
   (yojson :with-test)
   (ppx_expect :with-test)
   (ocamlformat :with-dev-setup)

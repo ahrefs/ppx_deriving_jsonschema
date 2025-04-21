@@ -205,9 +205,34 @@ type t =
 
 #### Records
 
-Records are converted to `{ "type": "object", "properties": {...}, "required": [...] }`.
+Records are converted to `{ "type": "object", "properties": {...}, "required": [...], "additionalProperties": false }`.
 
 The fields of type `option` are not included in the `required` list.
+
+By default, additionalProperties are not allowed in objects. To allow additionalProperties, use the `allow_extra_fields` attribute:
+
+```ocaml
+type company = {
+  name : string;
+  employees : int;
+}
+[@@deriving jsonschema]
+[@@jsonschema.allow_extra_fields]
+```
+
+This annotation will generate a schema with `"additionalProperties": true`, allowing for additional fields not defined in the record:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer" }
+  },
+  "required": [ "name", "age" ],
+  "additionalProperties": true
+}
+```
 
 When the JSON object keys differ from the ocaml field names, users can specify the corresponding JSON key implicitly using `[@key "field"]`, for example:
 
@@ -217,6 +242,59 @@ type t = {
   class_ : float [@key "CLASS"];
 }
 [@@deriving jsonschema]
+```
+
+#### Inline Records in Variants
+
+You can use the `[@jsonschema.allow_extra_fields]` attribute on a constructor with an inline record to allow additional fields in that record:
+
+```ocaml
+type inline_record_with_extra_fields =
+  | User of { name : string; email : string } [@jsonschema.allow_extra_fields]
+  | Guest of { ip : string }
+[@@deriving jsonschema]
+```
+
+This will generate a schema that allows additional fields for the `User` variant's record but not for the `Guest` variant:
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "User" },
+        {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string" },
+            "name": { "type": "string" }
+          },
+          "required": [ "email", "name" ],
+          "additionalProperties": true
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "Guest" },
+        {
+          "type": "object",
+          "properties": { "ip": { "type": "string" } },
+          "required": [ "ip" ],
+          "additionalProperties": false
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
 ```
 
 #### References

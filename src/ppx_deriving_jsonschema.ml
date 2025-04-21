@@ -33,12 +33,24 @@ let jsonschema_polymorphic_variant_name =
     Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
+let td_jsonschema_allow_extra_fields =
+  Attribute.declare "jsonschema.allow_extra_fields" Attribute.Context.type_declaration
+    Ast_pattern.(pstr nil)
+    (fun () -> ())
+
+let cd_jsonschema_allow_extra_fields =
+  Attribute.declare "jsonschema.allow_extra_fields" Attribute.Context.constructor_declaration
+    Ast_pattern.(pstr nil)
+    (fun () -> ())
+
 let attributes =
   [
     Attribute.T jsonschema_key;
     Attribute.T jsonschema_ref;
     Attribute.T jsonschema_variant_name;
     Attribute.T jsonschema_polymorphic_variant_name;
+    Attribute.T td_jsonschema_allow_extra_fields;
+    Attribute.T cd_jsonschema_allow_extra_fields;
   ]
 
 (* let args () = Deriving.Args.(empty) *)
@@ -211,7 +223,7 @@ let rec type_of_core ~config core_type =
     let msg = Format.asprintf "ppx_deriving_jsonschema: unsupported type %a" Astlib.Pprintast.core_type core_type in
     [%expr [%ocaml.error [%e estring ~loc msg]]]
 
-let object_ ~loc ~config fields =
+let object_ ~loc ~config fields allow_extra_fields =
   let fields, required =
     List.fold_left
       (fun (fields, required) ({ pld_name; pld_type; pld_loc = _loc; _ } as field) ->
@@ -236,10 +248,16 @@ let object_ ~loc ~config fields =
         "type", `String "object";
         "properties", `Assoc [%e elist ~loc fields];
         "required", `List [%e elist ~loc required];
+        "additionalProperties", `Bool [%e ebool ~loc allow_extra_fields];
       ]]
 
 let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
+  let allow_extra_fields =
+    match ast with
+    | _, [ type_decl ] -> Attribute.get td_jsonschema_allow_extra_fields type_decl |> Option.is_some
+    | _ -> false
+  in
   let config =
     { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
   in
@@ -255,7 +273,8 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
           in
           match pcd_args with
           | Pcstr_record label_declarations ->
-            let typs = [ object_ ~loc ~config label_declarations ] in
+            let allow_extra_fields = Attribute.get cd_jsonschema_allow_extra_fields var |> Option.is_some in
+            let typs = [ object_ ~loc ~config label_declarations allow_extra_fields ] in
             `Tag (name, typs)
           | Pcstr_tuple typs ->
             let types = List.map (type_of_core ~config) typs in
@@ -271,7 +290,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     let jsonschema_expr = create_value ~loc type_name v in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations) in
+    let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations allow_extra_fields) in
     [ jsonschema_expr ]
   | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
     let jsonschema_expr = create_value ~loc type_name (type_of_core ~config core_type) in
