@@ -39,6 +39,11 @@ let jsonschema_allow_extra_fields =
     Ast_pattern.(pstr nil)
     (fun () -> ())
 
+let constructor_allow_extra_fields =
+  Attribute.declare "jsonschema.allow_extra_fields" Attribute.Context.constructor_declaration
+    Ast_pattern.(pstr nil)
+    (fun () -> ())
+
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -46,6 +51,7 @@ let attributes =
     Attribute.T jsonschema_variant_name;
     Attribute.T jsonschema_polymorphic_variant_name;
     Attribute.T jsonschema_allow_extra_fields;
+    Attribute.T constructor_allow_extra_fields;
   ]
 
 (* let args () = Deriving.Args.(empty) *)
@@ -272,7 +278,14 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
           in
           match pcd_args with
           | Pcstr_record label_declarations ->
-            let typs = [ object_ ~loc ~config label_declarations ] in
+            let has_allow_extra_fields = Attribute.get constructor_allow_extra_fields var |> Option.is_some in
+            let inline_config = 
+              if has_allow_extra_fields then
+                { config with allow_extra_properties = true }
+              else
+                config
+            in
+            let typs = [ object_ ~loc ~config:inline_config label_declarations ] in
             `Tag (name, typs)
           | Pcstr_tuple typs ->
             let types = List.map (type_of_core ~config) typs in

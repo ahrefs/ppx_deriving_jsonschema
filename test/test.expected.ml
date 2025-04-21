@@ -1650,6 +1650,97 @@ include
       "anyOf": [ { "const": "A" }, { "const": "B" } ]
     }
     |}]]
+type inline_record_with_extra_fields =
+  | User of {
+  name: string ;
+  email: string } [@jsonschema.allow_extra_fields ]
+  | Guest of {
+  ip: string } [@@deriving jsonschema]
+include
+  struct
+    let inline_record_with_extra_fields_jsonschema =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List
+                      [`Assoc [("const", (`String "User"))];
+                      `Assoc
+                        [("type", (`String "object"));
+                        ("properties",
+                          (`Assoc
+                             [("email",
+                                (`Assoc [("type", (`String "string"))]));
+                             ("name",
+                               (`Assoc [("type", (`String "string"))]))]));
+                        ("required",
+                          (`List [`String "email"; `String "name"]));
+                        ("additionalProperties", (`Bool true))]]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List
+                     [`Assoc [("const", (`String "Guest"))];
+                     `Assoc
+                       [("type", (`String "object"));
+                       ("properties",
+                         (`Assoc
+                            [("ip", (`Assoc [("type", (`String "string"))]))]));
+                       ("required", (`List [`String "ip"]));
+                       ("additionalProperties", (`Bool false))]]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "inline_record_with_extra_fields" =
+    print_schema inline_record_with_extra_fields_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "User" },
+            {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string" },
+                "name": { "type": "string" }
+              },
+              "required": [ "email", "name" ],
+              "additionalProperties": true
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Guest" },
+            {
+              "type": "object",
+              "properties": { "ip": { "type": "string" } },
+              "required": [ "ip" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]]
 type variant_with_payload =
   | A of int 
   | B 
@@ -2242,7 +2333,7 @@ include
               "type": "object",
               "properties": { "x": { "type": "integer" } },
               "required": [ "x" ],
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "required": [ "obj2" ],

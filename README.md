@@ -253,7 +253,60 @@ type t = {
 [@@deriving jsonschema]
 ```
 
-#### References
+### Inline Records in Variants
+
+You can use the `[@jsonschema.allow_extra_fields]` attribute on a constructor with an inline record to allow additional fields in that record:
+
+```ocaml
+type inline_record_with_extra_fields =
+  | User of { name : string; email : string } [@jsonschema.allow_extra_fields]
+  | Guest of { ip : string }
+[@@deriving jsonschema]
+```
+
+This will generate a schema that allows additional fields for the `User` variant's record but not for the `Guest` variant:
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "User" },
+        {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string" },
+            "name": { "type": "string" }
+          },
+          "required": [ "email", "name" ],
+          "additionalProperties": true
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "Guest" },
+        {
+          "type": "object",
+          "properties": { "ip": { "type": "string" } },
+          "required": [ "ip" ],
+          "additionalProperties": false
+        }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
+### References
 
 Rather than inlining the definition of a type it is possible to use a [json schema `$ref`](https://json-schema.org/understanding-json-schema/structuring#dollarref) using the `[@ref "name"]` attribute. In such a case, the type definition must be passed to `Ppx_deriving_jsonschema_runtime.json_schema` as a parameter.
 

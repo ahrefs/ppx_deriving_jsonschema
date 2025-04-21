@@ -1252,6 +1252,55 @@ let%expect_test "variant_inline_record" =
     }
     |}]
 
+type inline_record_with_extra_fields =
+  | User of { name : string; email : string } [@jsonschema.allow_extra_fields]
+  | Guest of { ip : string }
+[@@deriving jsonschema]
+
+let%expect_test "inline_record_with_extra_fields" =
+  print_schema inline_record_with_extra_fields_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "User" },
+            {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string" },
+                "name": { "type": "string" }
+              },
+              "required": [ "email", "name" ],
+              "additionalProperties": true
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Guest" },
+            {
+              "type": "object",
+              "properties": { "ip": { "type": "string" } },
+              "required": [ "ip" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
 type variant_with_payload =
   | A of int
   | B
