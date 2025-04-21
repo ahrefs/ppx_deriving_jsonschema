@@ -209,16 +209,7 @@ Records are converted to `{ "type": "object", "properties": {...}, "required": [
 
 The fields of type `option` are not included in the `required` list.
 
-By default, additional properties are not allowed in objects. To allow additional properties, you can use either of these attribute annotations:
-
-```ocaml
-type person = {
-  name : string;
-  age : int;
-}
-[@@deriving jsonschema]
-[@@allow_additional_fields]
-```
+By default, additionalProperties are not allowed in objects. To allow additionalProperties, use the `allow_extra_fields` attribute:
 
 ```ocaml
 type company = {
@@ -226,10 +217,10 @@ type company = {
   employees : int;
 }
 [@@deriving jsonschema]
-[@@jsonschema.allow_additional_fields]
+[@@jsonschema.allow_extra_fields]
 ```
 
-Both annotations will generate a schema with `"additionalProperties": true`, allowing for additional fields not defined in the record:
+This annotation will generate a schema with `"additionalProperties": true`, allowing for additional fields not defined in the record:
 
 ```json
 {
@@ -253,7 +244,7 @@ type t = {
 [@@deriving jsonschema]
 ```
 
-### Inline Records in Variants
+#### Inline Records in Variants
 
 You can use the `[@jsonschema.allow_extra_fields]` attribute on a constructor with an inline record to allow additional fields in that record:
 
@@ -306,7 +297,7 @@ This will generate a schema that allows additional fields for the `User` variant
 }
 ```
 
-### References
+#### References
 
 Rather than inlining the definition of a type it is possible to use a [json schema `$ref`](https://json-schema.org/understanding-json-schema/structuring#dollarref) using the `[@ref "name"]` attribute. In such a case, the type definition must be passed to `Ppx_deriving_jsonschema_runtime.json_schema` as a parameter.
 
