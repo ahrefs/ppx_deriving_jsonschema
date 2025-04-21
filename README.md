@@ -205,9 +205,43 @@ type t =
 
 #### Records
 
-Records are converted to `{ "type": "object", "properties": {...}, "required": [...] }`.
+Records are converted to `{ "type": "object", "properties": {...}, "required": [...], "additionalProperties": false }`.
 
 The fields of type `option` are not included in the `required` list.
+
+By default, additional properties are not allowed in objects. To allow additional properties, you can use either of these attribute annotations:
+
+```ocaml
+type person = {
+  name : string;
+  age : int;
+}
+[@@deriving jsonschema]
+[@@allow_additional_fields]
+```
+
+```ocaml
+type company = {
+  name : string;
+  employees : int;
+}
+[@@deriving jsonschema]
+[@@jsonschema.allow_additional_fields]
+```
+
+Both annotations will generate a schema with `"additionalProperties": true`, allowing for additional fields not defined in the record:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer" }
+  },
+  "required": [ "name", "age" ],
+  "additionalProperties": true
+}
+```
 
 When the JSON object keys differ from the ocaml field names, users can specify the corresponding JSON key implicitly using `[@key "field"]`, for example:
 
