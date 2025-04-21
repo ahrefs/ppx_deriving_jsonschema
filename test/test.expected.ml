@@ -2192,23 +2192,8 @@ include
       ]
     }
     |}]]
-type allow_additional_properties = {
-  allow: bool }[@@deriving jsonschema ~allow_additional_properties]
-include
-  struct
-    let allow_additional_properties_jsonschema =
-      `Assoc
-        [("type", (`String "object"));
-        ("properties",
-          (`Assoc [("allow", (`Assoc [("type", (`String "boolean"))]))]));
-        ("required", (`List [`String "allow"]));
-        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
-  end[@@ocaml.doc "@inline"][@@merlin.hide ]
-[%%expect_test
-  let "allow_additional_properties" =
-    print_schema allow_additional_properties_jsonschema; [%expect {||}]]
 type obj2 = {
-  x: int }[@@deriving jsonschema]
+  x: int }[@@deriving jsonschema][@@jsonschema.allow_extra_fields ]
 include
   struct
     let obj2_jsonschema =
@@ -2217,7 +2202,7 @@ include
         ("properties",
           (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
         ("required", (`List [`String "x"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type obj1 = {
   obj2: obj2 }[@@deriving jsonschema]
@@ -2231,7 +2216,7 @@ include
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type nested_obj = {
-  obj1: obj1 }[@@deriving jsonschema]
+  obj1: obj1 }[@@deriving jsonschema][@@allow_extra_fields ]
 include
   struct
     let nested_obj_jsonschema =
@@ -2239,7 +2224,7 @@ include
         [("type", (`String "object"));
         ("properties", (`Assoc [("obj1", obj1_jsonschema)]));
         ("required", (`List [`String "obj1"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "nested_obj" =
@@ -2265,6 +2250,45 @@ include
         }
       },
       "required": [ "obj1" ],
-      "additionalProperties": false
+      "additionalProperties": true
     }
     |}]]
+open Melange_json.Primitives
+type x_without_extra = {
+  x: int }[@@deriving (json, jsonschema)][@@allow_extra_fields ]
+include
+  struct
+    [%%ocaml.error
+      "Ppxlib.Deriving: 'json' is not a supported type deriving generator"]
+    let x_without_extra_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List [`String "x"]));
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type x_with_extra = {
+  x: int ;
+  y: int }[@@deriving (json, jsonschema)][@@allow_extra_fields ]
+include
+  struct
+    [%%ocaml.error
+      "Ppxlib.Deriving: 'json' is not a supported type deriving generator"]
+    let x_with_extra_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("y", (`Assoc [("type", (`String "integer"))]));
+             ("x", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List [`String "y"; `String "x"]));
+        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "extra_fields" =
+    let _check_deseralization_ok =
+      ({ x = 1; y = 1 } |> x_with_extra_to_json) |> x_without_extra_of_json in
+    print_schema x_without_extra_jsonschema;
+    [%expect
+      "\n {\n   \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n   \"type\": \"object\",\n   \"properties\": { \"x\": { \"type\": \"integer\" } },\n   \"required\": [ \"x\" ],\n   \"additionalProperties\": true\n }\n "]]

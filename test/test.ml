@@ -1570,24 +1570,9 @@ let%expect_test "t11" =
     }
     |}]
 
-type allow_additional_properties = { allow : bool } [@@deriving jsonschema ~allow_additional_properties]
-
-let%expect_test "allow_additional_properties" =
-  print_schema allow_additional_properties_jsonschema;
-  [%expect
-    {|
-    {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "object",
-      "properties": { "allow": { "type": "boolean" } },
-      "required": [ "allow" ],
-      "additionalProperties": true
-    }
-    |}]
-
-type obj2 = { x : int } [@@deriving jsonschema]
+type obj2 = { x : int } [@@deriving jsonschema] [@@jsonschema.allow_extra_fields]
 type obj1 = { obj2 : obj2 } [@@deriving jsonschema]
-type nested_obj = { obj1 : obj1 } [@@deriving jsonschema]
+type nested_obj = { obj1 : obj1 } [@@deriving jsonschema] [@@allow_extra_fields]
 
 let%expect_test "nested_obj" =
   print_schema nested_obj_jsonschema;
@@ -1604,7 +1589,7 @@ let%expect_test "nested_obj" =
               "type": "object",
               "properties": { "x": { "type": "integer" } },
               "required": [ "x" ],
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "required": [ "obj2" ],
@@ -1612,6 +1597,29 @@ let%expect_test "nested_obj" =
         }
       },
       "required": [ "obj1" ],
-      "additionalProperties": false
+      "additionalProperties": true
     }
     |}]
+
+open Melange_json.Primitives
+
+type x_without_extra = { x : int } [@@deriving json, jsonschema] [@@allow_extra_fields]
+type x_with_extra = {
+  x : int;
+  y : int;
+}
+[@@deriving json, jsonschema] [@@allow_extra_fields]
+
+let%expect_test "extra_fields" =
+  let _check_deseralization_ok = { x = 1; y = 1 } |> x_with_extra_to_json |> x_without_extra_of_json in
+  print_schema x_without_extra_jsonschema;
+  [%expect
+    "\n\
+    \ {\n\
+    \   \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n\
+    \   \"type\": \"object\",\n\
+    \   \"properties\": { \"x\": { \"type\": \"integer\" } },\n\
+    \   \"required\": [ \"x\" ],\n\
+    \   \"additionalProperties\": true\n\
+    \ }\n\
+    \ "]

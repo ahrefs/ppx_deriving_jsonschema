@@ -9,7 +9,7 @@ type config = {
   polymorphic_variant_tuple : bool;
     (** Preserve the implicit tuple in a polymorphic variant.
         This option breaks compatibility with yojson derivers. *)
-  allow_additional_properties : bool;  (** annotate objects with additioanlProperties:true field *)
+  allow_extra_properties : bool;  (** annotate objects with additioanlProperties:true field *)
 }
 
 let deriver_name = "jsonschema"
@@ -34,18 +34,22 @@ let jsonschema_polymorphic_variant_name =
     Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
+let jsonschema_allow_extra_fields =
+  Attribute.declare "jsonschema.allow_extra_fields" Attribute.Context.type_declaration
+    Ast_pattern.(pstr nil)
+    (fun () -> ())
+
 let attributes =
   [
     Attribute.T jsonschema_key;
     Attribute.T jsonschema_ref;
     Attribute.T jsonschema_variant_name;
     Attribute.T jsonschema_polymorphic_variant_name;
+    Attribute.T jsonschema_allow_extra_fields;
   ]
 
 (* let args () = Deriving.Args.(empty) *)
-let args () =
-  Deriving.Args.(
-    empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "allow_additional_properties")
+let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple")
 
 let deps = []
 
@@ -239,16 +243,21 @@ let object_ ~loc ~config fields =
         "type", `String "object";
         "properties", `Assoc [%e elist ~loc fields];
         "required", `List [%e elist ~loc required];
-        "additionalProperties", `Bool [%e ebool ~loc config.allow_additional_properties];
+        "additionalProperties", `Bool [%e ebool ~loc config.allow_extra_properties];
       ]]
 
-let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple flag_additional_properties =
+let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
+  let has_allow_extra_fields_attr =
+    match ast with
+    | _, [ type_decl ] -> Attribute.get jsonschema_allow_extra_fields type_decl |> Option.is_some
+    | _ -> false
+  in
   let config =
     {
       variant_as_string = flag_variant_as_string;
       polymorphic_variant_tuple = flag_polymorphic_variant_tuple;
-      allow_additional_properties = flag_additional_properties;
+      allow_extra_properties = has_allow_extra_fields_attr;
     }
   in
   match ast with

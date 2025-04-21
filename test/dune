@@ -19,10 +19,10 @@
 (library
  (name test)
  (modules test)
- (libraries yojson)
+ (libraries yojson melange-json)
  (inline_tests)
  (preprocess
-  (pps ppx_deriving_jsonschema ppx_expect)))
+  (pps ppx_deriving_jsonschema ppx_expect melange-json-native.ppx)))
 
 (executable
  (name generate_schemas)
