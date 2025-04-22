@@ -33,12 +33,12 @@ let jsonschema_polymorphic_variant_name =
     Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
-let td_jsonschema_allow_extra_fields =
+let jsonschema_td_allow_extra_fields =
   Attribute.declare "jsonschema.allow_extra_fields" Attribute.Context.type_declaration
     Ast_pattern.(pstr nil)
     (fun () -> ())
 
-let cd_jsonschema_allow_extra_fields =
+let jsonschema_cd_allow_extra_fields =
   Attribute.declare "jsonschema.allow_extra_fields" Attribute.Context.constructor_declaration
     Ast_pattern.(pstr nil)
     (fun () -> ())
@@ -49,8 +49,8 @@ let attributes =
     Attribute.T jsonschema_ref;
     Attribute.T jsonschema_variant_name;
     Attribute.T jsonschema_polymorphic_variant_name;
-    Attribute.T td_jsonschema_allow_extra_fields;
-    Attribute.T cd_jsonschema_allow_extra_fields;
+    Attribute.T jsonschema_td_allow_extra_fields;
+    Attribute.T jsonschema_cd_allow_extra_fields;
   ]
 
 (* let args () = Deriving.Args.(empty) *)
@@ -255,7 +255,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   let allow_extra_fields =
     match ast with
-    | _, [ type_decl ] -> Attribute.get td_jsonschema_allow_extra_fields type_decl |> Option.is_some
+    | _, [ type_decl ] -> Attribute.get jsonschema_td_allow_extra_fields type_decl |> Option.is_some
     | _ -> false
   in
   let config =
@@ -273,7 +273,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
           in
           match pcd_args with
           | Pcstr_record label_declarations ->
-            let allow_extra_fields = Attribute.get cd_jsonschema_allow_extra_fields var |> Option.is_some in
+            let allow_extra_fields = Attribute.get jsonschema_cd_allow_extra_fields var |> Option.is_some in
             let typs = [ object_ ~loc ~config label_declarations allow_extra_fields ] in
             `Tag (name, typs)
           | Pcstr_tuple typs ->
