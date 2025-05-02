@@ -12,8 +12,9 @@
  "Ahrefs <github@ahrefs.com>")
 
 (maintainers
- "Louis Roché <louis.roche@ahrefs.com>"
- "Ahrefs <github@ahrefs.com>")
+  "Louis Roché <louis.roche@ahrefs.com>"
+  "Koonwen Lee <koonwen.lee@ahrefs.com>"
+  "Ahrefs <github@ahrefs.com>")
 
 (license MIT)
 

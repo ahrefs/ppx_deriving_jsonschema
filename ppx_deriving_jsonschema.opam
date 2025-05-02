@@ -4,7 +4,9 @@ synopsis: "Jsonschema generator for ppx_deriving"
 description:
   "ppx_deriving_jsonschema is a ppx rewriter that generates jsonschema from ocaml types"
 maintainer: [
-  "Louis Roché <louis.roche@ahrefs.com>" "Ahrefs <github@ahrefs.com>"
+  "Louis Roché <louis.roche@ahrefs.com>"
+  "Koonwen Lee <koonwen.lee@ahrefs.com>"
+  "Ahrefs <github@ahrefs.com>"
 ]
 authors: [
   "Louis Roché <louis.roche@ahrefs.com>" "Ahrefs <github@ahrefs.com>"

@@ -1,3 +1,7 @@
+# 0.0.4
+
+- add [@@json.allow\_extra\_fields] attribute
+
 # 0.0.3
 
 - make the default format compatible with the deriving ppxes
