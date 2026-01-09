@@ -609,8 +609,7 @@ let%expect_test "non_recursive" =
 
 (* Mutually recursive types *)
 type foo = { bar : bar option }
-and bar = { foo : foo option }
-[@@deriving jsonschema]
+and bar = { foo : foo option } [@@deriving jsonschema]
 
 let%expect_test "mutually_recursive_foo" =
   print_schema foo_jsonschema;
@@ -654,7 +653,11 @@ type expr =
 
 and stmt =
   | ExprStmt of expr
-  | IfStmt of { cond : expr; then_ : stmt; else_ : stmt option }
+  | IfStmt of {
+      cond : expr;
+      then_ : stmt;
+      else_ : stmt option;
+    }
 [@@deriving jsonschema]
 
 let%expect_test "mutually_recursive_expr" =
@@ -735,8 +738,7 @@ let%expect_test "mutually_recursive_expr" =
 
 (* Non-recursive mutually defined types should NOT get $defs wrapper *)
 type alpha = { x : int }
-and beta = { y : string }
-[@@deriving jsonschema]
+and beta = { y : string } [@@deriving jsonschema]
 
 let%expect_test "non_recursive_mutual_alpha" =
   print_schema alpha_jsonschema;
@@ -765,9 +767,18 @@ let%expect_test "non_recursive_mutual_beta" =
     |}]
 
 (* Three mutually recursive types *)
-type node_a = { b : node_b option; c : node_c option }
-and node_b = { a : node_a option; c : node_c option }
-and node_c = { a : node_a option; b : node_b option }
+type node_a = {
+  b : node_b option;
+  c : node_c option;
+}
+and node_b = {
+  a : node_a option;
+  c : node_c option;
+}
+and node_c = {
+  a : node_a option;
+  b : node_b option;
+}
 [@@deriving jsonschema]
 
 let%expect_test "three_way_mutual_recursion" =
