@@ -307,6 +307,7 @@ let derive_single_type ~loc ~config ~recursive_types type_decl =
         ([], false) variants
     in
     let variants = List.rev variants in
+    (* todo: raise an error if encoding is as string and constructor has a payload *)
     let schema =
       match config.variant_as_string with
       | true -> variant_as_string ~loc variants
