@@ -1,5 +1,5 @@
 [@@@ocaml.warning "-37-69"]
-let print_schema ?definitions  ?id  ?title  ?description  s =
+let print_schema ?definitions ?id ?title ?description s =
   let s =
     Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title
       ?description s in
@@ -702,6 +702,245 @@ include
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
         "comment", "kind_f", "date"
       ],
+      "additionalProperties": false
+    }
+    |}]]
+type recursive_record = {
+  a: int ;
+  b: recursive_record list }[@@deriving jsonschema]
+include
+  struct
+    let recursive_record_jsonschema =
+      `Assoc
+        [("$defs",
+           (`Assoc
+              [("recursive_record",
+                 (`Assoc
+                    [("type", (`String "object"));
+                    ("properties",
+                      (`Assoc
+                         [("b",
+                            (`Assoc
+                               [("type", (`String "array"));
+                               ("items",
+                                 (`Assoc
+                                    [("$ref",
+                                       (`String "#/$defs/recursive_record"))]))]));
+                         ("a", (`Assoc [("type", (`String "integer"))]))]));
+                    ("required", (`List [`String "b"; `String "a"]));
+                    ("additionalProperties", (`Bool false))]))]));
+        ("$ref", (`String "#/$defs/recursive_record"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "recursive_record" =
+    print_schema recursive_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_record": {
+          "type": "object",
+          "properties": {
+            "b": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/recursive_record" }
+            },
+            "a": { "type": "integer" }
+          },
+          "required": [ "b", "a" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/recursive_record"
+    }
+    |}]]
+type recursive_variant =
+  | A of recursive_variant 
+  | B [@@deriving jsonschema]
+include
+  struct
+    let recursive_variant_jsonschema =
+      `Assoc
+        [("$defs",
+           (`Assoc
+              [("recursive_variant",
+                 (`Assoc
+                    [("anyOf",
+                       (`List
+                          [`Assoc
+                             [("type", (`String "array"));
+                             ("prefixItems",
+                               (`List
+                                  [`Assoc [("const", (`String "A"))];
+                                  `Assoc
+                                    [("$ref",
+                                       (`String "#/$defs/recursive_variant"))]]));
+                             ("unevaluatedItems", (`Bool false));
+                             ("minItems", (`Int 2));
+                             ("maxItems", (`Int 2))];
+                          `Assoc
+                            [("type", (`String "array"));
+                            ("prefixItems",
+                              (`List [`Assoc [("const", (`String "B"))]]));
+                            ("unevaluatedItems", (`Bool false));
+                            ("minItems", (`Int 1));
+                            ("maxItems", (`Int 1))]]))]))]));
+        ("$ref", (`String "#/$defs/recursive_variant"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "recursive_variant" =
+    print_schema recursive_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_variant": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "A" }, { "$ref": "#/$defs/recursive_variant" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/recursive_variant"
+    }
+    |}]]
+type tree =
+  | Leaf 
+  | Node of {
+  value: int ;
+  left: tree ;
+  right: tree } [@@deriving jsonschema]
+include
+  struct
+    let tree_jsonschema =
+      `Assoc
+        [("$defs",
+           (`Assoc
+              [("tree",
+                 (`Assoc
+                    [("anyOf",
+                       (`List
+                          [`Assoc
+                             [("type", (`String "array"));
+                             ("prefixItems",
+                               (`List [`Assoc [("const", (`String "Leaf"))]]));
+                             ("unevaluatedItems", (`Bool false));
+                             ("minItems", (`Int 1));
+                             ("maxItems", (`Int 1))];
+                          `Assoc
+                            [("type", (`String "array"));
+                            ("prefixItems",
+                              (`List
+                                 [`Assoc [("const", (`String "Node"))];
+                                 `Assoc
+                                   [("type", (`String "object"));
+                                   ("properties",
+                                     (`Assoc
+                                        [("right",
+                                           (`Assoc
+                                              [("$ref",
+                                                 (`String "#/$defs/tree"))]));
+                                        ("left",
+                                          (`Assoc
+                                             [("$ref",
+                                                (`String "#/$defs/tree"))]));
+                                        ("value",
+                                          (`Assoc
+                                             [("type", (`String "integer"))]))]));
+                                   ("required",
+                                     (`List
+                                        [`String "right";
+                                        `String "left";
+                                        `String "value"]));
+                                   ("additionalProperties", (`Bool false))]]));
+                            ("unevaluatedItems", (`Bool false));
+                            ("minItems", (`Int 2));
+                            ("maxItems", (`Int 2))]]))]))]));
+        ("$ref", (`String "#/$defs/tree"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "tree" =
+    print_schema tree_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Node" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "right": { "$ref": "#/$defs/tree" },
+                    "left": { "$ref": "#/$defs/tree" },
+                    "value": { "type": "integer" }
+                  },
+                  "required": [ "right", "left", "value" ],
+                  "additionalProperties": false
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/tree"
+    }
+    |}]]
+type non_recursive = {
+  x: int ;
+  y: string }[@@deriving jsonschema]
+include
+  struct
+    let non_recursive_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("y", (`Assoc [("type", (`String "string"))]));
+             ("x", (`Assoc [("type", (`String "integer"))]))]));
+        ("required", (`List [`String "y"; `String "x"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "non_recursive" =
+    print_schema non_recursive_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "y": { "type": "string" }, "x": { "type": "integer" } },
+      "required": [ "y", "x" ],
       "additionalProperties": false
     }
     |}]]
