@@ -122,6 +122,16 @@ module Schema = struct
           "$defs", `Assoc [ [%e estring ~loc type_name], [%e schema] ];
           "$ref", `String [%e estring ~loc ("#/$defs/" ^ type_name)];
         ]]
+
+  (* For mutually recursive types: multiple definitions, ref to first type *)
+  let with_multi_defs ~loc ~primary_type defs =
+    let defs_expr = elist ~loc (List.map (fun (name, schema) -> [%expr [%e estring ~loc name], [%e schema]]) defs) in
+    [%expr
+      `Assoc
+        [
+          "$defs", `Assoc [%e defs_expr];
+          "$ref", `String [%e estring ~loc ("#/$defs/" ^ primary_type)];
+        ]]
 end
 
 let variant_as_string ~loc constrs =
@@ -161,8 +171,9 @@ let is_optional_type core_type =
   | [%type: [%t? _] option] -> true
   | _ -> false
 
-(* Returns (schema_expression, is_recursive) *)
-let rec type_of_core ~config ?current_type core_type =
+(* Returns (schema_expression, is_recursive)
+   recursive_types: list of type names in a mutually recursive group *)
+let rec type_of_core ~config ?(recursive_types = []) core_type =
   let loc = core_type.ptyp_loc in
   match core_type with
   | [%type: int] | [%type: int32] | [%type: int64] | [%type: nativeint] -> (Schema.type_def ~loc "integer", false)
@@ -171,24 +182,24 @@ let rec type_of_core ~config ?current_type core_type =
   | [%type: bool] -> (Schema.type_def ~loc "boolean", false)
   | [%type: char] -> (Schema.char ~loc, false)
   | [%type: unit] -> (Schema.null ~loc, false)
-  | [%type: [%t? t] option] -> type_of_core ~config ?current_type t
-  | [%type: [%t? t] ref] -> type_of_core ~config ?current_type t
+  | [%type: [%t? t] option] -> type_of_core ~config ~recursive_types t
+  | [%type: [%t? t] ref] -> type_of_core ~config ~recursive_types t
   | [%type: [%t? t] list] | [%type: [%t? t] array] ->
-    let (t, is_rec) = type_of_core ~config ?current_type t in
+    let (t, is_rec) = type_of_core ~config ~recursive_types t in
     (Schema.array_ ~loc t, is_rec)
   | _ ->
   match core_type.ptyp_desc with
   | Ptyp_constr (id, []) ->
-    (* Check if this is a self-reference (recursive type) *)
-    (match current_type, id.txt with
-    | Some current, Lident name when current = name ->
+    (* Check if this references a type in the recursive group *)
+    (match id.txt with
+    | Lident name when List.mem name recursive_types ->
       (* This is a recursive reference - use $ref *)
       (Schema.type_ref ~loc name, true)
     | _ ->
       (* Not recursive - inline as before *)
       (type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") [], false))
   | Ptyp_tuple types ->
-    let results = List.map (type_of_core ~config ?current_type) types in
+    let results = List.map (type_of_core ~config ~recursive_types) types in
     let ts = List.map fst results in
     let is_rec = List.exists snd results in
     (Schema.tuple ~loc ts, is_rec)
@@ -218,14 +229,14 @@ let rec type_of_core ~config ?current_type core_type =
               | Ptyp_tuple tps -> tps
               | _ -> [ typ ]
             in
-            let results = List.map (type_of_core ~config ?current_type) raw_typs in
+            let results = List.map (type_of_core ~config ~recursive_types) raw_typs in
             let typs = List.map fst results in
             let typs_rec = List.exists snd results in
             (`Tag (name, typs) :: constrs, is_rec || typs_rec)
           | Rtag (_, true, [ _ ]) | Rtag (_, _, _ :: _ :: _) ->
             Location.raise_errorf ~loc "ppx_deriving_jsonschema: polymorphic_variant/Rtag/&"
           | Rinherit core_type ->
-            let (typ, typ_rec) = type_of_core ~config ?current_type core_type in
+            let (typ, typ_rec) = type_of_core ~config ~recursive_types core_type in
             (`Inherit typ :: constrs, is_rec || typ_rec)
           (* impossible?*)
           | Rtag (_, false, []) -> assert false)
@@ -244,7 +255,7 @@ let rec type_of_core ~config ?current_type core_type =
     ([%expr [%ocaml.error [%e estring ~loc msg]]], false)
 
 (* Returns (schema_expression, is_recursive) *)
-let object_ ~loc ~config ?current_type fields allow_extra_fields =
+let object_ ~loc ~config ?(recursive_types = []) fields allow_extra_fields =
   let (fields, required, is_rec) =
     List.fold_left
       (fun (fields, required, is_rec) ({ pld_name; pld_type; pld_loc = _loc; _ } as field) ->
@@ -256,7 +267,7 @@ let object_ ~loc ~config ?current_type fields allow_extra_fields =
         let (type_def, field_rec) =
           match Attribute.get jsonschema_ref field with
           | Some def -> (Schema.type_ref ~loc def.txt, false)
-          | None -> type_of_core ~config ?current_type pld_type
+          | None -> type_of_core ~config ~recursive_types pld_type
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           (if is_optional_type pld_type then required else { txt = name; loc } :: required),
@@ -273,22 +284,12 @@ let object_ ~loc ~config ?current_type fields allow_extra_fields =
         "additionalProperties", `Bool [%e ebool ~loc allow_extra_fields];
       ]], is_rec)
 
-let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
-  let loc = Expansion_context.Deriver.derived_item_loc ctxt in
-  let allow_extra_fields =
-    match ast with
-    | _, [ type_decl ] -> Attribute.get jsonschema_td_allow_extra_fields type_decl |> Option.is_some
-    | _ -> false
-  in
-  let config =
-    { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
-  in
-  (* Helper to wrap schema with $defs if recursive references were found *)
-  let maybe_wrap_recursive ~type_name schema is_recursive =
-    if is_recursive then Schema.with_defs ~loc type_name schema else schema
-  in
-  match ast with
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
+(* Generate schema for a single type declaration, given the recursive type group *)
+let derive_single_type ~loc ~config ~recursive_types type_decl =
+  let type_name = type_decl.ptype_name.txt in
+  let allow_extra_fields = Attribute.get jsonschema_td_allow_extra_fields type_decl |> Option.is_some in
+  match type_decl.ptype_kind with
+  | Ptype_variant variants ->
     let (variants, is_rec) =
       List.fold_left
         (fun (variants, is_rec) ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
@@ -300,37 +301,78 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
           match pcd_args with
           | Pcstr_record label_declarations ->
             let allow_extra_fields = Attribute.get jsonschema_cd_allow_extra_fields var |> Option.is_some in
-            let (obj_schema, obj_rec) = object_ ~loc ~config ~current_type:type_name label_declarations allow_extra_fields in
+            let (obj_schema, obj_rec) = object_ ~loc ~config ~recursive_types label_declarations allow_extra_fields in
             (`Tag (name, [ obj_schema ]) :: variants, is_rec || obj_rec)
           | Pcstr_tuple typs ->
-            let results = List.map (type_of_core ~config ~current_type:type_name) typs in
+            let results = List.map (type_of_core ~config ~recursive_types) typs in
             let types = List.map fst results in
             let typs_rec = List.exists snd results in
             (`Tag (name, types) :: variants, is_rec || typs_rec))
         ([], false) variants
     in
     let variants = List.rev variants in
-    let v =
-      (* todo: raise an error if encoding is as string and constructor has a payload *)
+    let schema =
       match config.variant_as_string with
       | true -> variant_as_string ~loc variants
       | false -> variant_as_array ~loc variants
     in
-    let v = maybe_wrap_recursive ~type_name v is_rec in
-    let jsonschema_expr = create_value ~loc type_name v in
-    [ jsonschema_expr ]
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
-    let (schema, is_rec) = object_ ~loc ~config ~current_type:type_name label_declarations allow_extra_fields in
-    let schema = maybe_wrap_recursive ~type_name schema is_rec in
-    let jsonschema_expr = create_value ~loc type_name schema in
-    [ jsonschema_expr ]
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
-    let (schema, is_rec) = type_of_core ~config ~current_type:type_name core_type in
-    let schema = maybe_wrap_recursive ~type_name schema is_rec in
-    let jsonschema_expr = create_value ~loc type_name schema in
-    [ jsonschema_expr ]
-  | _, _ast ->
-    (* Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast; *)
+    (type_name, schema, is_rec)
+  | Ptype_record label_declarations ->
+    let (schema, is_rec) = object_ ~loc ~config ~recursive_types label_declarations allow_extra_fields in
+    (type_name, schema, is_rec)
+  | Ptype_abstract ->
+    (match type_decl.ptype_manifest with
+    | Some core_type ->
+      let (schema, is_rec) = type_of_core ~config ~recursive_types core_type in
+      (type_name, schema, is_rec)
+    | None ->
+      let msg = "ppx_deriving_jsonschema: abstract type without manifest" in
+      (type_name, [%expr [%ocaml.error [%e estring ~loc msg]]], false))
+  | Ptype_open ->
+    let msg = "ppx_deriving_jsonschema: open types not supported" in
+    (type_name, [%expr [%ocaml.error [%e estring ~loc msg]]], false)
+
+let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
+  let loc = Expansion_context.Deriver.derived_item_loc ctxt in
+  let config =
+    { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
+  in
+  match ast with
+  (* Single type declaration *)
+  | _, [ type_decl ] ->
+    let type_name = type_decl.ptype_name.txt in
+    let recursive_types = [ type_name ] in
+    let (_, schema, is_rec) = derive_single_type ~loc ~config ~recursive_types type_decl in
+    let schema =
+      if is_rec then Schema.with_defs ~loc type_name schema else schema
+    in
+    [ create_value ~loc type_name schema ]
+  (* Multiple type declarations (mutually recursive types) *)
+  | _, type_decls when List.length type_decls > 1 ->
+    (* Collect all type names in the recursive group *)
+    let recursive_types = List.map (fun td -> td.ptype_name.txt) type_decls in
+    let primary_type = List.hd recursive_types in
+    (* Generate schemas for all types *)
+    let results = List.map (derive_single_type ~loc ~config ~recursive_types) type_decls in
+    let any_recursive = List.exists (fun (_, _, is_rec) -> is_rec) results in
+    if any_recursive then
+      (* Generate a single value with $defs containing all types, $ref to first *)
+      let defs = List.map (fun (name, schema, _) -> (name, schema)) results in
+      let combined_schema = Schema.with_multi_defs ~loc ~primary_type defs in
+      let primary_value = create_value ~loc primary_type combined_schema in
+      (* Generate individual values that reference into $defs for other types *)
+      let other_values =
+        List.filter_map
+          (fun (name, _, _) ->
+            if name = primary_type then None
+            else Some (create_value ~loc name (Schema.type_ref ~loc name)))
+          results
+      in
+      primary_value :: other_values
+    else
+      (* No recursion detected - generate independent schemas *)
+      List.map (fun (name, schema, _) -> create_value ~loc name schema) results
+  | _, _ ->
     [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema

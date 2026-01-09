@@ -1,3 +1,8 @@
+# 0.0.5
+
+- add support for recursive types (self-referential)
+- add support for mutually recursive types (defined with `and`)
+
 # 0.0.4
 
 - add [@@json.allow\_extra\_fields] attribute

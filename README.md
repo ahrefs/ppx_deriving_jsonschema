@@ -354,3 +354,152 @@ Would produce the following schema:
   ]
 }
 ```
+
+#### Recursive Types
+
+Recursive types are automatically detected and handled using JSON Schema's `$defs` and `$ref` mechanism.
+
+##### Self-referential types
+
+```ocaml
+type tree =
+  | Leaf
+  | Node of { value : int; left : tree; right : tree }
+[@@deriving jsonschema]
+```
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "tree": {
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Leaf" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Node" },
+            {
+              "type": "object",
+              "properties": {
+                "right": { "$ref": "#/$defs/tree" },
+                "left": { "$ref": "#/$defs/tree" },
+                "value": { "type": "integer" }
+              },
+              "required": [ "right", "left", "value" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+  },
+  "$ref": "#/$defs/tree"
+}
+```
+
+##### Mutually recursive types
+
+Mutually recursive types (defined with `and`) are also supported:
+
+```ocaml
+type expr =
+  | Literal of int
+  | Binary of expr * expr
+  | Block of stmt list
+
+and stmt =
+  | ExprStmt of expr
+  | IfStmt of { cond : expr; then_ : stmt; else_ : stmt option }
+[@@deriving jsonschema]
+```
+
+This generates `expr_jsonschema` containing all definitions in `$defs`:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "expr": {
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Literal" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Binary" },
+            { "$ref": "#/$defs/expr" },
+            { "$ref": "#/$defs/expr" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Block" },
+            { "type": "array", "items": { "$ref": "#/$defs/stmt" } }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "stmt": {
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "ExprStmt" }, { "$ref": "#/$defs/expr" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "IfStmt" },
+            {
+              "type": "object",
+              "properties": {
+                "else_": { "$ref": "#/$defs/stmt" },
+                "then_": { "$ref": "#/$defs/stmt" },
+                "cond": { "$ref": "#/$defs/expr" }
+              },
+              "required": [ "then_", "cond" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+  },
+  "$ref": "#/$defs/expr"
+}
+```
+
+The secondary type `stmt_jsonschema` contains a simple reference:
+
+```json
+{ "$ref": "#/$defs/stmt" }
+```
