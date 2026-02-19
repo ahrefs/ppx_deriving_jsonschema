@@ -33,6 +33,7 @@
   dune
   (ppxlib
    (>= "0.24.0"))
+  melange
   (melange-json :with-test)
   (melange-json-native :with-test)
   (yojson :with-test)
