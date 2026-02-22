@@ -468,20 +468,450 @@ let%expect_test "event" =
     }
     |}]
 
-(* type recursive_record = {
-     a : int;
-     b : recursive_record list;
-   }
-   [@@deriving jsonschema]
+type recursive_record = {
+  a : int;
+  b : recursive_record list;
+}
+[@@deriving jsonschema]
 
-   let () = print_schema recursive_record_jsonschema
+let%expect_test "recursive_record" =
+  print_schema recursive_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_record": {
+          "type": "object",
+          "properties": {
+            "b": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/recursive_record" }
+            },
+            "a": { "type": "integer" }
+          },
+          "required": [ "b", "a" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/recursive_record"
+    }
+    |}]
 
-   type recursive_variant =
-     | A of recursive_variant
-     | B
-   [@@deriving jsonschema]
+type recursive_variant =
+  | A of recursive_variant
+  | B
+[@@deriving jsonschema]
 
-   let () = print_schema recursive_variant_jsonschema *)
+let%expect_test "recursive_variant" =
+  print_schema recursive_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_variant": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "A" }, { "$ref": "#/$defs/recursive_variant" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/recursive_variant"
+    }
+    |}]
+
+(* Test for tree-like recursive structure *)
+type tree =
+  | Leaf
+  | Node of {
+      value : int;
+      left : tree;
+      right : tree;
+    }
+[@@deriving jsonschema]
+
+let%expect_test "tree" =
+  print_schema tree_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Node" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "right": { "$ref": "#/$defs/tree" },
+                    "left": { "$ref": "#/$defs/tree" },
+                    "value": { "type": "integer" }
+                  },
+                  "required": [ "right", "left", "value" ],
+                  "additionalProperties": false
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/tree"
+    }
+    |}]
+
+(* Non-recursive types should NOT have $defs wrapper *)
+type non_recursive = {
+  x : int;
+  y : string;
+}
+[@@deriving jsonschema]
+
+let%expect_test "non_recursive" =
+  print_schema non_recursive_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "y": { "type": "string" }, "x": { "type": "integer" } },
+      "required": [ "y", "x" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Mutually recursive types *)
+type foo = { bar : bar option }
+and bar = { foo : foo option } [@@deriving jsonschema]
+
+let%expect_test "mutually_recursive_foo" =
+  print_schema foo_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "foo": {
+          "type": "object",
+          "properties": { "bar": { "$ref": "#/$defs/bar" } },
+          "required": [],
+          "additionalProperties": false
+        },
+        "bar": {
+          "type": "object",
+          "properties": { "foo": { "$ref": "#/$defs/foo" } },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/foo"
+    }
+    |}]
+
+let%expect_test "mutually_recursive_bar" =
+  print_schema bar_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/bar"
+    }
+    |}]
+
+(* More complex mutually recursive: expression/statement pattern *)
+type expr =
+  | Literal of int
+  | Binary of expr * expr
+  | Block of stmt list
+
+and stmt =
+  | ExprStmt of expr
+  | IfStmt of {
+      cond : expr;
+      then_ : stmt;
+      else_ : stmt option;
+    }
+[@@deriving jsonschema]
+
+let%expect_test "mutually_recursive_expr" =
+  print_schema expr_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Literal" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Binary" },
+                { "$ref": "#/$defs/expr" },
+                { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Block" },
+                { "type": "array", "items": { "$ref": "#/$defs/stmt" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "stmt": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "ExprStmt" }, { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "IfStmt" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "else_": { "$ref": "#/$defs/stmt" },
+                    "then_": { "$ref": "#/$defs/stmt" },
+                    "cond": { "$ref": "#/$defs/expr" }
+                  },
+                  "required": [ "then_", "cond" ],
+                  "additionalProperties": false
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/expr"
+    }
+    |}]
+
+(* Non-recursive mutually defined types should NOT get $defs wrapper *)
+type alpha = { x : int }
+and beta = { y : string } [@@deriving jsonschema]
+
+let%expect_test "non_recursive_mutual_alpha" =
+  print_schema alpha_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "x": { "type": "integer" } },
+      "required": [ "x" ],
+      "additionalProperties": false
+    }
+    |}]
+
+let%expect_test "non_recursive_mutual_beta" =
+  print_schema beta_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "y": { "type": "string" } },
+      "required": [ "y" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Three mutually recursive types *)
+type node_a = {
+  b : node_b option;
+  c : node_c option;
+}
+and node_b = {
+  a : node_a option;
+  c : node_c option;
+}
+and node_c = {
+  a : node_a option;
+  b : node_b option;
+}
+[@@deriving jsonschema]
+
+let%expect_test "three_way_mutual_recursion" =
+  print_schema node_a_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "node_a": {
+          "type": "object",
+          "properties": {
+            "c": { "$ref": "#/$defs/node_c" },
+            "b": { "$ref": "#/$defs/node_b" }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "node_b": {
+          "type": "object",
+          "properties": {
+            "c": { "$ref": "#/$defs/node_c" },
+            "a": { "$ref": "#/$defs/node_a" }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "node_c": {
+          "type": "object",
+          "properties": {
+            "b": { "$ref": "#/$defs/node_b" },
+            "a": { "$ref": "#/$defs/node_a" }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/node_a"
+    }
+    |}]
+
+(* Recursive type through tuple *)
+type recursive_tuple =
+  | Leaf of int
+  | Branch of (recursive_tuple * recursive_tuple)
+[@@deriving jsonschema]
+
+let%expect_test "recursive_tuple" =
+  print_schema recursive_tuple_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_tuple": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Branch" },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    { "$ref": "#/$defs/recursive_tuple" },
+                    { "$ref": "#/$defs/recursive_tuple" }
+                  ],
+                  "unevaluatedItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/recursive_tuple"
+    }
+    |}]
+
+(* Recursive abstract type alias *)
+type int_tree = tree [@@deriving jsonschema]
+
+let%expect_test "recursive_abstract_alias" =
+  print_schema int_tree_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Node" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "right": { "$ref": "#/$defs/tree" },
+                    "left": { "$ref": "#/$defs/tree" },
+                    "value": { "type": "integer" }
+                  },
+                  "required": [ "right", "left", "value" ],
+                  "additionalProperties": false
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/tree"
+    }
+    |}]
 
 type events = event list [@@deriving jsonschema]
 
