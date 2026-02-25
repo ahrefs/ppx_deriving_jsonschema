@@ -543,7 +543,8 @@ type expr =
 
 let%expect_test "expr (lambda calculus AST)" =
   print_schema expr_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -597,7 +598,8 @@ and mini_expr =
 
 let%expect_test "mutually recursive stmt/mini_expr" =
   print_schema stmt_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -657,7 +659,8 @@ let%expect_test "mutually recursive stmt/mini_expr" =
       "$ref": "#/$defs/stmt"
     } |}];
   print_schema mini_expr_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -726,7 +729,8 @@ type tree = {
 
 let%expect_test "recursive record with option" =
   print_schema tree_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -757,7 +761,8 @@ and edge = {
 
 let%expect_test "mutually recursive records" =
   print_schema node_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -783,7 +788,8 @@ let%expect_test "mutually recursive records" =
       "$ref": "#/$defs/node"
     } |}];
   print_schema edge_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -822,7 +828,8 @@ and shape = {
 
 let%expect_test "type and without mutual references" =
   print_schema color_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -864,7 +871,8 @@ let%expect_test "type and without mutual references" =
       "$ref": "#/$defs/color"
     } |}];
   print_schema shape_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {

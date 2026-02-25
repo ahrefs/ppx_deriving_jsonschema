@@ -13,10 +13,12 @@ let json_schema ?id ?title ?description ?definitions types =
     let defs = List.concat embedded @ Option.value ~default:[] definitions in
     let opt k v = Option.to_list (Option.map (fun v -> k, `String v) v) in
     let metadata =
-      ("$schema", `String schema_version)
-      :: opt "$id" id
+      (("$schema", `String schema_version) :: opt "$id" id)
       @ opt "title" title
       @ opt "description" description
-      @ (match defs with [] -> [] | defs -> [ "$defs", `Assoc defs ])
+      @
+      match defs with
+      | [] -> []
+      | defs -> [ "$defs", `Assoc defs ]
     in
     `Assoc (metadata @ types)
