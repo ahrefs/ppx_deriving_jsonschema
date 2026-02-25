@@ -61,6 +61,23 @@ let deps = []
 let predefined_types = [ "string"; "int"; "float"; "bool" ]
 let is_predefined_type type_name = List.mem type_name predefined_types
 
+let is_self_recursive type_name td =
+  let exception Found in
+  let self_ref = Ast_pattern.(ptyp_constr (lident (string type_name)) drop) in
+  let iter =
+    object
+      inherit Ast_traverse.iter as super
+
+      method! core_type ct =
+        match Ast_pattern.parse_res self_ref ct.ptyp_loc ct () with
+        | Ok () -> raise Found
+        | Error _ -> super#core_type ct
+    end
+  in
+  match iter#type_declaration td with
+  | () -> false
+  | exception Found -> true
+
 module Schema = struct
   let const ~loc value = [%expr `Assoc [ "const", `String [%e estring ~loc value] ]]
 
@@ -146,7 +163,28 @@ let variant ~loc ~config constrs =
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
 
 let create_value ~loc name value =
-  [%stri let[@warning "-32-39"] (* rec *) [%p value_name_pattern ~loc name (* : [< `Assoc of _ list ] *)] = [%e value]]
+  [%stri let[@warning "-32"] [%p value_name_pattern ~loc name] = [%e value]]
+
+let create_values_recursive ~loc items =
+  let defs_pat = [%pat? __jsonschema_defs] in
+  let defs_id = [%expr __jsonschema_defs] in
+  let defs_body =
+    let entries = List.map (fun (n, v) -> [%expr [%e estring ~loc n], [%e v]]) items in
+    List.fold_right
+      (fun (n, _) acc ->
+        [%expr
+          let [%p value_name_pattern ~loc n] = [%e Schema.type_ref ~loc n] in
+          [%e acc]])
+      items
+      [%expr `Assoc [%e elist ~loc entries]]
+  in
+  [%stri let[@warning "-32-26"] [%p defs_pat] = [%e defs_body]]
+  :: List.map
+       (fun (target_name, _) ->
+         [%stri
+           let[@warning "-32"] [%p value_name_pattern ~loc target_name] =
+             `Assoc [ "$defs", [%e defs_id]; "$ref", `String [%e estring ~loc ("#/$defs/" ^ target_name)] ]])
+       items
 
 let is_optional_type core_type =
   match core_type with
@@ -253,51 +291,55 @@ let object_ ~loc ~config fields allow_extra_fields =
 
 let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
-  let allow_extra_fields =
-    match ast with
-    | _, [ type_decl ] -> Attribute.get jsonschema_td_allow_extra_fields type_decl |> Option.is_some
-    | _ -> false
-  in
   let config =
     { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
   in
-  match ast with
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
-    let variants =
-      List.map
-        (fun ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
-          let name =
-            match Attribute.get jsonschema_variant_name var with
-            | Some name -> name.txt
-            | None -> name
-          in
-          match pcd_args with
-          | Pcstr_record label_declarations ->
-            let allow_extra_fields = Attribute.get jsonschema_cd_allow_extra_fields var |> Option.is_some in
-            let typs = [ object_ ~loc ~config label_declarations allow_extra_fields ] in
-            `Tag (name, typs)
-          | Pcstr_tuple typs ->
-            let types = List.map (type_of_core ~config) typs in
-            `Tag (name, types))
-        variants
+  let _, tds = ast in
+  let schema_of_td td =
+    let type_name = td.ptype_name.txt in
+    let allow_extra_fields = Option.is_some @@ Attribute.get jsonschema_td_allow_extra_fields td in
+    let value =
+      match td.ptype_kind, td.ptype_manifest with
+      | Ptype_variant variants, _ ->
+        let variants =
+          List.map
+            (fun ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
+              let name =
+                match Attribute.get jsonschema_variant_name var with
+                | Some name -> name.txt
+                | None -> name
+              in
+              match pcd_args with
+              | Pcstr_record label_declarations ->
+                let allow_extra_fields = Attribute.get jsonschema_cd_allow_extra_fields var |> Option.is_some in
+                let typs = [ object_ ~loc ~config label_declarations allow_extra_fields ] in
+                `Tag (name, typs)
+              | Pcstr_tuple typs ->
+                let types = List.map (type_of_core ~config) typs in
+                `Tag (name, types))
+            variants
+        in
+        let v =
+          match config.variant_as_string with
+          | true -> variant_as_string ~loc variants
+          | false -> variant_as_array ~loc variants
+        in
+        Ok v
+      | Ptype_record label_declarations, _ ->
+        Ok (object_ ~loc ~config label_declarations allow_extra_fields)
+      | Ptype_abstract, Some core_type -> Ok (type_of_core ~config core_type)
+      | _ -> Error ()
     in
-    let v =
-      (* todo: raise an error if encoding is as string and constructor has a payload *)
-      match config.variant_as_string with
-      | true -> variant_as_string ~loc variants
-      | false -> variant_as_array ~loc variants
-    in
-    let jsonschema_expr = create_value ~loc type_name v in
-    [ jsonschema_expr ]
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations allow_extra_fields) in
-    [ jsonschema_expr ]
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (type_of_core ~config core_type) in
-    [ jsonschema_expr ]
-  | _, _ast ->
-    (* Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast; *)
+    (type_name, td, value)
+  in
+  let items = List.map schema_of_td tds in
+  if List.exists (fun (_, _, v) -> Result.is_error v) items then
     [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
+  else
+    let items = List.map (fun (n, td, v) -> (n, td, Result.get_ok v)) items in
+    match items with
+    | [ (name, td, value) ] when not (is_self_recursive name td) -> [ create_value ~loc name value ]
+    | _ -> create_values_recursive ~loc (List.map (fun (n, _, v) -> (n, v)) items)
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 (* let generator () = Deriving.Generator.V2.make_noarg derive_jsonschema *)

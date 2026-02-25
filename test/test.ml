@@ -468,20 +468,443 @@ let%expect_test "event" =
     }
     |}]
 
-(* type recursive_record = {
-     a : int;
-     b : recursive_record list;
-   }
-   [@@deriving jsonschema]
+type recursive_record = {
+  a : int;
+  b : recursive_record list;
+}
+[@@deriving jsonschema]
 
-   let () = print_schema recursive_record_jsonschema
+let%expect_test "recursive_record" =
+  print_schema recursive_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_record": {
+          "type": "object",
+          "properties": {
+            "b": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/recursive_record" }
+            },
+            "a": { "type": "integer" }
+          },
+          "required": [ "b", "a" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/recursive_record"
+    }
+    |}]
 
-   type recursive_variant =
-     | A of recursive_variant
-     | B
-   [@@deriving jsonschema]
+type recursive_variant =
+  | A of recursive_variant
+  | B
+[@@deriving jsonschema]
 
-   let () = print_schema recursive_variant_jsonschema *)
+let%expect_test "recursive_variant" =
+  print_schema recursive_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_variant": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "A" }, { "$ref": "#/$defs/recursive_variant" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/recursive_variant"
+    }
+    |}]
+
+type expr =
+  | Var of string
+  | Lam of string * expr
+  | App of expr * expr
+[@@deriving jsonschema]
+
+let%expect_test "expr (lambda calculus AST)" =
+  print_schema expr_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Var" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Lam" },
+                { "type": "string" },
+                { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "App" },
+                { "$ref": "#/$defs/expr" },
+                { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/expr"
+    }
+    |}]
+
+type stmt =
+  | Expr of mini_expr
+  | Let of string * mini_expr
+
+and mini_expr =
+  | Lit of int
+  | Var of string
+  | Block of stmt list
+[@@deriving jsonschema]
+
+let%expect_test "mutually recursive stmt/mini_expr" =
+  print_schema stmt_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "stmt": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Expr" }, { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Let" },
+                { "type": "string" },
+                { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        },
+        "mini_expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Lit" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Var" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Block" },
+                { "type": "array", "items": { "$ref": "#/$defs/stmt" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/stmt"
+    } |}];
+  print_schema mini_expr_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "stmt": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Expr" }, { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Let" },
+                { "type": "string" },
+                { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        },
+        "mini_expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Lit" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Var" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Block" },
+                { "type": "array", "items": { "$ref": "#/$defs/stmt" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/mini_expr"
+    } |}]
+
+type tree = {
+  value : int;
+  children : tree list;
+  parent : tree option;
+}
+[@@deriving jsonschema]
+
+let%expect_test "recursive record with option" =
+  print_schema tree_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "type": "object",
+          "properties": {
+            "parent": { "$ref": "#/$defs/tree" },
+            "children": { "type": "array", "items": { "$ref": "#/$defs/tree" } },
+            "value": { "type": "integer" }
+          },
+          "required": [ "children", "value" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/tree"
+    } |}]
+
+type node = {
+  label : string;
+  edges : edge list;
+}
+
+and edge = {
+  weight : float;
+  target : node;
+}
+[@@deriving jsonschema]
+
+let%expect_test "mutually recursive records" =
+  print_schema node_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "node": {
+          "type": "object",
+          "properties": {
+            "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+            "label": { "type": "string" }
+          },
+          "required": [ "edges", "label" ],
+          "additionalProperties": false
+        },
+        "edge": {
+          "type": "object",
+          "properties": {
+            "target": { "$ref": "#/$defs/node" },
+            "weight": { "type": "number" }
+          },
+          "required": [ "target", "weight" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/node"
+    } |}];
+  print_schema edge_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "node": {
+          "type": "object",
+          "properties": {
+            "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+            "label": { "type": "string" }
+          },
+          "required": [ "edges", "label" ],
+          "additionalProperties": false
+        },
+        "edge": {
+          "type": "object",
+          "properties": {
+            "target": { "$ref": "#/$defs/node" },
+            "weight": { "type": "number" }
+          },
+          "required": [ "target", "weight" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/edge"
+    } |}]
+
+type color =
+  | Red
+  | Green
+  | Blue
+
+and shape = {
+  name : string;
+  sides : int;
+}
+[@@deriving jsonschema]
+
+let%expect_test "type and without mutual references" =
+  print_schema color_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "color": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Red" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Green" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Blue" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "shape": {
+          "type": "object",
+          "properties": {
+            "sides": { "type": "integer" },
+            "name": { "type": "string" }
+          },
+          "required": [ "sides", "name" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/color"
+    } |}];
+  print_schema shape_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "color": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Red" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Green" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Blue" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "shape": {
+          "type": "object",
+          "properties": {
+            "sides": { "type": "integer" },
+            "name": { "type": "string" }
+          },
+          "required": [ "sides", "name" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/shape"
+    } |}]
 
 type events = event list [@@deriving jsonschema]
 

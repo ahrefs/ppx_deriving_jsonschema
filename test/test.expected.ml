@@ -28,7 +28,7 @@ module Mod1 =
                       (`List [`Assoc [("const", (`String "B"))]]));
                     ("unevaluatedItems", (`Bool false));
                     ("minItems", (`Int 1));
-                    ("maxItems", (`Int 1))]]))][@@warning "-32-39"]
+                    ("maxItems", (`Int 1))]]))][@@warning "-32"]
       end[@@ocaml.doc "@inline"][@@merlin.hide ]
     [%%expect_test
       let "m_1" =
@@ -79,7 +79,7 @@ module Mod1 =
                           (`List [`Assoc [("const", (`String "D"))]]));
                         ("unevaluatedItems", (`Bool false));
                         ("minItems", (`Int 1));
-                        ("maxItems", (`Int 1))]]))][@@warning "-32-39"]
+                        ("maxItems", (`Int 1))]]))][@@warning "-32"]
           end[@@ocaml.doc "@inline"][@@merlin.hide ]
         [%%expect_test
           let "m_2" =
@@ -120,7 +120,7 @@ include
           (`Assoc
              [("m2", Mod1.Mod2.m_2_jsonschema); ("m", Mod1.m_1_jsonschema)]));
         ("required", (`List [`String "m2"; `String "m"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "with_modules" =
@@ -202,7 +202,7 @@ include
                   (`List [`Assoc [("const", (`String "skipped"))]]));
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 1));
-                ("maxItems", (`Int 1))]]))][@@warning "-32-39"]
+                ("maxItems", (`Int 1))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "kind" =
@@ -248,7 +248,7 @@ include
            (`List
               [`Assoc [("const", (`String "Success"))];
               `Assoc [("const", (`String "Error"))];
-              `Assoc [("const", (`String "skipped"))]]))][@@warning "-32-39"]
+              `Assoc [("const", (`String "skipped"))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "kind_as_string" =
@@ -289,7 +289,7 @@ include
                   (`List [`Assoc [("const", (`String "ccc"))]]));
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 1));
-                ("maxItems", (`Int 1))]]))][@@warning "-32-39"]
+                ("maxItems", (`Int 1))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_kind" =
@@ -334,7 +334,7 @@ include
            (`List
               [`Assoc [("const", (`String "Aaa"))];
               `Assoc [("const", (`String "Bbb"))];
-              `Assoc [("const", (`String "ccc"))]]))][@@warning "-32-39"]
+              `Assoc [("const", (`String "ccc"))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_kind_as_string" =
@@ -380,7 +380,7 @@ include
                      `Assoc [("type", (`String "boolean"))]]));
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 3));
-                ("maxItems", (`Int 3))]]))][@@warning "-32-39"]
+                ("maxItems", (`Int 3))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_kind_with_payload" =
@@ -428,7 +428,7 @@ include
            (`List
               [`Assoc [("const", (`String "Aaa"))];
               `Assoc [("const", (`String "Bbb"))];
-              `Assoc [("const", (`String "ccc"))]]))][@@warning "-32-39"]
+              `Assoc [("const", (`String "ccc"))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_kind_with_payload_as_string" =
@@ -464,7 +464,7 @@ include
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 2));
                 ("maxItems", (`Int 2))];
-              poly_kind_jsonschema]))][@@warning "-32-39"]
+              poly_kind_jsonschema]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_inherit" =
@@ -528,7 +528,7 @@ include
            (`List
               [`Assoc [("const", (`String "New_one"))];
               `Assoc [("const", (`String "Second_one"))];
-              poly_kind_as_string_jsonschema]))][@@warning "-32-39"]
+              poly_kind_as_string_jsonschema]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_inherit_as_string" =
@@ -626,7 +626,7 @@ include
              `String "comment";
              `String "kind_f";
              `String "date"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "event" =
@@ -705,12 +705,713 @@ include
       "additionalProperties": false
     }
     |}]]
+type recursive_record = {
+  a: int ;
+  b: recursive_record list }[@@deriving jsonschema]
+include
+  struct
+    let __jsonschema_defs =
+      let recursive_record_jsonschema =
+        `Assoc [("$ref", (`String "#/$defs/recursive_record"))] in
+      `Assoc
+        [("recursive_record",
+           (`Assoc
+              [("type", (`String "object"));
+              ("properties",
+                (`Assoc
+                   [("b",
+                      (`Assoc
+                         [("type", (`String "array"));
+                         ("items", recursive_record_jsonschema)]));
+                   ("a", (`Assoc [("type", (`String "integer"))]))]));
+              ("required", (`List [`String "b"; `String "a"]));
+              ("additionalProperties", (`Bool false))]))][@@warning "-32-26"]
+    let recursive_record_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs);
+        ("$ref", (`String "#/$defs/recursive_record"))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "recursive_record" =
+    print_schema recursive_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_record": {
+          "type": "object",
+          "properties": {
+            "b": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/recursive_record" }
+            },
+            "a": { "type": "integer" }
+          },
+          "required": [ "b", "a" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/recursive_record"
+    }
+    |}]]
+type recursive_variant =
+  | A of recursive_variant 
+  | B [@@deriving jsonschema]
+include
+  struct
+    let __jsonschema_defs =
+      let recursive_variant_jsonschema =
+        `Assoc [("$ref", (`String "#/$defs/recursive_variant"))] in
+      `Assoc
+        [("recursive_variant",
+           (`Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List
+                            [`Assoc [("const", (`String "A"))];
+                            recursive_variant_jsonschema]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 2));
+                       ("maxItems", (`Int 2))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List [`Assoc [("const", (`String "B"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 1));
+                      ("maxItems", (`Int 1))]]))]))][@@warning "-32-26"]
+    let recursive_variant_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs);
+        ("$ref", (`String "#/$defs/recursive_variant"))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "recursive_variant" =
+    print_schema recursive_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_variant": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "A" }, { "$ref": "#/$defs/recursive_variant" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/recursive_variant"
+    }
+    |}]]
+type expr =
+  | Var of string 
+  | Lam of string * expr 
+  | App of expr * expr [@@deriving jsonschema]
+include
+  struct
+    let __jsonschema_defs =
+      let expr_jsonschema = `Assoc [("$ref", (`String "#/$defs/expr"))] in
+      `Assoc
+        [("expr",
+           (`Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List
+                            [`Assoc [("const", (`String "Var"))];
+                            `Assoc [("type", (`String "string"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 2));
+                       ("maxItems", (`Int 2))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List
+                           [`Assoc [("const", (`String "Lam"))];
+                           `Assoc [("type", (`String "string"))];
+                           expr_jsonschema]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 3));
+                      ("maxItems", (`Int 3))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List
+                           [`Assoc [("const", (`String "App"))];
+                           expr_jsonschema;
+                           expr_jsonschema]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 3));
+                      ("maxItems", (`Int 3))]]))]))][@@warning "-32-26"]
+    let expr_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs); ("$ref", (`String "#/$defs/expr"))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "expr (lambda calculus AST)" =
+    print_schema expr_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Var" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Lam" },
+                { "type": "string" },
+                { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "App" },
+                { "$ref": "#/$defs/expr" },
+                { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/expr"
+    }
+    |}]]
+type stmt =
+  | Expr of mini_expr 
+  | Let of string * mini_expr 
+and mini_expr =
+  | Lit of int 
+  | Var of string 
+  | Block of stmt list [@@deriving jsonschema]
+include
+  struct
+    let __jsonschema_defs =
+      let stmt_jsonschema = `Assoc [("$ref", (`String "#/$defs/stmt"))] in
+      let mini_expr_jsonschema =
+        `Assoc [("$ref", (`String "#/$defs/mini_expr"))] in
+      `Assoc
+        [("stmt",
+           (`Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List
+                            [`Assoc [("const", (`String "Expr"))];
+                            mini_expr_jsonschema]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 2));
+                       ("maxItems", (`Int 2))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List
+                           [`Assoc [("const", (`String "Let"))];
+                           `Assoc [("type", (`String "string"))];
+                           mini_expr_jsonschema]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 3));
+                      ("maxItems", (`Int 3))]]))]));
+        ("mini_expr",
+          (`Assoc
+             [("anyOf",
+                (`List
+                   [`Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List
+                           [`Assoc [("const", (`String "Lit"))];
+                           `Assoc [("type", (`String "integer"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 2));
+                      ("maxItems", (`Int 2))];
+                   `Assoc
+                     [("type", (`String "array"));
+                     ("prefixItems",
+                       (`List
+                          [`Assoc [("const", (`String "Var"))];
+                          `Assoc [("type", (`String "string"))]]));
+                     ("unevaluatedItems", (`Bool false));
+                     ("minItems", (`Int 2));
+                     ("maxItems", (`Int 2))];
+                   `Assoc
+                     [("type", (`String "array"));
+                     ("prefixItems",
+                       (`List
+                          [`Assoc [("const", (`String "Block"))];
+                          `Assoc
+                            [("type", (`String "array"));
+                            ("items", stmt_jsonschema)]]));
+                     ("unevaluatedItems", (`Bool false));
+                     ("minItems", (`Int 2));
+                     ("maxItems", (`Int 2))]]))]))][@@warning "-32-26"]
+    let stmt_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs); ("$ref", (`String "#/$defs/stmt"))]
+      [@@warning "-32"]
+    let mini_expr_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs);
+        ("$ref", (`String "#/$defs/mini_expr"))][@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "mutually recursive stmt/mini_expr" =
+    print_schema stmt_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "stmt": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Expr" }, { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Let" },
+                { "type": "string" },
+                { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        },
+        "mini_expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Lit" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Var" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Block" },
+                { "type": "array", "items": { "$ref": "#/$defs/stmt" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/stmt"
+    } |}];
+    print_schema mini_expr_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "stmt": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Expr" }, { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Let" },
+                { "type": "string" },
+                { "$ref": "#/$defs/mini_expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        },
+        "mini_expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Lit" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Var" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Block" },
+                { "type": "array", "items": { "$ref": "#/$defs/stmt" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/mini_expr"
+    } |}]]
+type tree = {
+  value: int ;
+  children: tree list ;
+  parent: tree option }[@@deriving jsonschema]
+include
+  struct
+    let __jsonschema_defs =
+      let tree_jsonschema = `Assoc [("$ref", (`String "#/$defs/tree"))] in
+      `Assoc
+        [("tree",
+           (`Assoc
+              [("type", (`String "object"));
+              ("properties",
+                (`Assoc
+                   [("parent", tree_jsonschema);
+                   ("children",
+                     (`Assoc
+                        [("type", (`String "array"));
+                        ("items", tree_jsonschema)]));
+                   ("value", (`Assoc [("type", (`String "integer"))]))]));
+              ("required", (`List [`String "children"; `String "value"]));
+              ("additionalProperties", (`Bool false))]))][@@warning "-32-26"]
+    let tree_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs); ("$ref", (`String "#/$defs/tree"))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "recursive record with option" =
+    print_schema tree_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "type": "object",
+          "properties": {
+            "parent": { "$ref": "#/$defs/tree" },
+            "children": { "type": "array", "items": { "$ref": "#/$defs/tree" } },
+            "value": { "type": "integer" }
+          },
+          "required": [ "children", "value" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/tree"
+    } |}]]
+type node = {
+  label: string ;
+  edges: edge list }
+and edge = {
+  weight: float ;
+  target: node }[@@deriving jsonschema]
+include
+  struct
+    let __jsonschema_defs =
+      let node_jsonschema = `Assoc [("$ref", (`String "#/$defs/node"))] in
+      let edge_jsonschema = `Assoc [("$ref", (`String "#/$defs/edge"))] in
+      `Assoc
+        [("node",
+           (`Assoc
+              [("type", (`String "object"));
+              ("properties",
+                (`Assoc
+                   [("edges",
+                      (`Assoc
+                         [("type", (`String "array"));
+                         ("items", edge_jsonschema)]));
+                   ("label", (`Assoc [("type", (`String "string"))]))]));
+              ("required", (`List [`String "edges"; `String "label"]));
+              ("additionalProperties", (`Bool false))]));
+        ("edge",
+          (`Assoc
+             [("type", (`String "object"));
+             ("properties",
+               (`Assoc
+                  [("target", node_jsonschema);
+                  ("weight", (`Assoc [("type", (`String "number"))]))]));
+             ("required", (`List [`String "target"; `String "weight"]));
+             ("additionalProperties", (`Bool false))]))][@@warning "-32-26"]
+    let node_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs); ("$ref", (`String "#/$defs/node"))]
+      [@@warning "-32"]
+    let edge_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs); ("$ref", (`String "#/$defs/edge"))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "mutually recursive records" =
+    print_schema node_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "node": {
+          "type": "object",
+          "properties": {
+            "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+            "label": { "type": "string" }
+          },
+          "required": [ "edges", "label" ],
+          "additionalProperties": false
+        },
+        "edge": {
+          "type": "object",
+          "properties": {
+            "target": { "$ref": "#/$defs/node" },
+            "weight": { "type": "number" }
+          },
+          "required": [ "target", "weight" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/node"
+    } |}];
+    print_schema edge_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "node": {
+          "type": "object",
+          "properties": {
+            "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+            "label": { "type": "string" }
+          },
+          "required": [ "edges", "label" ],
+          "additionalProperties": false
+        },
+        "edge": {
+          "type": "object",
+          "properties": {
+            "target": { "$ref": "#/$defs/node" },
+            "weight": { "type": "number" }
+          },
+          "required": [ "target", "weight" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/edge"
+    } |}]]
+type color =
+  | Red 
+  | Green 
+  | Blue 
+and shape = {
+  name: string ;
+  sides: int }[@@deriving jsonschema]
+include
+  struct
+    let __jsonschema_defs =
+      let color_jsonschema = `Assoc [("$ref", (`String "#/$defs/color"))] in
+      let shape_jsonschema = `Assoc [("$ref", (`String "#/$defs/shape"))] in
+      `Assoc
+        [("color",
+           (`Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List [`Assoc [("const", (`String "Red"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 1));
+                       ("maxItems", (`Int 1))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List [`Assoc [("const", (`String "Green"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 1));
+                      ("maxItems", (`Int 1))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List [`Assoc [("const", (`String "Blue"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 1));
+                      ("maxItems", (`Int 1))]]))]));
+        ("shape",
+          (`Assoc
+             [("type", (`String "object"));
+             ("properties",
+               (`Assoc
+                  [("sides", (`Assoc [("type", (`String "integer"))]));
+                  ("name", (`Assoc [("type", (`String "string"))]))]));
+             ("required", (`List [`String "sides"; `String "name"]));
+             ("additionalProperties", (`Bool false))]))][@@warning "-32-26"]
+    let color_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs); ("$ref", (`String "#/$defs/color"))]
+      [@@warning "-32"]
+    let shape_jsonschema =
+      `Assoc
+        [("$defs", __jsonschema_defs); ("$ref", (`String "#/$defs/shape"))]
+      [@@warning "-32"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "type and without mutual references" =
+    print_schema color_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "color": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Red" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Green" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Blue" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "shape": {
+          "type": "object",
+          "properties": {
+            "sides": { "type": "integer" },
+            "name": { "type": "string" }
+          },
+          "required": [ "sides", "name" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/color"
+    } |}];
+    print_schema shape_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "color": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Red" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Green" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Blue" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "shape": {
+          "type": "object",
+          "properties": {
+            "sides": { "type": "integer" },
+            "name": { "type": "string" }
+          },
+          "required": [ "sides", "name" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/shape"
+    } |}]]
 type events = event list[@@deriving jsonschema]
 include
   struct
     let events_jsonschema =
       `Assoc [("type", (`String "array")); ("items", event_jsonschema)]
-      [@@warning "-32-39"]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "events" =
@@ -800,7 +1501,7 @@ include
         [("type", (`String "array"));
         ("items",
           (`Assoc [("type", (`String "array")); ("items", event_jsonschema)]))]
-      [@@warning "-32-39"]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "eventss" =
@@ -895,7 +1596,7 @@ include
           (`List [event_jsonschema; `Assoc [("type", (`String "string"))]]));
         ("unevaluatedItems", (`Bool false));
         ("minItems", (`Int 2));
-        ("maxItems", (`Int 2))][@@warning "-32-39"]
+        ("maxItems", (`Int 2))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "event_comment" =
@@ -989,7 +1690,7 @@ include
     let event_comments'_jsonschema =
       `Assoc
         [("type", (`String "array")); ("items", event_comment_jsonschema)]
-      [@@warning "-32-39"]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "event_comments'" =
@@ -1094,7 +1795,7 @@ include
                   [event_jsonschema; `Assoc [("type", (`String "integer"))]]));
              ("unevaluatedItems", (`Bool false));
              ("minItems", (`Int 2));
-             ("maxItems", (`Int 2))]))][@@warning "-32-39"]
+             ("maxItems", (`Int 2))]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "event_n" =
@@ -1190,7 +1891,7 @@ include
   struct
     let events_array_jsonschema =
       `Assoc [("type", (`String "array")); ("items", events_jsonschema)]
-      [@@warning "-32-39"]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "events_array" =
@@ -1281,8 +1982,7 @@ include
     let numbers_jsonschema =
       `Assoc
         [("type", (`String "array"));
-        ("items", (`Assoc [("type", (`String "integer"))]))][@@warning
-                                                              "-32-39"]
+        ("items", (`Assoc [("type", (`String "integer"))]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "numbers" =
@@ -1298,7 +1998,7 @@ type opt = int option[@@deriving jsonschema]
 include
   struct
     let opt_jsonschema = `Assoc [("type", (`String "integer"))][@@warning
-                                                                 "-32-39"]
+                                                                 "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "opt" =
@@ -1318,7 +2018,7 @@ include
         [("type", (`String "object"));
         ("properties", (`Assoc [("m", Mod1.m_1_jsonschema)]));
         ("required", (`List [`String "m"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "using_m" =
@@ -1358,7 +2058,7 @@ include
   struct
     let poly2_jsonschema =
       `Assoc [("anyOf", (`List [`Assoc [("const", (`String "C"))]]))]
-      [@@warning "-32-39"]
+      [@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly2" =
@@ -1398,7 +2098,7 @@ include
                        ("maxItems", (`Int 1))]]))]]));
         ("unevaluatedItems", (`Bool false));
         ("minItems", (`Int 2));
-        ("maxItems", (`Int 2))][@@warning "-32-39"]
+        ("maxItems", (`Int 2))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "tuple_with_variant" =
@@ -1449,7 +2149,7 @@ include
                 (`Assoc [("$ref", (`String "#/$defs/numbers"))]));
              ("player", (`Assoc [("type", (`String "string"))]))]));
         ("required", (`List [`String "scores_ref"; `String "player"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "player_scores" =
@@ -1489,7 +2189,7 @@ include
              ("street", (`Assoc [("type", (`String "string"))]))]));
         ("required",
           (`List [`String "zip"; `String "city"; `String "street"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type t = {
   name: string ;
@@ -1509,7 +2209,7 @@ include
              ("name", (`Assoc [("type", (`String "string"))]))]));
         ("required",
           (`List [`String "address"; `String "age"; `String "name"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t" =
@@ -1569,7 +2269,7 @@ include
              `String "home_address";
              `String "age";
              `String "name"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "tt" =
@@ -1613,7 +2313,7 @@ include
       `Assoc
         [("type", (`String "string"));
         ("minLength", (`Int 1));
-        ("maxLength", (`Int 1))][@@warning "-32-39"]
+        ("maxLength", (`Int 1))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "c" =
@@ -1638,7 +2338,7 @@ include
         [("anyOf",
            (`List
               [`Assoc [("const", (`String "A"))];
-              `Assoc [("const", (`String "B"))]]))][@@warning "-32-39"]
+              `Assoc [("const", (`String "B"))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "variant_inline_record" =
@@ -1695,7 +2395,7 @@ include
                        ("additionalProperties", (`Bool false))]]));
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 2));
-                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                ("maxItems", (`Int 2))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "inline_record_with_extra_fields" =
@@ -1755,7 +2455,7 @@ include
               [`Assoc [("const", (`String "A"))];
               `Assoc [("const", (`String "B"))];
               `Assoc [("const", (`String "C"))];
-              `Assoc [("const", (`String "D"))]]))][@@warning "-32-39"]
+              `Assoc [("const", (`String "D"))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "variant_with_payload" =
@@ -1793,7 +2493,7 @@ include
                      `Assoc [("type", (`String "string"))]]));
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 2));
-                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                ("maxItems", (`Int 2))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t1" =
@@ -1830,7 +2530,7 @@ include
         [("anyOf",
            (`List
               [`Assoc [("const", (`String "Typ"))];
-              `Assoc [("const", (`String "Class"))]]))][@@warning "-32-39"]
+              `Assoc [("const", (`String "Class"))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t2" =
@@ -1866,7 +2566,7 @@ include
                      `Assoc [("type", (`String "string"))]]));
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 2));
-                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                ("maxItems", (`Int 2))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t3" =
@@ -1905,7 +2605,7 @@ include
              `Assoc [("type", (`String "string"))]]));
         ("unevaluatedItems", (`Bool false));
         ("minItems", (`Int 2));
-        ("maxItems", (`Int 2))][@@warning "-32-39"]
+        ("maxItems", (`Int 2))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t4" =
@@ -1937,7 +2637,7 @@ include
                       `Assoc [("type", (`String "boolean"))]]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 4));
-                 ("maxItems", (`Int 4))]]))][@@warning "-32-39"]
+                 ("maxItems", (`Int 4))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t5" =
@@ -1987,7 +2687,7 @@ include
                       `Assoc [("type", (`String "number"))]]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 3));
-                 ("maxItems", (`Int 3))]]))][@@warning "-32-39"]
+                 ("maxItems", (`Int 3))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t6" =
@@ -2039,7 +2739,7 @@ include
                       `Assoc [("type", (`String "boolean"))]]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 4));
-                 ("maxItems", (`Int 4))]]))][@@warning "-32-39"]
+                 ("maxItems", (`Int 4))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t7" =
@@ -2089,7 +2789,7 @@ include
                         ("maxItems", (`Int 3))]]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 2));
-                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                 ("maxItems", (`Int 2))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t8" =
@@ -2148,7 +2848,7 @@ include
                       `Assoc [("type", (`String "number"))]]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 3));
-                 ("maxItems", (`Int 3))]]))][@@warning "-32-39"]
+                 ("maxItems", (`Int 3))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t9" =
@@ -2199,7 +2899,7 @@ include
                       `Assoc [("type", (`String "boolean"))]]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 4));
-                 ("maxItems", (`Int 4))]]))][@@warning "-32-39"]
+                 ("maxItems", (`Int 4))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t10" =
@@ -2250,7 +2950,7 @@ include
                         ("maxItems", (`Int 3))]]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 2));
-                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+                 ("maxItems", (`Int 2))]]))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "t11" =
@@ -2293,7 +2993,7 @@ include
         ("properties",
           (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
         ("required", (`List [`String "x"]));
-        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool true))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type obj1 = {
   obj2: obj2 }[@@deriving jsonschema]
@@ -2304,7 +3004,7 @@ include
         [("type", (`String "object"));
         ("properties", (`Assoc [("obj2", obj2_jsonschema)]));
         ("required", (`List [`String "obj2"]));
-        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool false))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type nested_obj = {
   obj1: obj1 }[@@deriving jsonschema][@@allow_extra_fields ]
@@ -2315,7 +3015,7 @@ include
         [("type", (`String "object"));
         ("properties", (`Assoc [("obj1", obj1_jsonschema)]));
         ("required", (`List [`String "obj1"]));
-        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool true))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "nested_obj" =
@@ -2357,7 +3057,7 @@ include
         ("properties",
           (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
         ("required", (`List [`String "x"]));
-        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool true))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type x_with_extra = {
   x: int ;
@@ -2374,7 +3074,7 @@ include
              [("y", (`Assoc [("type", (`String "integer"))]));
              ("x", (`Assoc [("type", (`String "integer"))]))]));
         ("required", (`List [`String "y"; `String "x"]));
-        ("additionalProperties", (`Bool true))][@@warning "-32-39"]
+        ("additionalProperties", (`Bool true))][@@warning "-32"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "extra_fields" =
