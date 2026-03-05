@@ -145,8 +145,7 @@ let variant ~loc ~config constrs =
 
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
 
-let create_value ~loc name value =
-  [%stri let[@warning "-32-39"] (* rec *) [%p value_name_pattern ~loc name (* : [< `Assoc of _ list ] *)] = [%e value]]
+let create_value ~loc name value = [%stri let[@warning "-32-39"] [%p value_name_pattern ~loc name] = [%e value]]
 
 let is_optional_type core_type =
   match core_type with
@@ -169,9 +168,10 @@ let rec type_of_core ~config core_type =
     Schema.array_ ~loc t
   | _ ->
   match core_type.ptyp_desc with
-  | Ptyp_constr (id, []) ->
-    (* todo: support using references with [type_ref ~loc type_name] instead of inlining everything *)
-    type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") []
+  | Ptyp_var name -> evar ~loc ("_" ^ name ^ "_jsonschema")
+  | Ptyp_constr (id, args) ->
+    let args = List.map (type_of_core ~config) args in
+    type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") args
   | Ptyp_tuple types ->
     let ts = List.map (type_of_core ~config) types in
     Schema.tuple ~loc ts
@@ -251,6 +251,28 @@ let object_ ~loc ~config fields allow_extra_fields =
         "additionalProperties", `Bool [%e ebool ~loc allow_extra_fields];
       ]]
 
+let expr_has_free_var name expr =
+  let found = ref false in
+  let iter =
+    object
+      inherit Ast_traverse.iter as super
+
+      method! expression e =
+        (match e.pexp_desc with
+        | Pexp_ident { txt = Lident n; _ } when String.equal n name -> found := true
+        | _ -> ());
+        super#expression e
+    end
+  in
+  iter#expression expr;
+  !found
+
+let wrap_type_params ~loc params body =
+  let used_params = List.filter (fun param -> expr_has_free_var ("_" ^ param ^ "_jsonschema") body) params in
+  List.fold_right
+    (fun param body -> [%expr fun [%p ppat_var ~loc { txt = "_" ^ param ^ "_jsonschema"; loc }] -> [%e body]])
+    used_params body
+
 let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   let allow_extra_fields =
@@ -262,7 +284,8 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     { variant_as_string = flag_variant_as_string; polymorphic_variant_tuple = flag_polymorphic_variant_tuple }
   in
   match ast with
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } ] ->
+  | _, [ ({ ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_variant variants; _ } as td) ] ->
+    let params = List.map (fun tp -> (get_type_param_name tp).txt) td.ptype_params in
     let variants =
       List.map
         (fun ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
@@ -282,22 +305,26 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
         variants
     in
     let v =
-      (* todo: raise an error if encoding is as string and constructor has a payload *)
       match config.variant_as_string with
       | true -> variant_as_string ~loc variants
       | false -> variant_as_array ~loc variants
     in
-    let jsonschema_expr = create_value ~loc type_name v in
+    let jsonschema_expr = create_value ~loc type_name (wrap_type_params ~loc params v) in
     [ jsonschema_expr ]
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (object_ ~loc ~config label_declarations allow_extra_fields) in
+  | _, [ ({ ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_record label_declarations; _ } as td) ] ->
+    let params = List.map (fun tp -> (get_type_param_name tp).txt) td.ptype_params in
+    let body = object_ ~loc ~config label_declarations allow_extra_fields in
+    let jsonschema_expr = create_value ~loc type_name (wrap_type_params ~loc params body) in
     [ jsonschema_expr ]
-  | _, [ { ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } ] ->
-    let jsonschema_expr = create_value ~loc type_name (type_of_core ~config core_type) in
+  | ( _,
+      [
+        ({ ptype_name = { txt = type_name; _ }; ptype_kind = Ptype_abstract; ptype_manifest = Some core_type; _ } as td);
+      ] ) ->
+    let params = List.map (fun tp -> (get_type_param_name tp).txt) td.ptype_params in
+    let body = type_of_core ~config core_type in
+    let jsonschema_expr = create_value ~loc type_name (wrap_type_params ~loc params body) in
     [ jsonschema_expr ]
-  | _, _ast ->
-    (* Format.printf "unsuported type: %a\n======\n" Format.(pp_print_list Astlib.Pprintast.type_declaration) ast; *)
-    [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
+  | _, _ast -> [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 (* let generator () = Deriving.Generator.V2.make_noarg derive_jsonschema *)
