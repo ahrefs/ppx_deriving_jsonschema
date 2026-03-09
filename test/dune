@@ -24,6 +24,9 @@
  (preprocess
   (pps ppx_deriving_jsonschema ppx_expect melange-json-native.ppx)))
 
+(cram
+ (deps %{exe:pp.exe}))
+
 (executable
  (name generate_schemas)
  (modules generate_schemas)
