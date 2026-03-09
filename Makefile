@@ -10,6 +10,10 @@ help: ## Show this help
 build: ## Build the project
 	$(DUNE) build
 
+.PHONY: build-dev
+dev: ## Build the project
+	$(DUNE) build --watch
+
 .PHONY: test
 test: ## Run tests
 	$(DUNE) runtest
