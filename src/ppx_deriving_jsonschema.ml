@@ -251,6 +251,10 @@ let object_ ~loc ~config fields allow_extra_fields =
         "additionalProperties", `Bool [%e ebool ~loc allow_extra_fields];
       ]]
 
+(* Wraps [body] in nested lambdas, one per type parameter.
+   Parametric types like [('a, 'b) t] derive as [fun a b -> <schema>],
+   so callers can pass schemas for each type variable.
+   Use [~prefix:"_"] to mark params unused in the body. *)
 let wrap_type_params ~loc ?(prefix = "") params body =
   List.fold_right
     (fun param body -> [%expr fun [%p ppat_var ~loc { txt = prefix ^ param; loc }] -> [%e body]])
