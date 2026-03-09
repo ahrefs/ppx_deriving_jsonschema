@@ -5,6 +5,10 @@ let print_schema ?definitions ?id ?title ?description s =
   let () = print_endline (Yojson.Basic.pretty_to_string s) in
   ()
 
+let string_jsonschema = `Assoc [ "type", `String "string" ]
+let int_jsonschema = `Assoc [ "type", `String "integer" ]
+let bool_jsonschema = `Assoc [ "type", `String "boolean" ]
+
 module Mod1 = struct
   type m_1 =
     | A
@@ -1065,7 +1069,7 @@ let%expect_test "using_m" =
 type 'param2 poly2 = C of 'param2 [@@deriving jsonschema ~variant_as_string]
 
 let%expect_test "poly2" =
-  print_schema poly2_jsonschema;
+  print_schema (poly2_jsonschema int_jsonschema);
   [%expect
     {|
     {
@@ -1675,3 +1679,177 @@ let%expect_test "extra_fields" =
     \   \"additionalProperties\": true\n\
     \ }\n\
     \ "]
+
+type 'url generic_link_traffic = {
+  title : string option;
+  url : 'url;
+}
+[@@deriving jsonschema]
+
+let%expect_test "parameterized_record" =
+  print_schema (generic_link_traffic_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "title": { "type": "string" }
+      },
+      "required": [ "url" ],
+      "additionalProperties": false
+    } |}]
+
+type string_link_traffic = string generic_link_traffic [@@deriving jsonschema]
+
+let%expect_test "instantiated_parameterized_record" =
+  print_schema string_link_traffic_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "title": { "type": "string" }
+      },
+      "required": [ "url" ],
+      "additionalProperties": false
+    } |}]
+
+type 'a poly_variant =
+  | A
+  | B of 'a
+[@@deriving jsonschema]
+
+let%expect_test "parameterized_variant" =
+  print_schema (poly_variant_jsonschema int_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "A" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "B" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    } |}]
+
+type ('a, 'b) multi_param = {
+  first : 'a;
+  second : 'b;
+  label : string;
+}
+[@@deriving jsonschema]
+
+let%expect_test "multi_param" =
+  print_schema (multi_param_jsonschema int_jsonschema bool_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "second": { "type": "boolean" },
+        "first": { "type": "integer" }
+      },
+      "required": [ "label", "second", "first" ],
+      "additionalProperties": false
+    } |}]
+
+type 'a param_list = 'a list [@@deriving jsonschema]
+
+let%expect_test "parameterized_abstract" =
+  print_schema (param_list_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": { "type": "string" }
+    } |}]
+
+type ('a, 'b) either =
+  | Left of 'a
+  | Right of 'b
+[@@deriving jsonschema]
+
+let%expect_test "multi_param_variant" =
+  print_schema (either_jsonschema int_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Left" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Right" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+type ('a, 'b) either_alias = ('a, 'b) either [@@deriving jsonschema]
+
+let%expect_test "multi_param_abstract" =
+  print_schema (either_alias_jsonschema int_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Left" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Right" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+type ('a, 'b) direction =
+  | North
+  | South
+[@@deriving jsonschema ~variant_as_string]
+
+let%expect_test "multi_param_variant_as_string" =
+  print_schema (direction_jsonschema int_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "North" }, { "const": "South" } ]
+    }
+    |}]
