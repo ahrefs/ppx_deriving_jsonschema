@@ -1069,7 +1069,7 @@ let%expect_test "using_m" =
 type 'param2 poly2 = C of 'param2 [@@deriving jsonschema ~variant_as_string]
 
 let%expect_test "poly2" =
-  print_schema poly2_jsonschema;
+  print_schema (poly2_jsonschema int_jsonschema);
   [%expect
     {|
     {

@@ -1359,13 +1359,13 @@ type 'param2 poly2 =
   | C of 'param2 [@@deriving jsonschema ~variant_as_string]
 include
   struct
-    let poly2_jsonschema =
+    let poly2_jsonschema _param2 =
       `Assoc [("anyOf", (`List [`Assoc [("const", (`String "C"))]]))]
       [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly2" =
-    print_schema poly2_jsonschema;
+    print_schema (poly2_jsonschema int_jsonschema);
     [%expect
       {|
     {
@@ -2391,12 +2391,12 @@ type 'url generic_link_traffic = {
   url: 'url }[@@deriving jsonschema]
 include
   struct
-    let generic_link_traffic_jsonschema _url_jsonschema =
+    let generic_link_traffic_jsonschema url =
       `Assoc
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("url", _url_jsonschema);
+             [("url", url);
              ("title", (`Assoc [("type", (`String "string"))]))]));
         ("required", (`List [`String "url"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
@@ -2443,7 +2443,7 @@ type 'a poly_variant =
   | B of 'a [@@deriving jsonschema]
 include
   struct
-    let poly_variant_jsonschema _a_jsonschema =
+    let poly_variant_jsonschema a =
       `Assoc
         [("anyOf",
            (`List
@@ -2456,7 +2456,7 @@ include
               `Assoc
                 [("type", (`String "array"));
                 ("prefixItems",
-                  (`List [`Assoc [("const", (`String "B"))]; _a_jsonschema]));
+                  (`List [`Assoc [("const", (`String "B"))]; a]));
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 2));
                 ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
@@ -2491,14 +2491,14 @@ type ('a, 'b) multi_param = {
   label: string }[@@deriving jsonschema]
 include
   struct
-    let multi_param_jsonschema _a_jsonschema _b_jsonschema =
+    let multi_param_jsonschema a b =
       `Assoc
         [("type", (`String "object"));
         ("properties",
           (`Assoc
              [("label", (`Assoc [("type", (`String "string"))]));
-             ("second", _b_jsonschema);
-             ("first", _a_jsonschema)]));
+             ("second", b);
+             ("first", a)]));
         ("required",
           (`List [`String "label"; `String "second"; `String "first"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
@@ -2522,9 +2522,8 @@ include
 type 'a param_list = 'a list[@@deriving jsonschema]
 include
   struct
-    let param_list_jsonschema _a_jsonschema =
-      `Assoc [("type", (`String "array")); ("items", _a_jsonschema)][@@warning
-                                                                    "-32-39"]
+    let param_list_jsonschema a =
+      `Assoc [("type", (`String "array")); ("items", a)][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "parameterized_abstract" =
