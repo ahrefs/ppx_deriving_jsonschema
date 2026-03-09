@@ -1789,7 +1789,8 @@ type ('a, 'b) either =
 
 let%expect_test "multi_param_variant" =
   print_schema (either_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
@@ -1815,7 +1816,8 @@ type ('a, 'b) either_alias = ('a, 'b) either [@@deriving jsonschema]
 
 let%expect_test "multi_param_abstract" =
   print_schema (either_alias_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
@@ -1844,7 +1846,8 @@ type ('a, 'b) direction =
 
 let%expect_test "multi_param_variant_as_string" =
   print_schema (direction_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [ { "const": "North" }, { "const": "South" } ]

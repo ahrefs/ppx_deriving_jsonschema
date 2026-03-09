@@ -289,8 +289,8 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     in
     let v, params_prefix =
       match config.variant_as_string with
-      | true -> (variant_as_string ~loc variants, "_")
-      | false -> (variant_as_array ~loc variants, "")
+      | true -> variant_as_string ~loc variants, "_"
+      | false -> variant_as_array ~loc variants, ""
     in
     let jsonschema_expr = create_value ~loc type_name (wrap_type_params ~loc ~prefix:params_prefix params v) in
     [ jsonschema_expr ]
@@ -326,5 +326,4 @@ let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_va
 
 let sig_generator () = Deriving.Generator.V2.make (args ()) derive_jsonschema_sig
 
-let _ : Deriving.t =
-  Deriving.add deriver_name ~str_type_decl:(generator ()) ~sig_type_decl:(sig_generator ())
+let _ : Deriving.t = Deriving.add deriver_name ~str_type_decl:(generator ()) ~sig_type_decl:(sig_generator ())
