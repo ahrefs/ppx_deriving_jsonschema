@@ -2535,3 +2535,105 @@ include
       "type": "array",
       "items": { "type": "string" }
     } |}]]
+type ('a, 'b) either =
+  | Left of 'a 
+  | Right of 'b [@@deriving jsonschema]
+include
+  struct
+    let either_jsonschema a b =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc
+                 [("type", (`String "array"));
+                 ("prefixItems",
+                   (`List [`Assoc [("const", (`String "Left"))]; a]));
+                 ("unevaluatedItems", (`Bool false));
+                 ("minItems", (`Int 2));
+                 ("maxItems", (`Int 2))];
+              `Assoc
+                [("type", (`String "array"));
+                ("prefixItems",
+                  (`List [`Assoc [("const", (`String "Right"))]; b]));
+                ("unevaluatedItems", (`Bool false));
+                ("minItems", (`Int 2));
+                ("maxItems", (`Int 2))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "multi_param_variant" =
+    print_schema (either_jsonschema int_jsonschema string_jsonschema);
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Left" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Right" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]]
+type ('a, 'b) either_alias = ('a, 'b) either[@@deriving jsonschema]
+include
+  struct
+    let either_alias_jsonschema a b = either_jsonschema a b[@@warning
+                                                             "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "multi_param_abstract" =
+    print_schema (either_alias_jsonschema int_jsonschema string_jsonschema);
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Left" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Right" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]]
+type ('a, 'b) direction =
+  | North 
+  | South [@@deriving jsonschema ~variant_as_string]
+include
+  struct
+    let direction_jsonschema _a _b =
+      `Assoc
+        [("anyOf",
+           (`List
+              [`Assoc [("const", (`String "North"))];
+              `Assoc [("const", (`String "South"))]]))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "multi_param_variant_as_string" =
+    print_schema (direction_jsonschema int_jsonschema string_jsonschema);
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "North" }, { "const": "South" } ]
+    }
+    |}]]
