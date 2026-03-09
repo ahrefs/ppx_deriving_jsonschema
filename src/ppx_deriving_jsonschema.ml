@@ -327,6 +327,21 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
   | _, _ast -> [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
-(* let generator () = Deriving.Generator.V2.make_noarg derive_jsonschema *)
 
-let _ : Deriving.t = Deriving.add deriver_name ~str_type_decl:(generator ())
+let yojson_basic_t ~loc = ptyp_constr ~loc { txt = Ldot (Ldot (Lident "Yojson", "Basic"), "t"); loc } []
+
+let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple =
+  let loc = Expansion_context.Deriver.derived_item_loc ctxt in
+  match ast with
+  | _, [ td ] ->
+    let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> yojson_basic_t ~loc) in
+    let name = { txt = td.ptype_name.txt ^ "_jsonschema"; loc } in
+    [ psig_value ~loc (value_description ~loc ~name ~type_:typ ~prim:[]) ]
+  | _, _ ->
+    let ext = Location.error_extensionf ~loc "ppx_deriving_jsonschema: unsupported type" in
+    [ psig_extension ~loc ext [] ]
+
+let sig_generator () = Deriving.Generator.V2.make (args ()) derive_jsonschema_sig
+
+let _ : Deriving.t =
+  Deriving.add deriver_name ~str_type_decl:(generator ()) ~sig_type_decl:(sig_generator ())
