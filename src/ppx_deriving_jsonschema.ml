@@ -315,7 +315,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     let allow_extra_fields = Attribute.get jsonschema_td_allow_extra_fields td |> Option.is_some in
     let body = schema_body_of_td ~loc ~config ~allow_extra_fields td in
     [ create_value ~loc td.ptype_name.txt body ]
-  | _, ((_ :: _ :: _) as tds) ->
+  | _, (_ :: _ :: _ as tds) ->
     let type_names = List.map (fun td -> td.ptype_name.txt) tds in
     let config = { config with recursive_group = type_names } in
     let schemas =
@@ -323,21 +323,16 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
         (fun td ->
           let allow_extra_fields = Attribute.get jsonschema_td_allow_extra_fields td |> Option.is_some in
           let body = schema_body_of_td ~loc ~config ~allow_extra_fields td in
-          (td.ptype_name.txt, body))
+          td.ptype_name.txt, body)
         tds
     in
-    let defs_list =
-      List.map (fun (name, schema) -> [%expr [%e estring ~loc name], [%e schema]]) schemas
-    in
+    let defs_list = List.map (fun (name, schema) -> [%expr [%e estring ~loc name], [%e schema]]) schemas in
     List.map
       (fun (type_name, _) ->
         let value =
           [%expr
             `Assoc
-              [
-                "$defs", `Assoc [%e elist ~loc defs_list];
-                "$ref", `String [%e estring ~loc ("#/$defs/" ^ type_name)];
-              ]]
+              [ "$defs", `Assoc [%e elist ~loc defs_list]; "$ref", `String [%e estring ~loc ("#/$defs/" ^ type_name)] ]]
         in
         create_value ~loc type_name value)
       schemas
@@ -364,5 +359,4 @@ let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_va
 
 let sig_generator () = Deriving.Generator.V2.make (args ()) derive_jsonschema_sig
 
-let _ : Deriving.t =
-  Deriving.add deriver_name ~str_type_decl:(generator ()) ~sig_type_decl:(sig_generator ())
+let _ : Deriving.t = Deriving.add deriver_name ~str_type_decl:(generator ()) ~sig_type_decl:(sig_generator ())

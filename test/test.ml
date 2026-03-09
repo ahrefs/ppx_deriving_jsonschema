@@ -1785,7 +1785,8 @@ type ('a, 'b) either =
 
 let%expect_test "multi_param_variant" =
   print_schema (either_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
@@ -1811,7 +1812,8 @@ type ('a, 'b) either_alias = ('a, 'b) either [@@deriving jsonschema]
 
 let%expect_test "multi_param_abstract" =
   print_schema (either_alias_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
@@ -1840,7 +1842,8 @@ type ('a, 'b) direction =
 
 let%expect_test "multi_param_variant_as_string" =
   print_schema (direction_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
@@ -1864,14 +1867,15 @@ let%expect_test "nested_params" =
 type node_content = node list [@@deriving jsonschema]
 
 and node = {
-  value: string;
-  children: node_content option;
+  value : string;
+  children : node_content option;
 }
 [@@deriving jsonschema]
 
 let%expect_test "mutually_recursive_alias" =
   print_schema node_content_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
@@ -1892,7 +1896,8 @@ let%expect_test "mutually_recursive_alias" =
 
 let%expect_test "mutually_recursive_record" =
   print_schema node_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$defs": {
