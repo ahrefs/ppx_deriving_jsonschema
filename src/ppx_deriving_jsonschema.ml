@@ -381,7 +381,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 
-let yojson_basic_t ~loc = ptyp_constr ~loc { txt = Ldot (Ldot (Lident "Yojson", "Basic"), "t"); loc } []
+let yojson_basic_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Melange_json", "t"); loc } []
 
 let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
