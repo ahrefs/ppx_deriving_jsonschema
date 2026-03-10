@@ -22,7 +22,7 @@ let schemas =
     json_schema numbers_jsonschema;
     json_schema opt_jsonschema;
     json_schema using_m_jsonschema;
-    json_schema poly2_jsonschema;
+    json_schema (poly2_jsonschema int_jsonschema);
     json_schema tuple_with_variant_jsonschema;
     json_schema ~id:"https://ahrefs.com/schemas/player_scores" ~title:"Player scores"
       ~description:"Object representing player scores"

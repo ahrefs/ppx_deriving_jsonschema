@@ -1,5 +1,7 @@
 (lang dune 3.16)
 
+(using melange 0.1)
+
 (name ppx_deriving_jsonschema)
 
 (generate_opam_files true)
