@@ -381,19 +381,19 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 
-let yojson_basic_t ~loc = ptyp_constr ~loc { txt = Ldot (Ldot (Lident "Yojson", "Basic"), "t"); loc } []
+let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } []
 
 let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   match ast with
   | _, [ td ] ->
-    let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> yojson_basic_t ~loc) in
+    let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> jsonschema_t ~loc) in
     let name = { txt = td.ptype_name.txt ^ "_jsonschema"; loc } in
     [ psig_value ~loc (value_description ~loc ~name ~type_:typ ~prim:[]) ]
   | _, type_decls when List.length type_decls > 1 ->
     List.map
       (fun td ->
-        let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> yojson_basic_t ~loc) in
+        let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> jsonschema_t ~loc) in
         let name = { txt = td.ptype_name.txt ^ "_jsonschema"; loc } in
         psig_value ~loc (value_description ~loc ~name ~type_:typ ~prim:[]))
       type_decls
