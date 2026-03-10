@@ -645,6 +645,20 @@ let%expect_test "mutually_recursive_bar" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "foo": {
+          "type": "object",
+          "properties": { "bar": { "$ref": "#/$defs/bar" } },
+          "required": [],
+          "additionalProperties": false
+        },
+        "bar": {
+          "type": "object",
+          "properties": { "foo": { "$ref": "#/$defs/foo" } },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
       "$ref": "#/$defs/bar"
     }
     |}]

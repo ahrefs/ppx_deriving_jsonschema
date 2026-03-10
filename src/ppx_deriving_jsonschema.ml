@@ -365,11 +365,12 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
       let defs = List.map (fun (name, schema, _) -> name, schema) results in
       let combined_schema = Schema.with_multi_defs ~loc ~primary_type defs in
       let primary_value = create_value ~loc primary_type combined_schema in
-      (* Generate individual values that reference into $defs for other types *)
+      (* Generate individual values, each with the full $defs and $ref to their own type *)
       let other_values =
         List.filter_map
           (fun (name, _, _) ->
-            if name = primary_type then None else Some (create_value ~loc name (Schema.type_ref ~loc name)))
+            if name = primary_type then None
+            else Some (create_value ~loc name (Schema.with_multi_defs ~loc ~primary_type:name defs)))
           results
       in
       primary_value :: other_values)
@@ -389,6 +390,13 @@ let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_va
     let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> yojson_basic_t ~loc) in
     let name = { txt = td.ptype_name.txt ^ "_jsonschema"; loc } in
     [ psig_value ~loc (value_description ~loc ~name ~type_:typ ~prim:[]) ]
+  | _, type_decls when List.length type_decls > 1 ->
+    List.map
+      (fun td ->
+        let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> yojson_basic_t ~loc) in
+        let name = { txt = td.ptype_name.txt ^ "_jsonschema"; loc } in
+        psig_value ~loc (value_description ~loc ~name ~type_:typ ~prim:[]))
+      type_decls
   | _, _ ->
     let ext = Location.error_extensionf ~loc "ppx_deriving_jsonschema: unsupported type" in
     [ psig_extension ~loc ext [] ]

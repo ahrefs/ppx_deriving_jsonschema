@@ -976,8 +976,29 @@ include
                    ("required", (`List []));
                    ("additionalProperties", (`Bool false))]))]));
         ("$ref", (`String "#/$defs/foo"))][@@warning "-32-39"]
-    let bar_jsonschema = `Assoc [("$ref", (`String "#/$defs/bar"))][@@warning
-                                                                    "-32-39"]
+    let bar_jsonschema =
+      `Assoc
+        [("$defs",
+           (`Assoc
+              [("foo",
+                 (`Assoc
+                    [("type", (`String "object"));
+                    ("properties",
+                      (`Assoc
+                         [("bar",
+                            (`Assoc [("$ref", (`String "#/$defs/bar"))]))]));
+                    ("required", (`List []));
+                    ("additionalProperties", (`Bool false))]));
+              ("bar",
+                (`Assoc
+                   [("type", (`String "object"));
+                   ("properties",
+                     (`Assoc
+                        [("foo",
+                           (`Assoc [("$ref", (`String "#/$defs/foo"))]))]));
+                   ("required", (`List []));
+                   ("additionalProperties", (`Bool false))]))]));
+        ("$ref", (`String "#/$defs/bar"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "mutually_recursive_foo" =
@@ -1010,6 +1031,20 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "foo": {
+          "type": "object",
+          "properties": { "bar": { "$ref": "#/$defs/bar" } },
+          "required": [],
+          "additionalProperties": false
+        },
+        "bar": {
+          "type": "object",
+          "properties": { "foo": { "$ref": "#/$defs/foo" } },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
       "$ref": "#/$defs/bar"
     }
     |}]]
@@ -1106,8 +1141,87 @@ include
                            ("minItems", (`Int 2));
                            ("maxItems", (`Int 2))]]))]))]));
         ("$ref", (`String "#/$defs/expr"))][@@warning "-32-39"]
-    let stmt_jsonschema = `Assoc [("$ref", (`String "#/$defs/stmt"))]
-      [@@warning "-32-39"]
+    let stmt_jsonschema =
+      `Assoc
+        [("$defs",
+           (`Assoc
+              [("expr",
+                 (`Assoc
+                    [("anyOf",
+                       (`List
+                          [`Assoc
+                             [("type", (`String "array"));
+                             ("prefixItems",
+                               (`List
+                                  [`Assoc [("const", (`String "Literal"))];
+                                  `Assoc [("type", (`String "integer"))]]));
+                             ("unevaluatedItems", (`Bool false));
+                             ("minItems", (`Int 2));
+                             ("maxItems", (`Int 2))];
+                          `Assoc
+                            [("type", (`String "array"));
+                            ("prefixItems",
+                              (`List
+                                 [`Assoc [("const", (`String "Binary"))];
+                                 `Assoc [("$ref", (`String "#/$defs/expr"))];
+                                 `Assoc [("$ref", (`String "#/$defs/expr"))]]));
+                            ("unevaluatedItems", (`Bool false));
+                            ("minItems", (`Int 3));
+                            ("maxItems", (`Int 3))];
+                          `Assoc
+                            [("type", (`String "array"));
+                            ("prefixItems",
+                              (`List
+                                 [`Assoc [("const", (`String "Block"))];
+                                 `Assoc
+                                   [("type", (`String "array"));
+                                   ("items",
+                                     (`Assoc
+                                        [("$ref", (`String "#/$defs/stmt"))]))]]));
+                            ("unevaluatedItems", (`Bool false));
+                            ("minItems", (`Int 2));
+                            ("maxItems", (`Int 2))]]))]));
+              ("stmt",
+                (`Assoc
+                   [("anyOf",
+                      (`List
+                         [`Assoc
+                            [("type", (`String "array"));
+                            ("prefixItems",
+                              (`List
+                                 [`Assoc [("const", (`String "ExprStmt"))];
+                                 `Assoc [("$ref", (`String "#/$defs/expr"))]]));
+                            ("unevaluatedItems", (`Bool false));
+                            ("minItems", (`Int 2));
+                            ("maxItems", (`Int 2))];
+                         `Assoc
+                           [("type", (`String "array"));
+                           ("prefixItems",
+                             (`List
+                                [`Assoc [("const", (`String "IfStmt"))];
+                                `Assoc
+                                  [("type", (`String "object"));
+                                  ("properties",
+                                    (`Assoc
+                                       [("else_",
+                                          (`Assoc
+                                             [("$ref",
+                                                (`String "#/$defs/stmt"))]));
+                                       ("then_",
+                                         (`Assoc
+                                            [("$ref",
+                                               (`String "#/$defs/stmt"))]));
+                                       ("cond",
+                                         (`Assoc
+                                            [("$ref",
+                                               (`String "#/$defs/expr"))]))]));
+                                  ("required",
+                                    (`List [`String "then_"; `String "cond"]));
+                                  ("additionalProperties", (`Bool false))]]));
+                           ("unevaluatedItems", (`Bool false));
+                           ("minItems", (`Int 2));
+                           ("maxItems", (`Int 2))]]))]))]));
+        ("$ref", (`String "#/$defs/stmt"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "mutually_recursive_expr" =
@@ -1281,10 +1395,82 @@ include
                    ("required", (`List []));
                    ("additionalProperties", (`Bool false))]))]));
         ("$ref", (`String "#/$defs/node_a"))][@@warning "-32-39"]
-    let node_b_jsonschema = `Assoc [("$ref", (`String "#/$defs/node_b"))]
-      [@@warning "-32-39"]
-    let node_c_jsonschema = `Assoc [("$ref", (`String "#/$defs/node_c"))]
-      [@@warning "-32-39"]
+    let node_b_jsonschema =
+      `Assoc
+        [("$defs",
+           (`Assoc
+              [("node_a",
+                 (`Assoc
+                    [("type", (`String "object"));
+                    ("properties",
+                      (`Assoc
+                         [("c",
+                            (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                         ("b",
+                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]))]));
+                    ("required", (`List []));
+                    ("additionalProperties", (`Bool false))]));
+              ("node_b",
+                (`Assoc
+                   [("type", (`String "object"));
+                   ("properties",
+                     (`Assoc
+                        [("c",
+                           (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                        ("a",
+                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
+                   ("required", (`List []));
+                   ("additionalProperties", (`Bool false))]));
+              ("node_c",
+                (`Assoc
+                   [("type", (`String "object"));
+                   ("properties",
+                     (`Assoc
+                        [("b",
+                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]));
+                        ("a",
+                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
+                   ("required", (`List []));
+                   ("additionalProperties", (`Bool false))]))]));
+        ("$ref", (`String "#/$defs/node_b"))][@@warning "-32-39"]
+    let node_c_jsonschema =
+      `Assoc
+        [("$defs",
+           (`Assoc
+              [("node_a",
+                 (`Assoc
+                    [("type", (`String "object"));
+                    ("properties",
+                      (`Assoc
+                         [("c",
+                            (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                         ("b",
+                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]))]));
+                    ("required", (`List []));
+                    ("additionalProperties", (`Bool false))]));
+              ("node_b",
+                (`Assoc
+                   [("type", (`String "object"));
+                   ("properties",
+                     (`Assoc
+                        [("c",
+                           (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                        ("a",
+                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
+                   ("required", (`List []));
+                   ("additionalProperties", (`Bool false))]));
+              ("node_c",
+                (`Assoc
+                   [("type", (`String "object"));
+                   ("properties",
+                     (`Assoc
+                        [("b",
+                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]));
+                        ("a",
+                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
+                   ("required", (`List []));
+                   ("additionalProperties", (`Bool false))]))]));
+        ("$ref", (`String "#/$defs/node_c"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "three_way_mutual_recursion" =

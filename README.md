@@ -498,8 +498,15 @@ This generates `expr_jsonschema` containing all definitions in `$defs`:
 }
 ```
 
-The secondary type `stmt_jsonschema` contains a simple reference:
+The secondary type `stmt_jsonschema` is also a self-contained schema, with the same `$defs` but `$ref` pointing to its own type:
 
 ```json
-{ "$ref": "#/$defs/stmt" }
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "expr": { ... },
+    "stmt": { ... }
+  },
+  "$ref": "#/$defs/stmt"
+}
 ```
