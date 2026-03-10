@@ -2,6 +2,7 @@
 
 - add support for recursive types (self-referential)
 - add support for mutually recursive types (defined with `and`)
+- add support to polymorphic types
 
 # 0.0.4
 
