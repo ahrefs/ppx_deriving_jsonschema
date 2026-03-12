@@ -1,3 +1,6 @@
+# 0.0.6
+- update jsonschema derivation to use t instead of Yojson.Basic for type signatures 
+
 # 0.0.5
 
 - add support for recursive types (self-referential)
