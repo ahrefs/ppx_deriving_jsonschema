@@ -2297,3 +2297,71 @@ let%expect_test "multi_param_variant_as_string" =
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
     }
     |}]
+
+(* Description attribute tests *)
+
+type tool_params = {
+  query : string; [@jsonschema.description "The search query to execute"]
+  max_results : int; [@jsonschema.description "Maximum number of results to return"]
+}
+[@@deriving jsonschema]
+
+let%expect_test "field_description" =
+  print_schema tool_params_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "max_results": {
+          "description": "Maximum number of results to return",
+          "type": "integer"
+        },
+        "query": {
+          "description": "The search query to execute",
+          "type": "string"
+        }
+      },
+      "required": [ "max_results", "query" ],
+      "additionalProperties": false
+    } |}]
+
+type described_record = {
+  name : string; [@jsonschema.description "The user's full name"]
+  age : int option; [@jsonschema.description "The user's age"]
+}
+[@@deriving jsonschema] [@@jsonschema.description "A user object"]
+
+let%expect_test "type_and_field_description" =
+  print_schema described_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A user object",
+      "type": "object",
+      "properties": {
+        "age": { "description": "The user's age", "type": "integer" },
+        "name": { "description": "The user's full name", "type": "string" }
+      },
+      "required": [ "name" ],
+      "additionalProperties": false
+    } |}]
+
+type with_key_and_desc = { opt : int option [@key "opt_int"] [@jsonschema.description "An optional integer"] }
+[@@deriving jsonschema]
+
+let%expect_test "field_description_with_key" =
+  print_schema with_key_and_desc_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "opt_int": { "description": "An optional integer", "type": "integer" }
+      },
+      "required": [],
+      "additionalProperties": false
+    } |}]

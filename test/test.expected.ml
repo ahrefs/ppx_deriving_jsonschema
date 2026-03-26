@@ -3575,3 +3575,143 @@ include
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
     }
     |}]]
+type tool_params =
+  {
+  query: string [@jsonschema.description "The search query to execute"];
+  max_results: int
+    [@jsonschema.description "Maximum number of results to return"]}[@@deriving
+                                                                    jsonschema]
+include
+  struct
+    let tool_params_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("max_results",
+                ((match `Assoc [("type", (`String "integer"))] with
+                  | `Assoc fields ->
+                      `Assoc
+                        (("description",
+                           (`String "Maximum number of results to return"))
+                        :: fields)
+                  | s -> s)));
+             ("query",
+               ((match `Assoc [("type", (`String "string"))] with
+                 | `Assoc fields ->
+                     `Assoc
+                       (("description",
+                          (`String "The search query to execute"))
+                       :: fields)
+                 | s -> s)))]));
+        ("required", (`List [`String "max_results"; `String "query"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "field_description" =
+    print_schema tool_params_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "max_results": {
+          "description": "Maximum number of results to return",
+          "type": "integer"
+        },
+        "query": {
+          "description": "The search query to execute",
+          "type": "string"
+        }
+      },
+      "required": [ "max_results", "query" ],
+      "additionalProperties": false
+    } |}]]
+type described_record =
+  {
+  name: string [@jsonschema.description "The user's full name"];
+  age: int option [@jsonschema.description "The user's age"]}[@@deriving
+                                                               jsonschema]
+[@@jsonschema.description "A user object"]
+include
+  struct
+    let described_record_jsonschema =
+      match `Assoc
+              [("type", (`String "object"));
+              ("properties",
+                (`Assoc
+                   [("age",
+                      ((match `Assoc [("type", (`String "integer"))] with
+                        | `Assoc fields ->
+                            `Assoc
+                              (("description", (`String "The user's age")) ::
+                              fields)
+                        | s -> s)));
+                   ("name",
+                     ((match `Assoc [("type", (`String "string"))] with
+                       | `Assoc fields ->
+                           `Assoc
+                             (("description",
+                                (`String "The user's full name"))
+                             :: fields)
+                       | s -> s)))]));
+              ("required", (`List [`String "name"]));
+              ("additionalProperties", (`Bool false))]
+      with
+      | `Assoc fields ->
+          `Assoc (("description", (`String "A user object")) :: fields)
+      | s -> s[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "type_and_field_description" =
+    print_schema described_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A user object",
+      "type": "object",
+      "properties": {
+        "age": { "description": "The user's age", "type": "integer" },
+        "name": { "description": "The user's full name", "type": "string" }
+      },
+      "required": [ "name" ],
+      "additionalProperties": false
+    } |}]]
+type with_key_and_desc =
+  {
+  opt: int option
+    [@key "opt_int"][@jsonschema.description "An optional integer"]}[@@deriving
+                                                                    jsonschema]
+include
+  struct
+    let with_key_and_desc_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("opt_int",
+                ((match `Assoc [("type", (`String "integer"))] with
+                  | `Assoc fields ->
+                      `Assoc
+                        (("description", (`String "An optional integer")) ::
+                        fields)
+                  | s -> s)))]));
+        ("required", (`List []));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "field_description_with_key" =
+    print_schema with_key_and_desc_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "opt_int": { "description": "An optional integer", "type": "integer" }
+      },
+      "required": [],
+      "additionalProperties": false
+    } |}]]

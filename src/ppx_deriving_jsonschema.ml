@@ -43,6 +43,16 @@ let jsonschema_cd_allow_extra_fields =
     Ast_pattern.(pstr nil)
     (fun () -> ())
 
+let jsonschema_ld_description =
+  Attribute.declare "jsonschema.description" Attribute.Context.label_declaration
+    Ast_pattern.(single_expr_payload (estring __'))
+    (fun x -> x)
+
+let jsonschema_td_description =
+  Attribute.declare "jsonschema.description" Attribute.Context.type_declaration
+    Ast_pattern.(single_expr_payload (estring __'))
+    (fun x -> x)
+
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -51,6 +61,8 @@ let attributes =
     Attribute.T jsonschema_polymorphic_variant_name;
     Attribute.T jsonschema_td_allow_extra_fields;
     Attribute.T jsonschema_cd_allow_extra_fields;
+    Attribute.T jsonschema_ld_description;
+    Attribute.T jsonschema_td_description;
   ]
 
 (* let args () = Deriving.Args.(empty) *)
@@ -127,6 +139,12 @@ module Schema = struct
   let with_multi_defs ~loc ~primary_type defs =
     let defs_expr = elist ~loc (List.map (fun (name, schema) -> [%expr [%e estring ~loc name], [%e schema]]) defs) in
     [%expr `Assoc [ "$defs", `Assoc [%e defs_expr]; "$ref", `String [%e estring ~loc ("#/$defs/" ^ primary_type)] ]]
+
+  let with_description ~loc desc schema =
+    [%expr
+      match [%e schema] with
+      | `Assoc fields -> `Assoc (("description", `String [%e estring ~loc desc]) :: fields)
+      | s -> s]
 end
 
 let variant_as_string ~loc constrs =
@@ -264,6 +282,11 @@ let object_ ~loc ~config ?(recursive_types = []) fields allow_extra_fields =
           | Some def -> Schema.type_ref ~loc def.txt, false
           | None -> type_of_core ~config ~recursive_types pld_type
         in
+        let type_def =
+          match Attribute.get jsonschema_ld_description field with
+          | Some desc -> Schema.with_description ~loc desc.txt type_def
+          | None -> type_def
+        in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           (if is_optional_type pld_type then required else { txt = name; loc } :: required),
           is_rec || field_rec ))
@@ -351,6 +374,11 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     let recursive_types = [ type_name ] in
     let _, schema, is_rec = derive_single_type ~loc ~config ~recursive_types type_decl in
     let schema = if is_rec then Schema.with_defs ~loc type_name schema else schema in
+    let schema =
+      match Attribute.get jsonschema_td_description type_decl with
+      | Some desc -> Schema.with_description ~loc desc.txt schema
+      | None -> schema
+    in
     [ create_value ~loc type_name schema ]
   (* Multiple type declarations (mutually recursive types) *)
   | _, type_decls when List.length type_decls > 1 ->
