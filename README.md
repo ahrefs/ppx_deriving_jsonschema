@@ -297,6 +297,42 @@ This will generate a schema that allows additional fields for the `User` variant
 }
 ```
 
+#### Annotations
+
+The `[@annotation "key" "value"]` attribute adds an arbitrary key-value pair to the generated schema. It can be used on record fields (single `@`) or type declarations (double `@@`), and can appear multiple times to add several annotations.
+
+```ocaml
+type user = {
+  name  : string;
+    [@annotation "description" "The user's full name"]
+    [@annotation "pattern" "^[A-Z].*"]
+  age   : int;    [@annotation "description" "Age in years"]
+  email : string option;
+}
+[@@deriving jsonschema]
+[@@annotation "description" "Represents a user account"]
+[@@annotation "title" "User"]
+```
+
+```json
+{
+  "title": "User",
+  "description": "Represents a user account",
+  "type": "object",
+  "properties": {
+    "email": { "type": "string" },
+    "age": { "description": "Age in years", "type": "integer" },
+    "name": {
+      "pattern": "^[A-Z].*",
+      "description": "The user's full name",
+      "type": "string"
+    }
+  },
+  "required": [ "age", "name" ],
+  "additionalProperties": false
+}
+```
+
 #### References
 
 Rather than inlining the definition of a type it is possible to use a [json schema `$ref`](https://json-schema.org/understanding-json-schema/structuring#dollarref) using the `[@ref "name"]` attribute. In such a case, the type definition must be passed to `Ppx_deriving_jsonschema_runtime.json_schema` as a parameter.

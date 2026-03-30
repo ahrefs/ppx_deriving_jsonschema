@@ -2297,3 +2297,39 @@ let%expect_test "multi_param_variant_as_string" =
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
     }
     |}]
+
+type name = string [@@deriving jsonschema]
+
+type annotated_user = {
+  name : name;
+    [@annotation "description" "The user's full name"]
+    [@annotation "pattern" "^[A-Z].*"]
+  age : int; [@annotation "description" "Age in years"]
+  email : string option;
+}
+[@@deriving jsonschema]
+[@@annotation "description" "Represents a user account"]
+[@@annotation "title" "User"]
+
+let%expect_test "annotated_user" =
+  print_schema annotated_user_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Represents a user account",
+      "title": "User",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "age": { "description": "Age in years", "type": "integer" },
+        "name": {
+          "description": "The user's full name",
+          "pattern": "^[A-Z].*",
+          "type": "string"
+        }
+      },
+      "required": [ "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]

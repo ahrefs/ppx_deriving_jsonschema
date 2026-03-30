@@ -53,6 +53,49 @@ let attributes =
     Attribute.T jsonschema_cd_allow_extra_fields;
   ]
 
+(* Collect all [@@jsonschema.annotation "key" "value"] attributes from a list.
+   ppxlib's Attribute.get raises on duplicates so we scan manually to support
+   multiple occurrences of the same attribute name. *)
+let get_annotations attributes =
+  List.filter_map
+    (fun attr ->
+      let name = attr.attr_name.txt in
+      if name = "jsonschema.annotation" || name = "annotation" then begin
+        Attribute.mark_as_handled_manually attr;
+        match attr.attr_payload with
+        | PStr
+            [ { pstr_desc =
+                  Pstr_eval
+                    ( { pexp_desc =
+                          Pexp_apply
+                            ( { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ },
+                              [ (Nolabel, { pexp_desc = Pexp_constant (Pconst_string (value, _, _)); _ }) ] );
+                        _ },
+                      _ );
+                _ }
+            ] -> Some (key, value)
+        | _ ->
+          Location.raise_errorf ~loc:attr.attr_name.loc
+            "ppx_deriving_jsonschema: [@@jsonschema.annotation] expects two string arguments, \
+             e.g. [@@jsonschema.annotation \"key\" \"value\"]"
+      end else None)
+    attributes
+
+(* Prepend arbitrary key-value pairs to a schema's assoc list. *)
+let apply_annotations ~loc annotations schema =
+  match annotations with
+  | [] -> schema
+  | _ ->
+    let annotation_fields =
+      List.map
+        (fun (key, value) -> [%expr [%e estring ~loc key], `String [%e estring ~loc value]])
+        annotations
+    in
+    [%expr
+      match [%e schema] with
+      | `Assoc fields -> `Assoc ([%e elist ~loc annotation_fields] @ fields)
+      | other -> other]
+
 (* let args () = Deriving.Args.(empty) *)
 let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple")
 
@@ -264,6 +307,8 @@ let object_ ~loc ~config ?(recursive_types = []) fields allow_extra_fields =
           | Some def -> Schema.type_ref ~loc def.txt, false
           | None -> type_of_core ~config ~recursive_types pld_type
         in
+        let field_annotations = get_annotations field.pld_attributes in
+        let type_def = apply_annotations ~loc field_annotations type_def in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           (if is_optional_type pld_type then required else { txt = name; loc } :: required),
           is_rec || field_rec ))
@@ -294,6 +339,7 @@ let derive_single_type ~loc ~config ~recursive_types type_decl =
   let type_name = type_decl.ptype_name.txt in
   let allow_extra_fields = Attribute.get jsonschema_td_allow_extra_fields type_decl |> Option.is_some in
   let params = List.map (fun tp -> (get_type_param_name tp).txt) type_decl.ptype_params in
+  let type_annotations = get_annotations type_decl.ptype_attributes in
   match type_decl.ptype_kind with
   | Ptype_variant variants ->
     let variants, is_rec =
@@ -323,14 +369,17 @@ let derive_single_type ~loc ~config ~recursive_types type_decl =
       | true -> variant_as_string ~loc variants, "_"
       | false -> variant_as_array ~loc variants, ""
     in
+    let schema = apply_annotations ~loc type_annotations schema in
     type_name, wrap_type_params ~loc ~prefix:params_prefix params schema, is_rec
   | Ptype_record label_declarations ->
     let schema, is_rec = object_ ~loc ~config ~recursive_types label_declarations allow_extra_fields in
+    let schema = apply_annotations ~loc type_annotations schema in
     type_name, wrap_type_params ~loc params schema, is_rec
   | Ptype_abstract ->
     (match type_decl.ptype_manifest with
     | Some core_type ->
       let schema, is_rec = type_of_core ~config ~recursive_types core_type in
+      let schema = apply_annotations ~loc type_annotations schema in
       type_name, wrap_type_params ~loc params schema, is_rec
     | None ->
       let msg = "ppx_deriving_jsonschema: abstract type without manifest" in

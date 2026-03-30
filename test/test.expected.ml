@@ -3575,3 +3575,74 @@ include
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
     }
     |}]]
+type name = string[@@deriving jsonschema]
+include
+  struct
+    let name_jsonschema = `Assoc [("type", (`String "string"))][@@warning
+                                                                 "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type annotated_user =
+  {
+  name: name
+    [@annotation "description" "The user's full name"][@annotation
+                                                        "pattern" "^[A-Z].*"];
+  age: int [@annotation "description" "Age in years"];
+  email: string option }[@@deriving jsonschema][@@annotation
+                                                 "description"
+                                                   "Represents a user account"]
+[@@annotation "title" "User"]
+include
+  struct
+    let annotated_user_jsonschema =
+      match `Assoc
+              [("type", (`String "object"));
+              ("properties",
+                (`Assoc
+                   [("email", (`Assoc [("type", (`String "string"))]));
+                   ("age",
+                     ((match `Assoc [("type", (`String "integer"))] with
+                       | `Assoc fields ->
+                           `Assoc
+                             ([("description", (`String "Age in years"))] @
+                                fields)
+                       | other -> other)));
+                   ("name",
+                     ((match name_jsonschema with
+                       | `Assoc fields ->
+                           `Assoc
+                             ([("description",
+                                 (`String "The user's full name"));
+                              ("pattern", (`String "^[A-Z].*"))] @ fields)
+                       | other -> other)))]));
+              ("required", (`List [`String "age"; `String "name"]));
+              ("additionalProperties", (`Bool false))]
+      with
+      | `Assoc fields ->
+          `Assoc
+            ([("description", (`String "Represents a user account"));
+             ("title", (`String "User"))] @ fields)
+      | other -> other[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "annotated_user" =
+    print_schema annotated_user_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Represents a user account",
+      "title": "User",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "age": { "description": "Age in years", "type": "integer" },
+        "name": {
+          "description": "The user's full name",
+          "pattern": "^[A-Z].*",
+          "type": "string"
+        }
+      },
+      "required": [ "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]]
