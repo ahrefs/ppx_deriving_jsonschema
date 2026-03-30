@@ -2301,15 +2301,11 @@ let%expect_test "multi_param_variant_as_string" =
 type name = string [@@deriving jsonschema]
 
 type annotated_user = {
-  name : name;
-    [@annotation "description" "The user's full name"]
-    [@annotation "pattern" "^[A-Z].*"]
+  name : name; [@annotation "description" "The user's full name"] [@annotation "pattern" "^[A-Z].*"]
   age : int; [@annotation "description" "Age in years"]
   email : string option;
 }
-[@@deriving jsonschema]
-[@@annotation "description" "Represents a user account"]
-[@@annotation "title" "User"]
+[@@deriving jsonschema] [@@annotation "description" "Represents a user account"] [@@annotation "title" "User"]
 
 let%expect_test "annotated_user" =
   print_schema annotated_user_jsonschema;

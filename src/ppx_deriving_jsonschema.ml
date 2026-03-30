@@ -64,21 +64,28 @@ let get_annotations attributes =
         Attribute.mark_as_handled_manually attr;
         match attr.attr_payload with
         | PStr
-            [ { pstr_desc =
+            [
+              {
+                pstr_desc =
                   Pstr_eval
-                    ( { pexp_desc =
+                    ( {
+                        pexp_desc =
                           Pexp_apply
                             ( { pexp_desc = Pexp_constant (Pconst_string (key, _, _)); _ },
                               [ (Nolabel, { pexp_desc = Pexp_constant (Pconst_string (value, _, _)); _ }) ] );
-                        _ },
+                        _;
+                      },
                       _ );
-                _ }
-            ] -> Some (key, value)
+                _;
+              };
+            ] ->
+          Some (key, value)
         | _ ->
           Location.raise_errorf ~loc:attr.attr_name.loc
-            "ppx_deriving_jsonschema: [@@jsonschema.annotation] expects two string arguments, \
-             e.g. [@@jsonschema.annotation \"key\" \"value\"]"
-      end else None)
+            "ppx_deriving_jsonschema: [@@jsonschema.annotation] expects two string arguments, e.g. \
+             [@@jsonschema.annotation \"key\" \"value\"]"
+      end
+      else None)
     attributes
 
 (* Prepend arbitrary key-value pairs to a schema's assoc list. *)
@@ -87,9 +94,7 @@ let apply_annotations ~loc annotations schema =
   | [] -> schema
   | _ ->
     let annotation_fields =
-      List.map
-        (fun (key, value) -> [%expr [%e estring ~loc key], `String [%e estring ~loc value]])
-        annotations
+      List.map (fun (key, value) -> [%expr [%e estring ~loc key], `String [%e estring ~loc value]]) annotations
     in
     [%expr
       match [%e schema] with
