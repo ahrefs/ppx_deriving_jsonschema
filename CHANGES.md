@@ -1,5 +1,8 @@
+# Next release
+- add `[@@jsonschema.annotation "key" "value"]` attribute to inject arbitrary key-value pairs into the generated schema (supported on type declarations and record fields)
+
 # 0.0.6
-- update jsonschema derivation to use t instead of Yojson.Basic for type signatures 
+- update jsonschema derivation to use t instead of Yojson.Basic for type signatures
 
 # 0.0.5
 

@@ -3575,3 +3575,120 @@ include
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
     }
     |}]]
+type annotated_record =
+  {
+  name: string [@jsonschema.annotation "description" "The user's name"];
+  age: int
+    [@jsonschema.annotation "minimum" "0"][@jsonschema.annotation
+                                            "description" "Age in years"]}
+[@@deriving jsonschema][@@jsonschema.annotation "title" "Annotated Record"]
+include
+  struct
+    let annotated_record_jsonschema =
+      match `Assoc
+              [("type", (`String "object"));
+              ("properties",
+                (`Assoc
+                   [("age",
+                      ((match `Assoc [("type", (`String "integer"))] with
+                        | `Assoc fields ->
+                            `Assoc
+                              ([("minimum", (`String "0"));
+                               ("description", (`String "Age in years"))] @
+                                 fields)
+                        | other -> other)));
+                   ("name",
+                     ((match `Assoc [("type", (`String "string"))] with
+                       | `Assoc fields ->
+                           `Assoc
+                             ([("description", (`String "The user's name"))]
+                                @ fields)
+                       | other -> other)))]));
+              ("required", (`List [`String "age"; `String "name"]));
+              ("additionalProperties", (`Bool false))]
+      with
+      | `Assoc fields ->
+          `Assoc ([("title", (`String "Annotated Record"))] @ fields)
+      | other -> other[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "field_annotations" =
+    print_schema annotated_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Annotated Record",
+      "type": "object",
+      "properties": {
+        "age": {
+          "minimum": "0",
+          "description": "Age in years",
+          "type": "integer"
+        },
+        "name": { "description": "The user's name", "type": "string" }
+      },
+      "required": [ "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]]
+type annotated_variant =
+  | Success of string 
+  | Failure of string [@@deriving jsonschema][@@jsonschema.annotation
+                                               "description"
+                                                 "Operation result"]
+include
+  struct
+    let annotated_variant_jsonschema =
+      match `Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List
+                            [`Assoc [("const", (`String "Success"))];
+                            `Assoc [("type", (`String "string"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 2));
+                       ("maxItems", (`Int 2))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List
+                           [`Assoc [("const", (`String "Failure"))];
+                           `Assoc [("type", (`String "string"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 2));
+                      ("maxItems", (`Int 2))]]))]
+      with
+      | `Assoc fields ->
+          `Assoc ([("description", (`String "Operation result"))] @ fields)
+      | other -> other[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "type_annotation" =
+    print_schema annotated_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Operation result",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Success" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Failure" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]]

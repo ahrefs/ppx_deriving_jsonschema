@@ -2297,3 +2297,61 @@ let%expect_test "multi_param_variant_as_string" =
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
     }
     |}]
+
+type annotated_record = {
+  name : string; [@jsonschema.annotation "description" "The user's name"]
+  age : int; [@jsonschema.annotation "minimum" "0"] [@jsonschema.annotation "description" "Age in years"]
+}
+[@@deriving jsonschema]
+[@@jsonschema.annotation "title" "Annotated Record"]
+
+let%expect_test "field_annotations" =
+  print_schema annotated_record_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Annotated Record",
+      "type": "object",
+      "properties": {
+        "age": {
+          "minimum": "0",
+          "description": "Age in years",
+          "type": "integer"
+        },
+        "name": { "description": "The user's name", "type": "string" }
+      },
+      "required": [ "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type annotated_variant =
+  | Success of string
+  | Failure of string
+[@@deriving jsonschema]
+[@@jsonschema.annotation "description" "Operation result"]
+
+let%expect_test "type_annotation" =
+  print_schema annotated_variant_jsonschema;
+  [%expect {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Operation result",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Success" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Failure" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
