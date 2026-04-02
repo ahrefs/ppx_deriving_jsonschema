@@ -2302,12 +2302,12 @@ type annotated_record = {
   name : string; [@jsonschema.annotation "description" "The user's name"]
   age : int; [@jsonschema.annotation "minimum" "0"] [@jsonschema.annotation "description" "Age in years"]
 }
-[@@deriving jsonschema]
-[@@jsonschema.annotation "title" "Annotated Record"]
+[@@deriving jsonschema] [@@jsonschema.annotation "title" "Annotated Record"]
 
 let%expect_test "field_annotations" =
   print_schema annotated_record_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "Annotated Record",
@@ -2328,12 +2328,12 @@ let%expect_test "field_annotations" =
 type annotated_variant =
   | Success of string
   | Failure of string
-[@@deriving jsonschema]
-[@@jsonschema.annotation "description" "Operation result"]
+[@@deriving jsonschema] [@@jsonschema.annotation "description" "Operation result"]
 
 let%expect_test "type_annotation" =
   print_schema annotated_variant_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "description": "Operation result",
