@@ -1491,7 +1491,8 @@ type opt = int option [@@deriving jsonschema]
 
 let%expect_test "opt" =
   print_schema opt_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": [ "integer", "null" ]
@@ -2332,7 +2333,8 @@ type nullable_fields = {
 
 let%expect_test "nullable_fields" =
   print_schema nullable_fields_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -2354,13 +2356,12 @@ let%expect_test "nullable_fields" =
 type composing_type = string
 let composing_type_jsonschema = `Assoc [ "type", `String "string"; "description", `String "A string" ]
 
-type composing_record = {
-  composing_type: composing_type option; [@jsonschema.option]
-} [@@deriving jsonschema]
+type composing_record = { composing_type : composing_type option [@jsonschema.option] } [@@deriving jsonschema]
 
 let%expect_test "nullable_option_composing" =
   print_schema composing_record_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",

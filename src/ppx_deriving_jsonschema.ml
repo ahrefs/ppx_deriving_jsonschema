@@ -43,8 +43,7 @@ let jsonschema_cd_allow_extra_fields =
     Ast_pattern.(pstr nil)
     (fun () -> ())
 
-let jsonschema_option =
-  Attribute.declare_flag "jsonschema.option" Attribute.Context.label_declaration
+let jsonschema_option = Attribute.declare_flag "jsonschema.option" Attribute.Context.label_declaration
 
 let attributes =
   [
@@ -274,11 +273,11 @@ let object_ ~loc ~config ?(recursive_types = []) fields allow_extra_fields =
           match Attribute.get jsonschema_ref field with
           | Some def -> Schema.type_ref ~loc def.txt, false
           | None ->
-            (match pld_type with
-            | [%type: [%t? inner] option] ->
-              let s, r = type_of_core ~config ~recursive_types inner in
-              Schema.nullable ~loc s, r
-            | _ -> type_of_core ~config ~recursive_types pld_type)
+          match pld_type with
+          | [%type: [%t? inner] option] ->
+            let s, r = type_of_core ~config ~recursive_types inner in
+            Schema.nullable ~loc s, r
+          | _ -> type_of_core ~config ~recursive_types pld_type
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           (if drop_required then required else { txt = name; loc } :: required),
