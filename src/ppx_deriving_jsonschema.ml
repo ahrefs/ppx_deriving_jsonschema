@@ -43,6 +43,9 @@ let jsonschema_cd_allow_extra_fields =
     Ast_pattern.(pstr nil)
     (fun () -> ())
 
+let jsonschema_option =
+  Attribute.declare_flag "jsonschema.option" Attribute.Context.label_declaration
+
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -51,6 +54,7 @@ let attributes =
     Attribute.T jsonschema_polymorphic_variant_name;
     Attribute.T jsonschema_td_allow_extra_fields;
     Attribute.T jsonschema_cd_allow_extra_fields;
+    Attribute.T jsonschema_option;
   ]
 
 (* let args () = Deriving.Args.(empty) *)
@@ -115,6 +119,15 @@ module Schema = struct
     let values = List.map (fun name -> [%expr `String [%e estring ~loc name]]) values in
     enum ~loc (Some "string") values
 
+  (* Make a schema explicitly nullable.
+     For simple {"type": "X"} schemas, produces {"type": ["X", "null"]}.
+     For complex schemas, falls back to {"anyOf": [schema, {"type": "null"}]}. *)
+  let nullable ~loc schema =
+    [%expr
+      match [%e schema] with
+      | `Assoc [ ("type", `String t) ] -> `Assoc [ "type", `List [ `String t; `String "null" ] ]
+      | s -> `Assoc [ "anyOf", `List [ s; `Assoc [ "type", `String "null" ] ] ]]
+
   let with_defs ~loc type_name schema =
     [%expr
       `Assoc
@@ -160,11 +173,6 @@ let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_json
 
 let create_value ~loc name value = [%stri let[@warning "-32-39"] [%p value_name_pattern ~loc name] = [%e value]]
 
-let is_optional_type core_type =
-  match core_type with
-  | [%type: [%t? _] option] -> true
-  | _ -> false
-
 (* Returns (schema_expression, is_recursive)
    recursive_types: list of type names in a mutually recursive group *)
 let rec type_of_core ~config ?(recursive_types = []) core_type =
@@ -176,7 +184,9 @@ let rec type_of_core ~config ?(recursive_types = []) core_type =
   | [%type: bool] -> Schema.type_def ~loc "boolean", false
   | [%type: char] -> Schema.char ~loc, false
   | [%type: unit] -> Schema.null ~loc, false
-  | [%type: [%t? t] option] -> type_of_core ~config ~recursive_types t
+  | [%type: [%t? t] option] ->
+    let s, is_rec = type_of_core ~config ~recursive_types t in
+    Schema.nullable ~loc s, is_rec
   | [%type: [%t? t] ref] -> type_of_core ~config ~recursive_types t
   | [%type: [%t? t] list] | [%type: [%t? t] array] ->
     let t, is_rec = type_of_core ~config ~recursive_types t in
@@ -259,13 +269,19 @@ let object_ ~loc ~config ?(recursive_types = []) fields allow_extra_fields =
           | Some name -> name.txt
           | None -> pld_name.txt
         in
+        let drop_required = Attribute.has_flag jsonschema_option field in
         let type_def, field_rec =
           match Attribute.get jsonschema_ref field with
           | Some def -> Schema.type_ref ~loc def.txt, false
-          | None -> type_of_core ~config ~recursive_types pld_type
+          | None ->
+            (match pld_type with
+            | [%type: [%t? inner] option] ->
+              let s, r = type_of_core ~config ~recursive_types inner in
+              Schema.nullable ~loc s, r
+            | _ -> type_of_core ~config ~recursive_types pld_type)
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
-          (if is_optional_type pld_type then required else { txt = name; loc } :: required),
+          (if drop_required then required else { txt = name; loc } :: required),
           is_rec || field_rec ))
       ([], [], false) fields
   in

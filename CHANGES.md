@@ -1,5 +1,8 @@
+# Next release
+- make option types nullable in generated JSON Schema (e.g. `int option` → `{"type":["integer","null"]}`); add `[@@jsonschema.option]` attribute to opt a field out of `required` without making its type nullable
+
 # 0.0.6
-- update jsonschema derivation to use t instead of Yojson.Basic for type signatures 
+- update jsonschema derivation to use t instead of Yojson.Basic for type signatures
 
 # 0.0.5
 
