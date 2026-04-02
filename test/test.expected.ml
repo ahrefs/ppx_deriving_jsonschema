@@ -121,7 +121,20 @@ include
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("m2", Mod1.Mod2.m_2_jsonschema); ("m", Mod1.m_1_jsonschema)]));
+             [("m2",
+                ((match Mod1.Mod2.m_2_jsonschema with
+                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                      `Assoc
+                        (("$id", (`String "urn:jsonschema:test.ml:78:1882"))
+                        :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                  | other -> other)));
+             ("m",
+               ((match Mod1.m_1_jsonschema with
+                 | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                     `Assoc
+                       (("$id", (`String "urn:jsonschema:test.ml:77:1865"))
+                       :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                 | other -> other)))]));
         ("required", (`List [`String "m2"; `String "m"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -467,7 +480,12 @@ include
                 ("unevaluatedItems", (`Bool false));
                 ("minItems", (`Int 2));
                 ("maxItems", (`Int 2))];
-              poly_kind_jsonschema]))][@@warning "-32-39"]
+              (match poly_kind_jsonschema with
+               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                   `Assoc
+                     (("$id", (`String "urn:jsonschema:test.ml:305:7119")) ::
+                     (List.filter (fun (k, _) -> k <> "$id") pairs))
+               | other -> other)]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_inherit" =
@@ -531,7 +549,12 @@ include
            (`List
               [`Assoc [("const", (`String "New_one"))];
               `Assoc [("const", (`String "Second_one"))];
-              poly_kind_as_string_jsonschema]))][@@warning "-32-39"]
+              (match poly_kind_as_string_jsonschema with
+               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                   `Assoc
+                     (("$id", (`String "urn:jsonschema:test.ml:362:8515")) ::
+                     (List.filter (fun (k, _) -> k <> "$id") pairs))
+               | other -> other)]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "poly_inherit_as_string" =
@@ -621,7 +644,13 @@ include
                        [("anyOf",
                           (`List [s; `Assoc [("type", (`String "null"))]]))])));
              ("comment", (`Assoc [("type", (`String "string"))]));
-             ("kind_f", kind_jsonschema);
+             ("kind_f",
+               ((match kind_jsonschema with
+                 | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                     `Assoc
+                       (("$id", (`String "urn:jsonschema:test.ml:384:9016"))
+                       :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                 | other -> other)));
              ("date", (`Assoc [("type", (`String "number"))]))]));
         ("required",
           (`List
@@ -722,24 +751,24 @@ type recursive_record = {
 include
   struct
     let recursive_record_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("b",
+                  (`Assoc
+                     [("type", (`String "array"));
+                     ("items",
+                       (`Assoc
+                          [("$ref", (`String "#/$defs/recursive_record"))]))]));
+               ("a", (`Assoc [("type", (`String "integer"))]))]));
+          ("required", (`List [`String "b"; `String "a"]));
+          ("additionalProperties", (`Bool false))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("recursive_record",
-                 (`Assoc
-                    [("type", (`String "object"));
-                    ("properties",
-                      (`Assoc
-                         [("b",
-                            (`Assoc
-                               [("type", (`String "array"));
-                               ("items",
-                                 (`Assoc
-                                    [("$ref",
-                                       (`String "#/$defs/recursive_record"))]))]));
-                         ("a", (`Assoc [("type", (`String "integer"))]))]));
-                    ("required", (`List [`String "b"; `String "a"]));
-                    ("additionalProperties", (`Bool false))]))]));
+        [("$id", (`String "urn:jsonschema:recursive_record"));
+        ("$defs", (`Assoc (("recursive_record", _ppx_body) :: (!_ppx_eds))));
         ("$ref", (`String "#/$defs/recursive_record"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -749,6 +778,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:recursive_record",
       "$defs": {
         "recursive_record": {
           "type": "object",
@@ -772,31 +802,31 @@ type recursive_variant =
 include
   struct
     let recursive_variant_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "A"))];
+                        `Assoc
+                          [("$ref", (`String "#/$defs/recursive_variant"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List [`Assoc [("const", (`String "B"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 1));
+                  ("maxItems", (`Int 1))]]))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("recursive_variant",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc
-                             [("type", (`String "array"));
-                             ("prefixItems",
-                               (`List
-                                  [`Assoc [("const", (`String "A"))];
-                                  `Assoc
-                                    [("$ref",
-                                       (`String "#/$defs/recursive_variant"))]]));
-                             ("unevaluatedItems", (`Bool false));
-                             ("minItems", (`Int 2));
-                             ("maxItems", (`Int 2))];
-                          `Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List [`Assoc [("const", (`String "B"))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 1));
-                            ("maxItems", (`Int 1))]]))]))]));
+        [("$id", (`String "urn:jsonschema:recursive_variant"));
+        ("$defs", (`Assoc (("recursive_variant", _ppx_body) :: (!_ppx_eds))));
         ("$ref", (`String "#/$defs/recursive_variant"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -806,6 +836,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:recursive_variant",
       "$defs": {
         "recursive_variant": {
           "anyOf": [
@@ -840,49 +871,45 @@ type tree =
 include
   struct
     let tree_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "Leaf"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 1));
+                   ("maxItems", (`Int 1))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Node"))];
+                       `Assoc
+                         [("type", (`String "object"));
+                         ("properties",
+                           (`Assoc
+                              [("right",
+                                 (`Assoc [("$ref", (`String "#/$defs/tree"))]));
+                              ("left",
+                                (`Assoc [("$ref", (`String "#/$defs/tree"))]));
+                              ("value",
+                                (`Assoc [("type", (`String "integer"))]))]));
+                         ("required",
+                           (`List
+                              [`String "right";
+                              `String "left";
+                              `String "value"]));
+                         ("additionalProperties", (`Bool false))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("tree",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc
-                             [("type", (`String "array"));
-                             ("prefixItems",
-                               (`List [`Assoc [("const", (`String "Leaf"))]]));
-                             ("unevaluatedItems", (`Bool false));
-                             ("minItems", (`Int 1));
-                             ("maxItems", (`Int 1))];
-                          `Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "Node"))];
-                                 `Assoc
-                                   [("type", (`String "object"));
-                                   ("properties",
-                                     (`Assoc
-                                        [("right",
-                                           (`Assoc
-                                              [("$ref",
-                                                 (`String "#/$defs/tree"))]));
-                                        ("left",
-                                          (`Assoc
-                                             [("$ref",
-                                                (`String "#/$defs/tree"))]));
-                                        ("value",
-                                          (`Assoc
-                                             [("type", (`String "integer"))]))]));
-                                   ("required",
-                                     (`List
-                                        [`String "right";
-                                        `String "left";
-                                        `String "value"]));
-                                   ("additionalProperties", (`Bool false))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 2));
-                            ("maxItems", (`Int 2))]]))]))]));
+        [("$id", (`String "urn:jsonschema:tree"));
+        ("$defs", (`Assoc (("tree", _ppx_body) :: (!_ppx_eds))));
         ("$ref", (`String "#/$defs/tree"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -892,6 +919,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:tree",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -962,96 +990,84 @@ and bar = {
 include
   struct
     let foo_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body_0 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("bar",
+                  ((match `Assoc [("$ref", (`String "#/$defs/bar"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "bar"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_1 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("foo",
+                  ((match `Assoc [("$ref", (`String "#/$defs/foo"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "foo"]));
+          ("additionalProperties", (`Bool false))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("foo",
-                 (`Assoc
-                    [("type", (`String "object"));
-                    ("properties",
-                      (`Assoc
-                         [("bar",
-                            ((match `Assoc
-                                      [("$ref", (`String "#/$defs/bar"))]
-                              with
-                              | `Assoc (("type", `String t)::[]) ->
-                                  `Assoc
-                                    [("type",
-                                       (`List [`String t; `String "null"]))]
-                              | s ->
-                                  `Assoc
-                                    [("anyOf",
-                                       (`List
-                                          [s;
-                                          `Assoc [("type", (`String "null"))]]))])))]));
-                    ("required", (`List [`String "bar"]));
-                    ("additionalProperties", (`Bool false))]));
-              ("bar",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("foo",
-                           ((match `Assoc [("$ref", (`String "#/$defs/foo"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "foo"]));
-                   ("additionalProperties", (`Bool false))]))]));
+        [("$id", (`String "urn:jsonschema:foo"));
+        ("$defs",
+          (`Assoc
+             ([("foo", _ppx_body_0); ("bar", _ppx_body_1)] @ (!_ppx_eds))));
         ("$ref", (`String "#/$defs/foo"))][@@warning "-32-39"]
     let bar_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body_0 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("bar",
+                  ((match `Assoc [("$ref", (`String "#/$defs/bar"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "bar"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_1 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("foo",
+                  ((match `Assoc [("$ref", (`String "#/$defs/foo"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "foo"]));
+          ("additionalProperties", (`Bool false))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("foo",
-                 (`Assoc
-                    [("type", (`String "object"));
-                    ("properties",
-                      (`Assoc
-                         [("bar",
-                            ((match `Assoc
-                                      [("$ref", (`String "#/$defs/bar"))]
-                              with
-                              | `Assoc (("type", `String t)::[]) ->
-                                  `Assoc
-                                    [("type",
-                                       (`List [`String t; `String "null"]))]
-                              | s ->
-                                  `Assoc
-                                    [("anyOf",
-                                       (`List
-                                          [s;
-                                          `Assoc [("type", (`String "null"))]]))])))]));
-                    ("required", (`List [`String "bar"]));
-                    ("additionalProperties", (`Bool false))]));
-              ("bar",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("foo",
-                           ((match `Assoc [("$ref", (`String "#/$defs/foo"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "foo"]));
-                   ("additionalProperties", (`Bool false))]))]));
+        [("$id", (`String "urn:jsonschema:bar"));
+        ("$defs",
+          (`Assoc
+             ([("foo", _ppx_body_0); ("bar", _ppx_body_1)] @ (!_ppx_eds))));
         ("$ref", (`String "#/$defs/bar"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -1061,6 +1077,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:foo",
       "$defs": {
         "foo": {
           "type": "object",
@@ -1089,6 +1106,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:bar",
       "$defs": {
         "foo": {
           "type": "object",
@@ -1123,206 +1141,194 @@ and stmt =
 include
   struct
     let expr_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body_0 =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "Literal"))];
+                        `Assoc [("type", (`String "integer"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Binary"))];
+                       `Assoc [("$ref", (`String "#/$defs/expr"))];
+                       `Assoc [("$ref", (`String "#/$defs/expr"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 3));
+                  ("maxItems", (`Int 3))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Block"))];
+                       `Assoc
+                         [("type", (`String "array"));
+                         ("items",
+                           (`Assoc [("$ref", (`String "#/$defs/stmt"))]))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      let _ppx_body_1 =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "ExprStmt"))];
+                        `Assoc [("$ref", (`String "#/$defs/expr"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "IfStmt"))];
+                       `Assoc
+                         [("type", (`String "object"));
+                         ("properties",
+                           (`Assoc
+                              [("else_",
+                                 ((match `Assoc
+                                           [("$ref",
+                                              (`String "#/$defs/stmt"))]
+                                   with
+                                   | `Assoc (("type", `String t)::[]) ->
+                                       `Assoc
+                                         [("type",
+                                            (`List
+                                               [`String t; `String "null"]))]
+                                   | s ->
+                                       `Assoc
+                                         [("anyOf",
+                                            (`List
+                                               [s;
+                                               `Assoc
+                                                 [("type", (`String "null"))]]))])));
+                              ("then_",
+                                (`Assoc [("$ref", (`String "#/$defs/stmt"))]));
+                              ("cond",
+                                (`Assoc [("$ref", (`String "#/$defs/expr"))]))]));
+                         ("required",
+                           (`List
+                              [`String "else_";
+                              `String "then_";
+                              `String "cond"]));
+                         ("additionalProperties", (`Bool false))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("expr",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc
-                             [("type", (`String "array"));
-                             ("prefixItems",
-                               (`List
-                                  [`Assoc [("const", (`String "Literal"))];
-                                  `Assoc [("type", (`String "integer"))]]));
-                             ("unevaluatedItems", (`Bool false));
-                             ("minItems", (`Int 2));
-                             ("maxItems", (`Int 2))];
-                          `Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "Binary"))];
-                                 `Assoc [("$ref", (`String "#/$defs/expr"))];
-                                 `Assoc [("$ref", (`String "#/$defs/expr"))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 3));
-                            ("maxItems", (`Int 3))];
-                          `Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "Block"))];
-                                 `Assoc
-                                   [("type", (`String "array"));
-                                   ("items",
-                                     (`Assoc
-                                        [("$ref", (`String "#/$defs/stmt"))]))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 2));
-                            ("maxItems", (`Int 2))]]))]));
-              ("stmt",
-                (`Assoc
-                   [("anyOf",
-                      (`List
-                         [`Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "ExprStmt"))];
-                                 `Assoc [("$ref", (`String "#/$defs/expr"))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 2));
-                            ("maxItems", (`Int 2))];
-                         `Assoc
-                           [("type", (`String "array"));
-                           ("prefixItems",
-                             (`List
-                                [`Assoc [("const", (`String "IfStmt"))];
-                                `Assoc
-                                  [("type", (`String "object"));
-                                  ("properties",
-                                    (`Assoc
-                                       [("else_",
-                                          ((match `Assoc
-                                                    [("$ref",
-                                                       (`String
-                                                          "#/$defs/stmt"))]
-                                            with
-                                            | `Assoc
-                                                (("type", `String t)::[]) ->
-                                                `Assoc
-                                                  [("type",
-                                                     (`List
-                                                        [`String t;
-                                                        `String "null"]))]
-                                            | s ->
-                                                `Assoc
-                                                  [("anyOf",
-                                                     (`List
-                                                        [s;
-                                                        `Assoc
-                                                          [("type",
-                                                             (`String "null"))]]))])));
-                                       ("then_",
-                                         (`Assoc
-                                            [("$ref",
-                                               (`String "#/$defs/stmt"))]));
-                                       ("cond",
-                                         (`Assoc
-                                            [("$ref",
-                                               (`String "#/$defs/expr"))]))]));
-                                  ("required",
-                                    (`List
-                                       [`String "else_";
-                                       `String "then_";
-                                       `String "cond"]));
-                                  ("additionalProperties", (`Bool false))]]));
-                           ("unevaluatedItems", (`Bool false));
-                           ("minItems", (`Int 2));
-                           ("maxItems", (`Int 2))]]))]))]));
+        [("$id", (`String "urn:jsonschema:expr"));
+        ("$defs",
+          (`Assoc
+             ([("expr", _ppx_body_0); ("stmt", _ppx_body_1)] @ (!_ppx_eds))));
         ("$ref", (`String "#/$defs/expr"))][@@warning "-32-39"]
     let stmt_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body_0 =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "Literal"))];
+                        `Assoc [("type", (`String "integer"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Binary"))];
+                       `Assoc [("$ref", (`String "#/$defs/expr"))];
+                       `Assoc [("$ref", (`String "#/$defs/expr"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 3));
+                  ("maxItems", (`Int 3))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Block"))];
+                       `Assoc
+                         [("type", (`String "array"));
+                         ("items",
+                           (`Assoc [("$ref", (`String "#/$defs/stmt"))]))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      let _ppx_body_1 =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "ExprStmt"))];
+                        `Assoc [("$ref", (`String "#/$defs/expr"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "IfStmt"))];
+                       `Assoc
+                         [("type", (`String "object"));
+                         ("properties",
+                           (`Assoc
+                              [("else_",
+                                 ((match `Assoc
+                                           [("$ref",
+                                              (`String "#/$defs/stmt"))]
+                                   with
+                                   | `Assoc (("type", `String t)::[]) ->
+                                       `Assoc
+                                         [("type",
+                                            (`List
+                                               [`String t; `String "null"]))]
+                                   | s ->
+                                       `Assoc
+                                         [("anyOf",
+                                            (`List
+                                               [s;
+                                               `Assoc
+                                                 [("type", (`String "null"))]]))])));
+                              ("then_",
+                                (`Assoc [("$ref", (`String "#/$defs/stmt"))]));
+                              ("cond",
+                                (`Assoc [("$ref", (`String "#/$defs/expr"))]))]));
+                         ("required",
+                           (`List
+                              [`String "else_";
+                              `String "then_";
+                              `String "cond"]));
+                         ("additionalProperties", (`Bool false))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("expr",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc
-                             [("type", (`String "array"));
-                             ("prefixItems",
-                               (`List
-                                  [`Assoc [("const", (`String "Literal"))];
-                                  `Assoc [("type", (`String "integer"))]]));
-                             ("unevaluatedItems", (`Bool false));
-                             ("minItems", (`Int 2));
-                             ("maxItems", (`Int 2))];
-                          `Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "Binary"))];
-                                 `Assoc [("$ref", (`String "#/$defs/expr"))];
-                                 `Assoc [("$ref", (`String "#/$defs/expr"))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 3));
-                            ("maxItems", (`Int 3))];
-                          `Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "Block"))];
-                                 `Assoc
-                                   [("type", (`String "array"));
-                                   ("items",
-                                     (`Assoc
-                                        [("$ref", (`String "#/$defs/stmt"))]))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 2));
-                            ("maxItems", (`Int 2))]]))]));
-              ("stmt",
-                (`Assoc
-                   [("anyOf",
-                      (`List
-                         [`Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "ExprStmt"))];
-                                 `Assoc [("$ref", (`String "#/$defs/expr"))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 2));
-                            ("maxItems", (`Int 2))];
-                         `Assoc
-                           [("type", (`String "array"));
-                           ("prefixItems",
-                             (`List
-                                [`Assoc [("const", (`String "IfStmt"))];
-                                `Assoc
-                                  [("type", (`String "object"));
-                                  ("properties",
-                                    (`Assoc
-                                       [("else_",
-                                          ((match `Assoc
-                                                    [("$ref",
-                                                       (`String
-                                                          "#/$defs/stmt"))]
-                                            with
-                                            | `Assoc
-                                                (("type", `String t)::[]) ->
-                                                `Assoc
-                                                  [("type",
-                                                     (`List
-                                                        [`String t;
-                                                        `String "null"]))]
-                                            | s ->
-                                                `Assoc
-                                                  [("anyOf",
-                                                     (`List
-                                                        [s;
-                                                        `Assoc
-                                                          [("type",
-                                                             (`String "null"))]]))])));
-                                       ("then_",
-                                         (`Assoc
-                                            [("$ref",
-                                               (`String "#/$defs/stmt"))]));
-                                       ("cond",
-                                         (`Assoc
-                                            [("$ref",
-                                               (`String "#/$defs/expr"))]))]));
-                                  ("required",
-                                    (`List
-                                       [`String "else_";
-                                       `String "then_";
-                                       `String "cond"]));
-                                  ("additionalProperties", (`Bool false))]]));
-                           ("unevaluatedItems", (`Bool false));
-                           ("minItems", (`Int 2));
-                           ("maxItems", (`Int 2))]]))]))]));
+        [("$id", (`String "urn:jsonschema:stmt"));
+        ("$defs",
+          (`Assoc
+             ([("expr", _ppx_body_0); ("stmt", _ppx_body_1)] @ (!_ppx_eds))));
         ("$ref", (`String "#/$defs/stmt"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -1332,6 +1338,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:expr",
       "$defs": {
         "expr": {
           "anyOf": [
@@ -1462,334 +1469,250 @@ and node_c = {
 include
   struct
     let node_a_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body_0 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("c",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_c"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("b",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_b"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "c"; `String "b"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_1 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("c",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_c"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("a",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_a"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "c"; `String "a"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_2 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("b",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_b"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("a",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_a"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "b"; `String "a"]));
+          ("additionalProperties", (`Bool false))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("node_a",
-                 (`Assoc
-                    [("type", (`String "object"));
-                    ("properties",
-                      (`Assoc
-                         [("c",
-                            ((match `Assoc
-                                      [("$ref", (`String "#/$defs/node_c"))]
-                              with
-                              | `Assoc (("type", `String t)::[]) ->
-                                  `Assoc
-                                    [("type",
-                                       (`List [`String t; `String "null"]))]
-                              | s ->
-                                  `Assoc
-                                    [("anyOf",
-                                       (`List
-                                          [s;
-                                          `Assoc [("type", (`String "null"))]]))])));
-                         ("b",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_b"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])))]));
-                    ("required", (`List [`String "c"; `String "b"]));
-                    ("additionalProperties", (`Bool false))]));
-              ("node_b",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("c",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_c"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])));
-                        ("a",
-                          ((match `Assoc
-                                    [("$ref", (`String "#/$defs/node_a"))]
-                            with
-                            | `Assoc (("type", `String t)::[]) ->
-                                `Assoc
-                                  [("type",
-                                     (`List [`String t; `String "null"]))]
-                            | s ->
-                                `Assoc
-                                  [("anyOf",
-                                     (`List
-                                        [s;
-                                        `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "c"; `String "a"]));
-                   ("additionalProperties", (`Bool false))]));
-              ("node_c",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("b",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_b"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])));
-                        ("a",
-                          ((match `Assoc
-                                    [("$ref", (`String "#/$defs/node_a"))]
-                            with
-                            | `Assoc (("type", `String t)::[]) ->
-                                `Assoc
-                                  [("type",
-                                     (`List [`String t; `String "null"]))]
-                            | s ->
-                                `Assoc
-                                  [("anyOf",
-                                     (`List
-                                        [s;
-                                        `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "b"; `String "a"]));
-                   ("additionalProperties", (`Bool false))]))]));
+        [("$id", (`String "urn:jsonschema:node_a"));
+        ("$defs",
+          (`Assoc
+             ([("node_a", _ppx_body_0);
+              ("node_b", _ppx_body_1);
+              ("node_c", _ppx_body_2)] @ (!_ppx_eds))));
         ("$ref", (`String "#/$defs/node_a"))][@@warning "-32-39"]
     let node_b_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body_0 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("c",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_c"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("b",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_b"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "c"; `String "b"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_1 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("c",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_c"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("a",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_a"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "c"; `String "a"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_2 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("b",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_b"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("a",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_a"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "b"; `String "a"]));
+          ("additionalProperties", (`Bool false))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("node_a",
-                 (`Assoc
-                    [("type", (`String "object"));
-                    ("properties",
-                      (`Assoc
-                         [("c",
-                            ((match `Assoc
-                                      [("$ref", (`String "#/$defs/node_c"))]
-                              with
-                              | `Assoc (("type", `String t)::[]) ->
-                                  `Assoc
-                                    [("type",
-                                       (`List [`String t; `String "null"]))]
-                              | s ->
-                                  `Assoc
-                                    [("anyOf",
-                                       (`List
-                                          [s;
-                                          `Assoc [("type", (`String "null"))]]))])));
-                         ("b",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_b"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])))]));
-                    ("required", (`List [`String "c"; `String "b"]));
-                    ("additionalProperties", (`Bool false))]));
-              ("node_b",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("c",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_c"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])));
-                        ("a",
-                          ((match `Assoc
-                                    [("$ref", (`String "#/$defs/node_a"))]
-                            with
-                            | `Assoc (("type", `String t)::[]) ->
-                                `Assoc
-                                  [("type",
-                                     (`List [`String t; `String "null"]))]
-                            | s ->
-                                `Assoc
-                                  [("anyOf",
-                                     (`List
-                                        [s;
-                                        `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "c"; `String "a"]));
-                   ("additionalProperties", (`Bool false))]));
-              ("node_c",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("b",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_b"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])));
-                        ("a",
-                          ((match `Assoc
-                                    [("$ref", (`String "#/$defs/node_a"))]
-                            with
-                            | `Assoc (("type", `String t)::[]) ->
-                                `Assoc
-                                  [("type",
-                                     (`List [`String t; `String "null"]))]
-                            | s ->
-                                `Assoc
-                                  [("anyOf",
-                                     (`List
-                                        [s;
-                                        `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "b"; `String "a"]));
-                   ("additionalProperties", (`Bool false))]))]));
+        [("$id", (`String "urn:jsonschema:node_b"));
+        ("$defs",
+          (`Assoc
+             ([("node_a", _ppx_body_0);
+              ("node_b", _ppx_body_1);
+              ("node_c", _ppx_body_2)] @ (!_ppx_eds))));
         ("$ref", (`String "#/$defs/node_b"))][@@warning "-32-39"]
     let node_c_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body_0 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("c",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_c"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("b",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_b"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "c"; `String "b"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_1 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("c",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_c"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("a",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_a"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "c"; `String "a"]));
+          ("additionalProperties", (`Bool false))] in
+      let _ppx_body_2 =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("b",
+                  ((match `Assoc [("$ref", (`String "#/$defs/node_b"))] with
+                    | `Assoc (("type", `String t)::[]) ->
+                        `Assoc
+                          [("type", (`List [`String t; `String "null"]))]
+                    | s ->
+                        `Assoc
+                          [("anyOf",
+                             (`List [s; `Assoc [("type", (`String "null"))]]))])));
+               ("a",
+                 ((match `Assoc [("$ref", (`String "#/$defs/node_a"))] with
+                   | `Assoc (("type", `String t)::[]) ->
+                       `Assoc [("type", (`List [`String t; `String "null"]))]
+                   | s ->
+                       `Assoc
+                         [("anyOf",
+                            (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+          ("required", (`List [`String "b"; `String "a"]));
+          ("additionalProperties", (`Bool false))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("node_a",
-                 (`Assoc
-                    [("type", (`String "object"));
-                    ("properties",
-                      (`Assoc
-                         [("c",
-                            ((match `Assoc
-                                      [("$ref", (`String "#/$defs/node_c"))]
-                              with
-                              | `Assoc (("type", `String t)::[]) ->
-                                  `Assoc
-                                    [("type",
-                                       (`List [`String t; `String "null"]))]
-                              | s ->
-                                  `Assoc
-                                    [("anyOf",
-                                       (`List
-                                          [s;
-                                          `Assoc [("type", (`String "null"))]]))])));
-                         ("b",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_b"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])))]));
-                    ("required", (`List [`String "c"; `String "b"]));
-                    ("additionalProperties", (`Bool false))]));
-              ("node_b",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("c",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_c"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])));
-                        ("a",
-                          ((match `Assoc
-                                    [("$ref", (`String "#/$defs/node_a"))]
-                            with
-                            | `Assoc (("type", `String t)::[]) ->
-                                `Assoc
-                                  [("type",
-                                     (`List [`String t; `String "null"]))]
-                            | s ->
-                                `Assoc
-                                  [("anyOf",
-                                     (`List
-                                        [s;
-                                        `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "c"; `String "a"]));
-                   ("additionalProperties", (`Bool false))]));
-              ("node_c",
-                (`Assoc
-                   [("type", (`String "object"));
-                   ("properties",
-                     (`Assoc
-                        [("b",
-                           ((match `Assoc
-                                     [("$ref", (`String "#/$defs/node_b"))]
-                             with
-                             | `Assoc (("type", `String t)::[]) ->
-                                 `Assoc
-                                   [("type",
-                                      (`List [`String t; `String "null"]))]
-                             | s ->
-                                 `Assoc
-                                   [("anyOf",
-                                      (`List
-                                         [s;
-                                         `Assoc [("type", (`String "null"))]]))])));
-                        ("a",
-                          ((match `Assoc
-                                    [("$ref", (`String "#/$defs/node_a"))]
-                            with
-                            | `Assoc (("type", `String t)::[]) ->
-                                `Assoc
-                                  [("type",
-                                     (`List [`String t; `String "null"]))]
-                            | s ->
-                                `Assoc
-                                  [("anyOf",
-                                     (`List
-                                        [s;
-                                        `Assoc [("type", (`String "null"))]]))])))]));
-                   ("required", (`List [`String "b"; `String "a"]));
-                   ("additionalProperties", (`Bool false))]))]));
+        [("$id", (`String "urn:jsonschema:node_c"));
+        ("$defs",
+          (`Assoc
+             ([("node_a", _ppx_body_0);
+              ("node_b", _ppx_body_1);
+              ("node_c", _ppx_body_2)] @ (!_ppx_eds))));
         ("$ref", (`String "#/$defs/node_c"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -1799,6 +1722,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:node_a",
       "$defs": {
         "node_a": {
           "type": "object",
@@ -1849,45 +1773,44 @@ type recursive_tuple =
 include
   struct
     let recursive_tuple_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "Leaf"))];
+                        `Assoc [("type", (`String "integer"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Branch"))];
+                       `Assoc
+                         [("type", (`String "array"));
+                         ("prefixItems",
+                           (`List
+                              [`Assoc
+                                 [("$ref",
+                                    (`String "#/$defs/recursive_tuple"))];
+                              `Assoc
+                                [("$ref",
+                                   (`String "#/$defs/recursive_tuple"))]]));
+                         ("unevaluatedItems", (`Bool false));
+                         ("minItems", (`Int 2));
+                         ("maxItems", (`Int 2))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
       `Assoc
-        [("$defs",
-           (`Assoc
-              [("recursive_tuple",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc
-                             [("type", (`String "array"));
-                             ("prefixItems",
-                               (`List
-                                  [`Assoc [("const", (`String "Leaf"))];
-                                  `Assoc [("type", (`String "integer"))]]));
-                             ("unevaluatedItems", (`Bool false));
-                             ("minItems", (`Int 2));
-                             ("maxItems", (`Int 2))];
-                          `Assoc
-                            [("type", (`String "array"));
-                            ("prefixItems",
-                              (`List
-                                 [`Assoc [("const", (`String "Branch"))];
-                                 `Assoc
-                                   [("type", (`String "array"));
-                                   ("prefixItems",
-                                     (`List
-                                        [`Assoc
-                                           [("$ref",
-                                              (`String
-                                                 "#/$defs/recursive_tuple"))];
-                                        `Assoc
-                                          [("$ref",
-                                             (`String
-                                                "#/$defs/recursive_tuple"))]]));
-                                   ("unevaluatedItems", (`Bool false));
-                                   ("minItems", (`Int 2));
-                                   ("maxItems", (`Int 2))]]));
-                            ("unevaluatedItems", (`Bool false));
-                            ("minItems", (`Int 2));
-                            ("maxItems", (`Int 2))]]))]))]));
+        [("$id", (`String "urn:jsonschema:recursive_tuple"));
+        ("$defs", (`Assoc (("recursive_tuple", _ppx_body) :: (!_ppx_eds))));
         ("$ref", (`String "#/$defs/recursive_tuple"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -1897,6 +1820,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:recursive_tuple",
       "$defs": {
         "recursive_tuple": {
           "anyOf": [
@@ -1934,8 +1858,14 @@ include
     |}]]
 type int_tree = tree[@@deriving jsonschema]
 include
-  struct let int_tree_jsonschema = tree_jsonschema[@@warning "-32-39"] end
-[@@ocaml.doc "@inline"][@@merlin.hide ]
+  struct
+    let int_tree_jsonschema =
+      match tree_jsonschema with
+      | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+          `Assoc (("$id", (`String "urn:jsonschema:test.ml:920:23215")) ::
+            (List.filter (fun (k, _) -> k <> "$id") pairs))
+      | other -> other[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "recursive_abstract_alias" =
     print_schema int_tree_jsonschema;
@@ -1943,6 +1873,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:test/test.ml:920:23215",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -1982,8 +1913,14 @@ type events = event list[@@deriving jsonschema]
 include
   struct
     let events_jsonschema =
-      `Assoc [("type", (`String "array")); ("items", event_jsonschema)]
-      [@@warning "-32-39"]
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          ((match event_jsonschema with
+            | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                `Assoc (("$id", (`String "urn:jsonschema:test.ml:965:24467"))
+                  :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+            | other -> other)))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "events" =
@@ -2072,8 +2009,16 @@ include
       `Assoc
         [("type", (`String "array"));
         ("items",
-          (`Assoc [("type", (`String "array")); ("items", event_jsonschema)]))]
-      [@@warning "-32-39"]
+          (`Assoc
+             [("type", (`String "array"));
+             ("items",
+               ((match event_jsonschema with
+                 | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                     `Assoc
+                       (("$id",
+                          (`String "urn:jsonschema:test.ml:1047:27015"))
+                       :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                 | other -> other)))]))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "eventss" =
@@ -2165,7 +2110,14 @@ include
       `Assoc
         [("type", (`String "array"));
         ("prefixItems",
-          (`List [event_jsonschema; `Assoc [("type", (`String "string"))]]));
+          (`List
+             [(match event_jsonschema with
+               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                   `Assoc
+                     (("$id", (`String "urn:jsonschema:test.ml:1132:29766"))
+                     :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+               | other -> other);
+             `Assoc [("type", (`String "string"))]]));
         ("unevaluatedItems", (`Bool false));
         ("minItems", (`Int 2));
         ("maxItems", (`Int 2))][@@warning "-32-39"]
@@ -2261,8 +2213,14 @@ include
   struct
     let event_comments'_jsonschema =
       `Assoc
-        [("type", (`String "array")); ("items", event_comment_jsonschema)]
-      [@@warning "-32-39"]
+        [("type", (`String "array"));
+        ("items",
+          ((match event_comment_jsonschema with
+            | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                `Assoc
+                  (("$id", (`String "urn:jsonschema:test.ml:1220:32607")) ::
+                  (List.filter (fun (k, _) -> k <> "$id") pairs))
+            | other -> other)))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "event_comments'" =
@@ -2364,7 +2322,14 @@ include
              [("type", (`String "array"));
              ("prefixItems",
                (`List
-                  [event_jsonschema; `Assoc [("type", (`String "integer"))]]));
+                  [(match event_jsonschema with
+                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                        `Assoc
+                          (("$id",
+                             (`String "urn:jsonschema:test.ml:1311:35651"))
+                          :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                    | other -> other);
+                  `Assoc [("type", (`String "integer"))]]));
              ("unevaluatedItems", (`Bool false));
              ("minItems", (`Int 2));
              ("maxItems", (`Int 2))]))][@@warning "-32-39"]
@@ -2462,8 +2427,15 @@ type events_array = events array[@@deriving jsonschema]
 include
   struct
     let events_array_jsonschema =
-      `Assoc [("type", (`String "array")); ("items", events_jsonschema)]
-      [@@warning "-32-39"]
+      `Assoc
+        [("type", (`String "array"));
+        ("items",
+          ((match events_jsonschema with
+            | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                `Assoc
+                  (("$id", (`String "urn:jsonschema:test.ml:1402:38683")) ::
+                  (List.filter (fun (k, _) -> k <> "$id") pairs))
+            | other -> other)))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "events_array" =
@@ -2596,7 +2568,16 @@ include
     let using_m_jsonschema =
       `Assoc
         [("type", (`String "object"));
-        ("properties", (`Assoc [("m", Mod1.m_1_jsonschema)]));
+        ("properties",
+          (`Assoc
+             [("m",
+                ((match Mod1.m_1_jsonschema with
+                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                      `Assoc
+                        (("$id",
+                           (`String "urn:jsonschema:test.ml:1511:41955"))
+                        :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                  | other -> other)))]));
         ("required", (`List [`String "m"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2783,7 +2764,14 @@ include
         [("type", (`String "object"));
         ("properties",
           (`Assoc
-             [("address", address_jsonschema);
+             [("address",
+                ((match address_jsonschema with
+                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                      `Assoc
+                        (("$id",
+                           (`String "urn:jsonschema:test.ml:1633:45167"))
+                        :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                  | other -> other)));
              ("email",
                ((match `Assoc [("type", (`String "string"))] with
                  | `Assoc (("type", `String t)::[]) ->
@@ -3601,7 +3589,16 @@ include
     let obj1_jsonschema =
       `Assoc
         [("type", (`String "object"));
-        ("properties", (`Assoc [("obj2", obj2_jsonschema)]));
+        ("properties",
+          (`Assoc
+             [("obj2",
+                ((match obj2_jsonschema with
+                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                      `Assoc
+                        (("$id",
+                           (`String "urn:jsonschema:test.ml:2107:56585"))
+                        :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                  | other -> other)))]));
         ("required", (`List [`String "obj2"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3612,7 +3609,16 @@ include
     let nested_obj_jsonschema =
       `Assoc
         [("type", (`String "object"));
-        ("properties", (`Assoc [("obj1", obj1_jsonschema)]));
+        ("properties",
+          (`Assoc
+             [("obj1",
+                ((match obj1_jsonschema with
+                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                      `Assoc
+                        (("$id",
+                           (`String "urn:jsonschema:test.ml:2108:56643"))
+                        :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                  | other -> other)))]));
         ("required", (`List [`String "obj1"]));
         ("additionalProperties", (`Bool true))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3724,8 +3730,13 @@ type string_link_traffic = string generic_link_traffic[@@deriving jsonschema]
 include
   struct
     let string_link_traffic_jsonschema =
-      generic_link_traffic_jsonschema (`Assoc [("type", (`String "string"))])
-      [@@warning "-32-39"]
+      match generic_link_traffic_jsonschema
+              (`Assoc [("type", (`String "string"))])
+      with
+      | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+          `Assoc (("$id", (`String "urn:jsonschema:test.ml:2182:58623")) ::
+            (List.filter (fun (k, _) -> k <> "$id") pairs))
+      | other -> other[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "instantiated_parameterized_record" =
@@ -3892,8 +3903,12 @@ include
 type ('a, 'b) either_alias = ('a, 'b) either[@@deriving jsonschema]
 include
   struct
-    let either_alias_jsonschema a b = either_jsonschema a b[@@warning
-                                                             "-32-39"]
+    let either_alias_jsonschema a b =
+      match either_jsonschema a b with
+      | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+          `Assoc (("$id", (`String "urn:jsonschema:test.ml:2294:61412")) ::
+            (List.filter (fun (k, _) -> k <> "$id") pairs))
+      | other -> other[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "multi_param_abstract" =
@@ -4022,7 +4037,15 @@ include
         ("properties",
           (`Assoc
              [("composing_type",
-                ((match composing_type_jsonschema with
+                ((match match composing_type_jsonschema with
+                        | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                            `Assoc
+                              (("$id",
+                                 (`String "urn:jsonschema:test.ml:2368:63427"))
+                              ::
+                              (List.filter (fun (k, _) -> k <> "$id") pairs))
+                        | other -> other
+                  with
                   | `Assoc (("type", `String t)::[]) ->
                       `Assoc [("type", (`List [`String t; `String "null"]))]
                   | s ->
@@ -4049,5 +4072,583 @@ include
       },
       "required": [],
       "additionalProperties": false
+    }
+    |}]]
+type 'a grade' =
+  | A of 'a 
+  | B of ('a grade' * 'a grade') 
+  | C 
+type 'a grade = 'a grade' =
+  | A of 'a 
+  | B of ('a grade * 'a grade) 
+  | C [@@deriving jsonschema]
+include
+  struct
+    let grade_jsonschema a =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "A"))]; a]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "B"))];
+                       `Assoc
+                         [("type", (`String "array"));
+                         ("prefixItems",
+                           (`List
+                              [`Assoc [("$ref", (`String "#/$defs/grade"))];
+                              `Assoc [("$ref", (`String "#/$defs/grade"))]]));
+                         ("unevaluatedItems", (`Bool false));
+                         ("minItems", (`Int 2));
+                         ("maxItems", (`Int 2))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List [`Assoc [("const", (`String "C"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 1));
+                  ("maxItems", (`Int 1))]]))] in
+      `Assoc
+        [("$id", (`String "urn:jsonschema:grade"));
+        ("$defs", (`Assoc (("grade", _ppx_body) :: (!_ppx_eds))));
+        ("$ref", (`String "#/$defs/grade"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "grade" =
+    print_schema (grade_jsonschema int_jsonschema);
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:grade",
+      "$defs": {
+        "grade": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "B" },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    { "$ref": "#/$defs/grade" }, { "$ref": "#/$defs/grade" }
+                  ],
+                  "unevaluatedItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "C" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/grade"
+    }
+    |}]]
+type self_ref = {
+  children: self_ref list }[@@deriving jsonschema]
+include
+  struct
+    let self_ref_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("children",
+                  (`Assoc
+                     [("type", (`String "array"));
+                     ("items",
+                       (`Assoc [("$ref", (`String "#/$defs/self_ref"))]))]))]));
+          ("required", (`List [`String "children"]));
+          ("additionalProperties", (`Bool false))] in
+      `Assoc
+        [("$id", (`String "urn:jsonschema:self_ref"));
+        ("$defs", (`Assoc (("self_ref", _ppx_body) :: (!_ppx_eds))));
+        ("$ref", (`String "#/$defs/self_ref"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type two_self_refs = {
+  a: self_ref ;
+  b: self_ref }[@@deriving jsonschema]
+include
+  struct
+    let two_self_refs_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("b",
+                ((match self_ref_jsonschema with
+                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                      `Assoc
+                        (("$id",
+                           (`String "urn:jsonschema:test.ml:2456:65714"))
+                        :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                  | other -> other)));
+             ("a",
+               ((match self_ref_jsonschema with
+                 | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                     `Assoc
+                       (("$id",
+                          (`String "urn:jsonschema:test.ml:2455:65698"))
+                       :: (List.filter (fun (k, _) -> k <> "$id") pairs))
+                 | other -> other)))]));
+        ("required", (`List [`String "b"; `String "a"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "no_duplicate_id_when_recursive_type_used_twice" =
+    print_schema two_self_refs_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "b": {
+          "$id": "urn:jsonschema:test/test.ml:2456:65714",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        },
+        "a": {
+          "$id": "urn:jsonschema:test/test.ml:2455:65698",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        }
+      },
+      "required": [ "b", "a" ],
+      "additionalProperties": false
+    }
+    |}]]
+type ('atom, 'group_atom) filter =
+  | Atom of 'atom 
+  | Group of ('atom, 'group_atom) filter list * 'group_atom [@@deriving
+                                                              jsonschema]
+include
+  struct
+    let filter_jsonschema atom group_atom =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "Atom"))]; atom]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Group"))];
+                       `Assoc
+                         [("type", (`String "array"));
+                         ("items",
+                           (`Assoc [("$ref", (`String "#/$defs/filter"))]))];
+                       group_atom]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 3));
+                  ("maxItems", (`Int 3))]]))] in
+      `Assoc
+        [("$id", (`String "urn:jsonschema:filter"));
+        ("$defs", (`Assoc (("filter", _ppx_body) :: (!_ppx_eds))));
+        ("$ref", (`String "#/$defs/filter"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type ('atom, 'group_atom) bool_filter =
+  | BoolAtom of ('atom, 'group_atom) filter 
+  | BoolFilterGroup of ('atom, 'group_atom) bool_filter list [@@deriving
+                                                               jsonschema]
+include
+  struct
+    let bool_filter_jsonschema atom group_atom =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "BoolAtom"))];
+                        (match filter_jsonschema atom group_atom with
+                         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                             `Assoc
+                               (("$id",
+                                  (`String
+                                     "urn:jsonschema:test.ml:2514:67360"))
+                               ::
+                               (List.filter (fun (k, _) -> k <> "$id") pairs))
+                         | other -> other)]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "BoolFilterGroup"))];
+                       `Assoc
+                         [("type", (`String "array"));
+                         ("items",
+                           (`Assoc
+                              [("$ref", (`String "#/$defs/bool_filter"))]))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      `Assoc
+        [("$id", (`String "urn:jsonschema:bool_filter"));
+        ("$defs", (`Assoc (("bool_filter", _ppx_body) :: (!_ppx_eds))));
+        ("$ref", (`String "#/$defs/bool_filter"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "polymorphic_recursive_ref" =
+    print_schema (filter_jsonschema int_jsonschema string_jsonschema);
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:filter",
+      "$defs": {
+        "filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Atom" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Group" },
+                { "type": "array", "items": { "$ref": "#/$defs/filter" } },
+                { "type": "string" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/filter"
+    }
+    |}]]
+type 'a rec_wrapper =
+  | RWrap of 'a 
+  | RNested of 'a rec_wrapper [@@deriving jsonschema]
+include
+  struct
+    let rec_wrapper_jsonschema a =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "RWrap"))]; a]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "RNested"))];
+                       `Assoc [("$ref", (`String "#/$defs/rec_wrapper"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      `Assoc
+        [("$id", (`String "urn:jsonschema:rec_wrapper"));
+        ("$defs", (`Assoc (("rec_wrapper", _ppx_body) :: (!_ppx_eds))));
+        ("$ref", (`String "#/$defs/rec_wrapper"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type outer_rec =
+  | ORLeaf of int 
+  | ORNode of outer_rec rec_wrapper [@@deriving jsonschema]
+include
+  struct
+    let outer_rec_jsonschema =
+      let _ppx_eds = ref [] in
+      let _ppx_body =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "ORLeaf"))];
+                        `Assoc [("type", (`String "integer"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "ORNode"))];
+                       (let _ppx_sub =
+                          rec_wrapper_jsonschema
+                            (`Assoc [("$ref", (`String "#/$defs/outer_rec"))]) in
+                        match _ppx_sub with
+                        | `Assoc _ppx_pairs when
+                            List.mem_assoc "$defs" _ppx_pairs ->
+                            let _ppx_inner_defs =
+                              match List.assoc_opt "$defs" _ppx_pairs with
+                              | Some (`Assoc d) -> d
+                              | _ -> [] in
+                            let _ppx_suffix = "2561_68692" in
+                            let _ppx_mk n = n ^ ("__" ^ _ppx_suffix) in
+                            let _ppx_rmap =
+                              List.map (fun (n, _) -> (n, (_ppx_mk n)))
+                                _ppx_inner_defs in
+                            let rec _ppx_ren t =
+                              match t with
+                              | `Assoc pairs ->
+                                  `Assoc
+                                    (List.map
+                                       (fun (k, v) ->
+                                          let v' =
+                                            if k = "$ref"
+                                            then
+                                              match v with
+                                              | `String r when
+                                                  ((String.length r) > 8) &&
+                                                    ((String.sub r 0 8) =
+                                                       "#/$defs/")
+                                                  ->
+                                                  let n =
+                                                    String.sub r 8
+                                                      ((String.length r) - 8) in
+                                                  `String
+                                                    ("#/$defs/" ^
+                                                       ((match List.assoc_opt
+                                                                 n _ppx_rmap
+                                                         with
+                                                         | Some m -> m
+                                                         | None -> n)))
+                                              | _ -> v
+                                            else _ppx_ren v in
+                                          (k, v')) pairs)
+                              | `List xs -> `List (List.map _ppx_ren xs)
+                              | other -> other in
+                            let _ppx_hoisted =
+                              List.map
+                                (fun (n, b) -> ((_ppx_mk n), (_ppx_ren b)))
+                                _ppx_inner_defs in
+                            (_ppx_eds := ((!_ppx_eds) @ _ppx_hoisted);
+                             (match List.assoc_opt "$ref" _ppx_pairs with
+                              | Some (`String _ppx_r) when
+                                  ((String.length _ppx_r) > 8) &&
+                                    ((String.sub _ppx_r 0 8) = "#/$defs/")
+                                  ->
+                                  let _ppx_n =
+                                    String.sub _ppx_r 8
+                                      ((String.length _ppx_r) - 8) in
+                                  `Assoc
+                                    [("$ref",
+                                       (`String
+                                          ("#/$defs/" ^ (_ppx_mk _ppx_n))))]
+                              | _ ->
+                                  `Assoc
+                                    (List.filter (fun (k, _) -> k <> "$id")
+                                       _ppx_pairs)))
+                        | _ppx_other -> _ppx_other)]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      `Assoc
+        [("$id", (`String "urn:jsonschema:outer_rec"));
+        ("$defs", (`Assoc (("outer_rec", _ppx_body) :: (!_ppx_eds))));
+        ("$ref", (`String "#/$defs/outer_rec"))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "parametric_recursive_cross_ref" =
+    print_schema outer_rec_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:outer_rec",
+      "$defs": {
+        "outer_rec": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "ORLeaf" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "ORNode" },
+                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "rec_wrapper__2561_68692": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RWrap" }, { "$ref": "#/$defs/outer_rec" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RNested" },
+                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/outer_rec"
+    }
+    |}]]
+[%%expect_test
+  let "polymorphic_recursive_ref_bool_filter" =
+    print_schema (bool_filter_jsonschema int_jsonschema string_jsonschema);
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:bool_filter",
+      "$defs": {
+        "bool_filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolAtom" },
+                {
+                  "$id": "urn:jsonschema:test/test.ml:2514:67360",
+                  "$defs": {
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Atom" }, { "type": "integer" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Group" },
+                            {
+                              "type": "array",
+                              "items": { "$ref": "#/$defs/filter" }
+                            },
+                            { "type": "string" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 3,
+                          "maxItems": 3
+                        }
+                      ]
+                    }
+                  },
+                  "$ref": "#/$defs/filter"
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolFilterGroup" },
+                { "type": "array", "items": { "$ref": "#/$defs/bool_filter" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/bool_filter"
     }
     |}]]
