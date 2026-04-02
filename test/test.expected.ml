@@ -612,7 +612,14 @@ include
                (`Assoc
                   [("type", (`String "array"));
                   ("items", (`Assoc [("type", (`String "number"))]))]));
-             ("opt_int", (`Assoc [("type", (`String "integer"))]));
+             ("opt_int",
+               ((match `Assoc [("type", (`String "integer"))] with
+                 | `Assoc (("type", `String t)::[]) ->
+                     `Assoc [("type", (`List [`String t; `String "null"]))]
+                 | s ->
+                     `Assoc
+                       [("anyOf",
+                          (`List [s; `Assoc [("type", (`String "null"))]]))])));
              ("comment", (`Assoc [("type", (`String "string"))]));
              ("kind_f", kind_jsonschema);
              ("date", (`Assoc [("type", (`String "number"))]))]));
@@ -626,6 +633,7 @@ include
              `String "t";
              `String "l";
              `String "a";
+             `String "opt_int";
              `String "comment";
              `String "kind_f";
              `String "date"]));
@@ -672,7 +680,7 @@ include
         },
         "l": { "type": "array", "items": { "type": "string" } },
         "a": { "type": "array", "items": { "type": "number" } },
-        "opt_int": { "type": "integer" },
+        "opt_int": { "type": [ "integer", "null" ] },
         "comment": { "type": "string" },
         "kind_f": {
           "anyOf": [
@@ -703,7 +711,7 @@ include
       },
       "required": [
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
-        "comment", "kind_f", "date"
+        "opt_int", "comment", "kind_f", "date"
       ],
       "additionalProperties": false
     }
@@ -963,8 +971,20 @@ include
                     ("properties",
                       (`Assoc
                          [("bar",
-                            (`Assoc [("$ref", (`String "#/$defs/bar"))]))]));
-                    ("required", (`List []));
+                            ((match `Assoc
+                                      [("$ref", (`String "#/$defs/bar"))]
+                              with
+                              | `Assoc (("type", `String t)::[]) ->
+                                  `Assoc
+                                    [("type",
+                                       (`List [`String t; `String "null"]))]
+                              | s ->
+                                  `Assoc
+                                    [("anyOf",
+                                       (`List
+                                          [s;
+                                          `Assoc [("type", (`String "null"))]]))])))]));
+                    ("required", (`List [`String "bar"]));
                     ("additionalProperties", (`Bool false))]));
               ("bar",
                 (`Assoc
@@ -972,8 +992,19 @@ include
                    ("properties",
                      (`Assoc
                         [("foo",
-                           (`Assoc [("$ref", (`String "#/$defs/foo"))]))]));
-                   ("required", (`List []));
+                           ((match `Assoc [("$ref", (`String "#/$defs/foo"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "foo"]));
                    ("additionalProperties", (`Bool false))]))]));
         ("$ref", (`String "#/$defs/foo"))][@@warning "-32-39"]
     let bar_jsonschema =
@@ -986,8 +1017,20 @@ include
                     ("properties",
                       (`Assoc
                          [("bar",
-                            (`Assoc [("$ref", (`String "#/$defs/bar"))]))]));
-                    ("required", (`List []));
+                            ((match `Assoc
+                                      [("$ref", (`String "#/$defs/bar"))]
+                              with
+                              | `Assoc (("type", `String t)::[]) ->
+                                  `Assoc
+                                    [("type",
+                                       (`List [`String t; `String "null"]))]
+                              | s ->
+                                  `Assoc
+                                    [("anyOf",
+                                       (`List
+                                          [s;
+                                          `Assoc [("type", (`String "null"))]]))])))]));
+                    ("required", (`List [`String "bar"]));
                     ("additionalProperties", (`Bool false))]));
               ("bar",
                 (`Assoc
@@ -995,8 +1038,19 @@ include
                    ("properties",
                      (`Assoc
                         [("foo",
-                           (`Assoc [("$ref", (`String "#/$defs/foo"))]))]));
-                   ("required", (`List []));
+                           ((match `Assoc [("$ref", (`String "#/$defs/foo"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "foo"]));
                    ("additionalProperties", (`Bool false))]))]));
         ("$ref", (`String "#/$defs/bar"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -1010,14 +1064,18 @@ include
       "$defs": {
         "foo": {
           "type": "object",
-          "properties": { "bar": { "$ref": "#/$defs/bar" } },
-          "required": [],
+          "properties": {
+            "bar": { "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ] }
+          },
+          "required": [ "bar" ],
           "additionalProperties": false
         },
         "bar": {
           "type": "object",
-          "properties": { "foo": { "$ref": "#/$defs/foo" } },
-          "required": [],
+          "properties": {
+            "foo": { "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ] }
+          },
+          "required": [ "foo" ],
           "additionalProperties": false
         }
       },
@@ -1034,14 +1092,18 @@ include
       "$defs": {
         "foo": {
           "type": "object",
-          "properties": { "bar": { "$ref": "#/$defs/bar" } },
-          "required": [],
+          "properties": {
+            "bar": { "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ] }
+          },
+          "required": [ "bar" ],
           "additionalProperties": false
         },
         "bar": {
           "type": "object",
-          "properties": { "foo": { "$ref": "#/$defs/foo" } },
-          "required": [],
+          "properties": {
+            "foo": { "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ] }
+          },
+          "required": [ "foo" ],
           "additionalProperties": false
         }
       },
@@ -1123,9 +1185,26 @@ include
                                   ("properties",
                                     (`Assoc
                                        [("else_",
-                                          (`Assoc
-                                             [("$ref",
-                                                (`String "#/$defs/stmt"))]));
+                                          ((match `Assoc
+                                                    [("$ref",
+                                                       (`String
+                                                          "#/$defs/stmt"))]
+                                            with
+                                            | `Assoc
+                                                (("type", `String t)::[]) ->
+                                                `Assoc
+                                                  [("type",
+                                                     (`List
+                                                        [`String t;
+                                                        `String "null"]))]
+                                            | s ->
+                                                `Assoc
+                                                  [("anyOf",
+                                                     (`List
+                                                        [s;
+                                                        `Assoc
+                                                          [("type",
+                                                             (`String "null"))]]))])));
                                        ("then_",
                                          (`Assoc
                                             [("$ref",
@@ -1135,7 +1214,10 @@ include
                                             [("$ref",
                                                (`String "#/$defs/expr"))]))]));
                                   ("required",
-                                    (`List [`String "then_"; `String "cond"]));
+                                    (`List
+                                       [`String "else_";
+                                       `String "then_";
+                                       `String "cond"]));
                                   ("additionalProperties", (`Bool false))]]));
                            ("unevaluatedItems", (`Bool false));
                            ("minItems", (`Int 2));
@@ -1204,9 +1286,26 @@ include
                                   ("properties",
                                     (`Assoc
                                        [("else_",
-                                          (`Assoc
-                                             [("$ref",
-                                                (`String "#/$defs/stmt"))]));
+                                          ((match `Assoc
+                                                    [("$ref",
+                                                       (`String
+                                                          "#/$defs/stmt"))]
+                                            with
+                                            | `Assoc
+                                                (("type", `String t)::[]) ->
+                                                `Assoc
+                                                  [("type",
+                                                     (`List
+                                                        [`String t;
+                                                        `String "null"]))]
+                                            | s ->
+                                                `Assoc
+                                                  [("anyOf",
+                                                     (`List
+                                                        [s;
+                                                        `Assoc
+                                                          [("type",
+                                                             (`String "null"))]]))])));
                                        ("then_",
                                          (`Assoc
                                             [("$ref",
@@ -1216,7 +1315,10 @@ include
                                             [("$ref",
                                                (`String "#/$defs/expr"))]))]));
                                   ("required",
-                                    (`List [`String "then_"; `String "cond"]));
+                                    (`List
+                                       [`String "else_";
+                                       `String "then_";
+                                       `String "cond"]));
                                   ("additionalProperties", (`Bool false))]]));
                            ("unevaluatedItems", (`Bool false));
                            ("minItems", (`Int 2));
@@ -1281,11 +1383,13 @@ include
                 {
                   "type": "object",
                   "properties": {
-                    "else_": { "$ref": "#/$defs/stmt" },
+                    "else_": {
+                      "anyOf": [ { "$ref": "#/$defs/stmt" }, { "type": "null" } ]
+                    },
                     "then_": { "$ref": "#/$defs/stmt" },
                     "cond": { "$ref": "#/$defs/expr" }
                   },
-                  "required": [ "then_", "cond" ],
+                  "required": [ "else_", "then_", "cond" ],
                   "additionalProperties": false
                 }
               ],
@@ -1367,10 +1471,34 @@ include
                     ("properties",
                       (`Assoc
                          [("c",
-                            (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                            ((match `Assoc
+                                      [("$ref", (`String "#/$defs/node_c"))]
+                              with
+                              | `Assoc (("type", `String t)::[]) ->
+                                  `Assoc
+                                    [("type",
+                                       (`List [`String t; `String "null"]))]
+                              | s ->
+                                  `Assoc
+                                    [("anyOf",
+                                       (`List
+                                          [s;
+                                          `Assoc [("type", (`String "null"))]]))])));
                          ("b",
-                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]))]));
-                    ("required", (`List []));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_b"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])))]));
+                    ("required", (`List [`String "c"; `String "b"]));
                     ("additionalProperties", (`Bool false))]));
               ("node_b",
                 (`Assoc
@@ -1378,10 +1506,34 @@ include
                    ("properties",
                      (`Assoc
                         [("c",
-                           (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_c"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])));
                         ("a",
-                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
-                   ("required", (`List []));
+                          ((match `Assoc
+                                    [("$ref", (`String "#/$defs/node_a"))]
+                            with
+                            | `Assoc (("type", `String t)::[]) ->
+                                `Assoc
+                                  [("type",
+                                     (`List [`String t; `String "null"]))]
+                            | s ->
+                                `Assoc
+                                  [("anyOf",
+                                     (`List
+                                        [s;
+                                        `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "c"; `String "a"]));
                    ("additionalProperties", (`Bool false))]));
               ("node_c",
                 (`Assoc
@@ -1389,10 +1541,34 @@ include
                    ("properties",
                      (`Assoc
                         [("b",
-                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_b"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])));
                         ("a",
-                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
-                   ("required", (`List []));
+                          ((match `Assoc
+                                    [("$ref", (`String "#/$defs/node_a"))]
+                            with
+                            | `Assoc (("type", `String t)::[]) ->
+                                `Assoc
+                                  [("type",
+                                     (`List [`String t; `String "null"]))]
+                            | s ->
+                                `Assoc
+                                  [("anyOf",
+                                     (`List
+                                        [s;
+                                        `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "b"; `String "a"]));
                    ("additionalProperties", (`Bool false))]))]));
         ("$ref", (`String "#/$defs/node_a"))][@@warning "-32-39"]
     let node_b_jsonschema =
@@ -1405,10 +1581,34 @@ include
                     ("properties",
                       (`Assoc
                          [("c",
-                            (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                            ((match `Assoc
+                                      [("$ref", (`String "#/$defs/node_c"))]
+                              with
+                              | `Assoc (("type", `String t)::[]) ->
+                                  `Assoc
+                                    [("type",
+                                       (`List [`String t; `String "null"]))]
+                              | s ->
+                                  `Assoc
+                                    [("anyOf",
+                                       (`List
+                                          [s;
+                                          `Assoc [("type", (`String "null"))]]))])));
                          ("b",
-                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]))]));
-                    ("required", (`List []));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_b"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])))]));
+                    ("required", (`List [`String "c"; `String "b"]));
                     ("additionalProperties", (`Bool false))]));
               ("node_b",
                 (`Assoc
@@ -1416,10 +1616,34 @@ include
                    ("properties",
                      (`Assoc
                         [("c",
-                           (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_c"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])));
                         ("a",
-                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
-                   ("required", (`List []));
+                          ((match `Assoc
+                                    [("$ref", (`String "#/$defs/node_a"))]
+                            with
+                            | `Assoc (("type", `String t)::[]) ->
+                                `Assoc
+                                  [("type",
+                                     (`List [`String t; `String "null"]))]
+                            | s ->
+                                `Assoc
+                                  [("anyOf",
+                                     (`List
+                                        [s;
+                                        `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "c"; `String "a"]));
                    ("additionalProperties", (`Bool false))]));
               ("node_c",
                 (`Assoc
@@ -1427,10 +1651,34 @@ include
                    ("properties",
                      (`Assoc
                         [("b",
-                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_b"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])));
                         ("a",
-                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
-                   ("required", (`List []));
+                          ((match `Assoc
+                                    [("$ref", (`String "#/$defs/node_a"))]
+                            with
+                            | `Assoc (("type", `String t)::[]) ->
+                                `Assoc
+                                  [("type",
+                                     (`List [`String t; `String "null"]))]
+                            | s ->
+                                `Assoc
+                                  [("anyOf",
+                                     (`List
+                                        [s;
+                                        `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "b"; `String "a"]));
                    ("additionalProperties", (`Bool false))]))]));
         ("$ref", (`String "#/$defs/node_b"))][@@warning "-32-39"]
     let node_c_jsonschema =
@@ -1443,10 +1691,34 @@ include
                     ("properties",
                       (`Assoc
                          [("c",
-                            (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                            ((match `Assoc
+                                      [("$ref", (`String "#/$defs/node_c"))]
+                              with
+                              | `Assoc (("type", `String t)::[]) ->
+                                  `Assoc
+                                    [("type",
+                                       (`List [`String t; `String "null"]))]
+                              | s ->
+                                  `Assoc
+                                    [("anyOf",
+                                       (`List
+                                          [s;
+                                          `Assoc [("type", (`String "null"))]]))])));
                          ("b",
-                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]))]));
-                    ("required", (`List []));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_b"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])))]));
+                    ("required", (`List [`String "c"; `String "b"]));
                     ("additionalProperties", (`Bool false))]));
               ("node_b",
                 (`Assoc
@@ -1454,10 +1726,34 @@ include
                    ("properties",
                      (`Assoc
                         [("c",
-                           (`Assoc [("$ref", (`String "#/$defs/node_c"))]));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_c"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])));
                         ("a",
-                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
-                   ("required", (`List []));
+                          ((match `Assoc
+                                    [("$ref", (`String "#/$defs/node_a"))]
+                            with
+                            | `Assoc (("type", `String t)::[]) ->
+                                `Assoc
+                                  [("type",
+                                     (`List [`String t; `String "null"]))]
+                            | s ->
+                                `Assoc
+                                  [("anyOf",
+                                     (`List
+                                        [s;
+                                        `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "c"; `String "a"]));
                    ("additionalProperties", (`Bool false))]));
               ("node_c",
                 (`Assoc
@@ -1465,10 +1761,34 @@ include
                    ("properties",
                      (`Assoc
                         [("b",
-                           (`Assoc [("$ref", (`String "#/$defs/node_b"))]));
+                           ((match `Assoc
+                                     [("$ref", (`String "#/$defs/node_b"))]
+                             with
+                             | `Assoc (("type", `String t)::[]) ->
+                                 `Assoc
+                                   [("type",
+                                      (`List [`String t; `String "null"]))]
+                             | s ->
+                                 `Assoc
+                                   [("anyOf",
+                                      (`List
+                                         [s;
+                                         `Assoc [("type", (`String "null"))]]))])));
                         ("a",
-                          (`Assoc [("$ref", (`String "#/$defs/node_a"))]))]));
-                   ("required", (`List []));
+                          ((match `Assoc
+                                    [("$ref", (`String "#/$defs/node_a"))]
+                            with
+                            | `Assoc (("type", `String t)::[]) ->
+                                `Assoc
+                                  [("type",
+                                     (`List [`String t; `String "null"]))]
+                            | s ->
+                                `Assoc
+                                  [("anyOf",
+                                     (`List
+                                        [s;
+                                        `Assoc [("type", (`String "null"))]]))])))]));
+                   ("required", (`List [`String "b"; `String "a"]));
                    ("additionalProperties", (`Bool false))]))]));
         ("$ref", (`String "#/$defs/node_c"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -1483,28 +1803,40 @@ include
         "node_a": {
           "type": "object",
           "properties": {
-            "c": { "$ref": "#/$defs/node_c" },
-            "b": { "$ref": "#/$defs/node_b" }
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "c", "b" ],
           "additionalProperties": false
         },
         "node_b": {
           "type": "object",
           "properties": {
-            "c": { "$ref": "#/$defs/node_c" },
-            "a": { "$ref": "#/$defs/node_a" }
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "c", "a" ],
           "additionalProperties": false
         },
         "node_c": {
           "type": "object",
           "properties": {
-            "b": { "$ref": "#/$defs/node_b" },
-            "a": { "$ref": "#/$defs/node_a" }
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "b", "a" ],
           "additionalProperties": false
         }
       },
@@ -1696,7 +2028,7 @@ include
           },
           "l": { "type": "array", "items": { "type": "string" } },
           "a": { "type": "array", "items": { "type": "number" } },
-          "opt_int": { "type": "integer" },
+          "opt_int": { "type": [ "integer", "null" ] },
           "comment": { "type": "string" },
           "kind_f": {
             "anyOf": [
@@ -1727,7 +2059,7 @@ include
         },
         "required": [
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-          "a", "comment", "kind_f", "date"
+          "a", "opt_int", "comment", "kind_f", "date"
         ],
         "additionalProperties": false
       }
@@ -1788,7 +2120,7 @@ include
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1819,7 +2151,7 @@ include
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         }
@@ -1882,7 +2214,7 @@ include
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1913,7 +2245,7 @@ include
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         },
@@ -1978,7 +2310,7 @@ include
               },
               "l": { "type": "array", "items": { "type": "string" } },
               "a": { "type": "array", "items": { "type": "number" } },
-              "opt_int": { "type": "integer" },
+              "opt_int": { "type": [ "integer", "null" ] },
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
@@ -2009,7 +2341,7 @@ include
             },
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-              "l", "a", "comment", "kind_f", "date"
+              "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
             "additionalProperties": false
           },
@@ -2083,7 +2415,7 @@ include
               },
               "l": { "type": "array", "items": { "type": "string" } },
               "a": { "type": "array", "items": { "type": "number" } },
-              "opt_int": { "type": "integer" },
+              "opt_int": { "type": [ "integer", "null" ] },
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
@@ -2114,7 +2446,7 @@ include
             },
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-              "l", "a", "comment", "kind_f", "date"
+              "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
             "additionalProperties": false
           },
@@ -2178,7 +2510,7 @@ include
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -2209,7 +2541,7 @@ include
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         }
@@ -2238,8 +2570,14 @@ include
 type opt = int option[@@deriving jsonschema]
 include
   struct
-    let opt_jsonschema = `Assoc [("type", (`String "integer"))][@@warning
-                                                                 "-32-39"]
+    let opt_jsonschema =
+      match `Assoc [("type", (`String "integer"))] with
+      | `Assoc (("type", `String t)::[]) ->
+          `Assoc [("type", (`List [`String t; `String "null"]))]
+      | s ->
+          `Assoc
+            [("anyOf", (`List [s; `Assoc [("type", (`String "null"))]]))]
+      [@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "opt" =
@@ -2248,8 +2586,9 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "integer"
-    } |}]]
+      "type": [ "integer", "null" ]
+    }
+    |}]]
 type using_m = {
   m: Mod1.m_1 }[@@deriving jsonschema]
 include
@@ -2445,11 +2784,22 @@ include
         ("properties",
           (`Assoc
              [("address", address_jsonschema);
-             ("email", (`Assoc [("type", (`String "string"))]));
+             ("email",
+               ((match `Assoc [("type", (`String "string"))] with
+                 | `Assoc (("type", `String t)::[]) ->
+                     `Assoc [("type", (`List [`String t; `String "null"]))]
+                 | s ->
+                     `Assoc
+                       [("anyOf",
+                          (`List [s; `Assoc [("type", (`String "null"))]]))])));
              ("age", (`Assoc [("type", (`String "integer"))]));
              ("name", (`Assoc [("type", (`String "string"))]))]));
         ("required",
-          (`List [`String "address"; `String "age"; `String "name"]));
+          (`List
+             [`String "address";
+             `String "email";
+             `String "age";
+             `String "name"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -2471,11 +2821,11 @@ include
           "required": [ "zip", "city", "street" ],
           "additionalProperties": false
         },
-        "email": { "type": "string" },
+        "email": { "type": [ "string", "null" ] },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
-      "required": [ "address", "age", "name" ],
+      "required": [ "address", "email", "age", "name" ],
       "additionalProperties": false
     }
     |}]]
@@ -2500,7 +2850,14 @@ include
                (`Assoc [("$ref", (`String "#/$defs/shared_address"))]));
              ("home_address",
                (`Assoc [("$ref", (`String "#/$defs/shared_address"))]));
-             ("email", (`Assoc [("type", (`String "string"))]));
+             ("email",
+               ((match `Assoc [("type", (`String "string"))] with
+                 | `Assoc (("type", `String t)::[]) ->
+                     `Assoc [("type", (`List [`String t; `String "null"]))]
+                 | s ->
+                     `Assoc
+                       [("anyOf",
+                          (`List [s; `Assoc [("type", (`String "null"))]]))])));
              ("age", (`Assoc [("type", (`String "integer"))]));
              ("name", (`Assoc [("type", (`String "string"))]))]));
         ("required",
@@ -2508,6 +2865,7 @@ include
              [`String "retreat_address";
              `String "work_address";
              `String "home_address";
+             `String "email";
              `String "age";
              `String "name"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
@@ -2537,12 +2895,12 @@ include
         "retreat_address": { "$ref": "#/$defs/shared_address" },
         "work_address": { "$ref": "#/$defs/shared_address" },
         "home_address": { "$ref": "#/$defs/shared_address" },
-        "email": { "type": "string" },
+        "email": { "type": [ "string", "null" ] },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
       "required": [
-        "retreat_address", "work_address", "home_address", "age", "name"
+        "retreat_address", "work_address", "home_address", "email", "age", "name"
       ],
       "additionalProperties": false
     }
@@ -3335,8 +3693,15 @@ include
         ("properties",
           (`Assoc
              [("url", url);
-             ("title", (`Assoc [("type", (`String "string"))]))]));
-        ("required", (`List [`String "url"]));
+             ("title",
+               ((match `Assoc [("type", (`String "string"))] with
+                 | `Assoc (("type", `String t)::[]) ->
+                     `Assoc [("type", (`List [`String t; `String "null"]))]
+                 | s ->
+                     `Assoc
+                       [("anyOf",
+                          (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+        ("required", (`List [`String "url"; `String "title"]));
         ("additionalProperties", (`Bool false))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -3349,11 +3714,12 @@ include
       "type": "object",
       "properties": {
         "url": { "type": "string" },
-        "title": { "type": "string" }
+        "title": { "type": [ "string", "null" ] }
       },
-      "required": [ "url" ],
+      "required": [ "url", "title" ],
       "additionalProperties": false
-    } |}]]
+    }
+    |}]]
 type string_link_traffic = string generic_link_traffic[@@deriving jsonschema]
 include
   struct
@@ -3371,11 +3737,12 @@ include
       "type": "object",
       "properties": {
         "url": { "type": "string" },
-        "title": { "type": "string" }
+        "title": { "type": [ "string", "null" ] }
       },
-      "required": [ "url" ],
+      "required": [ "url", "title" ],
       "additionalProperties": false
-    } |}]]
+    }
+    |}]]
 type 'a poly_variant =
   | A 
   | B of 'a [@@deriving jsonschema]
@@ -3573,5 +3940,114 @@ include
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
+    }
+    |}]]
+type nullable_fields =
+  {
+  plain: string option ;
+  drop_simple: string option [@jsonschema.option ];
+  drop_complex: int list option [@jsonschema.option ]}[@@deriving jsonschema]
+include
+  struct
+    let nullable_fields_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("drop_complex",
+                ((match `Assoc
+                          [("type", (`String "array"));
+                          ("items", (`Assoc [("type", (`String "integer"))]))]
+                  with
+                  | `Assoc (("type", `String t)::[]) ->
+                      `Assoc [("type", (`List [`String t; `String "null"]))]
+                  | s ->
+                      `Assoc
+                        [("anyOf",
+                           (`List [s; `Assoc [("type", (`String "null"))]]))])));
+             ("drop_simple",
+               ((match `Assoc [("type", (`String "string"))] with
+                 | `Assoc (("type", `String t)::[]) ->
+                     `Assoc [("type", (`List [`String t; `String "null"]))]
+                 | s ->
+                     `Assoc
+                       [("anyOf",
+                          (`List [s; `Assoc [("type", (`String "null"))]]))])));
+             ("plain",
+               ((match `Assoc [("type", (`String "string"))] with
+                 | `Assoc (("type", `String t)::[]) ->
+                     `Assoc [("type", (`List [`String t; `String "null"]))]
+                 | s ->
+                     `Assoc
+                       [("anyOf",
+                          (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+        ("required", (`List [`String "plain"]));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "nullable_fields" =
+    print_schema nullable_fields_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "drop_complex": {
+          "anyOf": [
+            { "type": "array", "items": { "type": "integer" } },
+            { "type": "null" }
+          ]
+        },
+        "drop_simple": { "type": [ "string", "null" ] },
+        "plain": { "type": [ "string", "null" ] }
+      },
+      "required": [ "plain" ],
+      "additionalProperties": false
+    }
+    |}]]
+type composing_type = string
+let composing_type_jsonschema =
+  `Assoc
+    [("type", (`String "string")); ("description", (`String "A string"))]
+type composing_record =
+  {
+  composing_type: composing_type option [@jsonschema.option ]}[@@deriving
+                                                                jsonschema]
+include
+  struct
+    let composing_record_jsonschema =
+      `Assoc
+        [("type", (`String "object"));
+        ("properties",
+          (`Assoc
+             [("composing_type",
+                ((match composing_type_jsonschema with
+                  | `Assoc (("type", `String t)::[]) ->
+                      `Assoc [("type", (`List [`String t; `String "null"]))]
+                  | s ->
+                      `Assoc
+                        [("anyOf",
+                           (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
+        ("required", (`List []));
+        ("additionalProperties", (`Bool false))][@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "nullable_option_composing" =
+    print_schema composing_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "composing_type": {
+          "anyOf": [
+            { "type": "string", "description": "A string" }, { "type": "null" }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
     }
     |}]]

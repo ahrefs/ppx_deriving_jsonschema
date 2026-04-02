@@ -435,7 +435,7 @@ let%expect_test "event" =
         },
         "l": { "type": "array", "items": { "type": "string" } },
         "a": { "type": "array", "items": { "type": "number" } },
-        "opt_int": { "type": "integer" },
+        "opt_int": { "type": [ "integer", "null" ] },
         "comment": { "type": "string" },
         "kind_f": {
           "anyOf": [
@@ -466,7 +466,7 @@ let%expect_test "event" =
       },
       "required": [
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
-        "comment", "kind_f", "date"
+        "opt_int", "comment", "kind_f", "date"
       ],
       "additionalProperties": false
     }
@@ -624,14 +624,18 @@ let%expect_test "mutually_recursive_foo" =
       "$defs": {
         "foo": {
           "type": "object",
-          "properties": { "bar": { "$ref": "#/$defs/bar" } },
-          "required": [],
+          "properties": {
+            "bar": { "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ] }
+          },
+          "required": [ "bar" ],
           "additionalProperties": false
         },
         "bar": {
           "type": "object",
-          "properties": { "foo": { "$ref": "#/$defs/foo" } },
-          "required": [],
+          "properties": {
+            "foo": { "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ] }
+          },
+          "required": [ "foo" ],
           "additionalProperties": false
         }
       },
@@ -648,14 +652,18 @@ let%expect_test "mutually_recursive_bar" =
       "$defs": {
         "foo": {
           "type": "object",
-          "properties": { "bar": { "$ref": "#/$defs/bar" } },
-          "required": [],
+          "properties": {
+            "bar": { "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ] }
+          },
+          "required": [ "bar" ],
           "additionalProperties": false
         },
         "bar": {
           "type": "object",
-          "properties": { "foo": { "$ref": "#/$defs/foo" } },
-          "required": [],
+          "properties": {
+            "foo": { "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ] }
+          },
+          "required": [ "foo" ],
           "additionalProperties": false
         }
       },
@@ -735,11 +743,13 @@ let%expect_test "mutually_recursive_expr" =
                 {
                   "type": "object",
                   "properties": {
-                    "else_": { "$ref": "#/$defs/stmt" },
+                    "else_": {
+                      "anyOf": [ { "$ref": "#/$defs/stmt" }, { "type": "null" } ]
+                    },
                     "then_": { "$ref": "#/$defs/stmt" },
                     "cond": { "$ref": "#/$defs/expr" }
                   },
-                  "required": [ "then_", "cond" ],
+                  "required": [ "else_", "then_", "cond" ],
                   "additionalProperties": false
                 }
               ],
@@ -809,28 +819,40 @@ let%expect_test "three_way_mutual_recursion" =
         "node_a": {
           "type": "object",
           "properties": {
-            "c": { "$ref": "#/$defs/node_c" },
-            "b": { "$ref": "#/$defs/node_b" }
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "c", "b" ],
           "additionalProperties": false
         },
         "node_b": {
           "type": "object",
           "properties": {
-            "c": { "$ref": "#/$defs/node_c" },
-            "a": { "$ref": "#/$defs/node_a" }
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "c", "a" ],
           "additionalProperties": false
         },
         "node_c": {
           "type": "object",
           "properties": {
-            "b": { "$ref": "#/$defs/node_b" },
-            "a": { "$ref": "#/$defs/node_a" }
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "b", "a" ],
           "additionalProperties": false
         }
       },
@@ -975,7 +997,7 @@ let%expect_test "events" =
           },
           "l": { "type": "array", "items": { "type": "string" } },
           "a": { "type": "array", "items": { "type": "number" } },
-          "opt_int": { "type": "integer" },
+          "opt_int": { "type": [ "integer", "null" ] },
           "comment": { "type": "string" },
           "kind_f": {
             "anyOf": [
@@ -1006,7 +1028,7 @@ let%expect_test "events" =
         },
         "required": [
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-          "a", "comment", "kind_f", "date"
+          "a", "opt_int", "comment", "kind_f", "date"
         ],
         "additionalProperties": false
       }
@@ -1059,7 +1081,7 @@ let%expect_test "eventss" =
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1090,7 +1112,7 @@ let%expect_test "eventss" =
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         }
@@ -1143,7 +1165,7 @@ let%expect_test "event_comment" =
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1174,7 +1196,7 @@ let%expect_test "event_comment" =
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         },
@@ -1233,7 +1255,7 @@ let%expect_test "event_comments'" =
               },
               "l": { "type": "array", "items": { "type": "string" } },
               "a": { "type": "array", "items": { "type": "number" } },
-              "opt_int": { "type": "integer" },
+              "opt_int": { "type": [ "integer", "null" ] },
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
@@ -1264,7 +1286,7 @@ let%expect_test "event_comments'" =
             },
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-              "l", "a", "comment", "kind_f", "date"
+              "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
             "additionalProperties": false
           },
@@ -1324,7 +1346,7 @@ let%expect_test "event_n" =
               },
               "l": { "type": "array", "items": { "type": "string" } },
               "a": { "type": "array", "items": { "type": "number" } },
-              "opt_int": { "type": "integer" },
+              "opt_int": { "type": [ "integer", "null" ] },
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
@@ -1355,7 +1377,7 @@ let%expect_test "event_n" =
             },
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-              "l", "a", "comment", "kind_f", "date"
+              "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
             "additionalProperties": false
           },
@@ -1414,7 +1436,7 @@ let%expect_test "events_array" =
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1445,7 +1467,7 @@ let%expect_test "events_array" =
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         }
@@ -1469,11 +1491,13 @@ type opt = int option [@@deriving jsonschema]
 
 let%expect_test "opt" =
   print_schema opt_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "integer"
-    } |}]
+      "type": [ "integer", "null" ]
+    }
+    |}]
 
 type using_m = { m : Mod1.m_1 } [@@deriving jsonschema]
 
@@ -1619,11 +1643,11 @@ let%expect_test "t" =
           "required": [ "zip", "city", "street" ],
           "additionalProperties": false
         },
-        "email": { "type": "string" },
+        "email": { "type": [ "string", "null" ] },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
-      "required": [ "address", "age", "name" ],
+      "required": [ "address", "email", "age", "name" ],
       "additionalProperties": false
     }
     |}]
@@ -1661,12 +1685,12 @@ let%expect_test "tt" =
         "retreat_address": { "$ref": "#/$defs/shared_address" },
         "work_address": { "$ref": "#/$defs/shared_address" },
         "home_address": { "$ref": "#/$defs/shared_address" },
-        "email": { "type": "string" },
+        "email": { "type": [ "string", "null" ] },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
       "required": [
-        "retreat_address", "work_address", "home_address", "age", "name"
+        "retreat_address", "work_address", "home_address", "email", "age", "name"
       ],
       "additionalProperties": false
     }
@@ -2139,11 +2163,12 @@ let%expect_test "parameterized_record" =
       "type": "object",
       "properties": {
         "url": { "type": "string" },
-        "title": { "type": "string" }
+        "title": { "type": [ "string", "null" ] }
       },
-      "required": [ "url" ],
+      "required": [ "url", "title" ],
       "additionalProperties": false
-    } |}]
+    }
+    |}]
 
 type string_link_traffic = string generic_link_traffic [@@deriving jsonschema]
 
@@ -2156,11 +2181,12 @@ let%expect_test "instantiated_parameterized_record" =
       "type": "object",
       "properties": {
         "url": { "type": "string" },
-        "title": { "type": "string" }
+        "title": { "type": [ "string", "null" ] }
       },
-      "required": [ "url" ],
+      "required": [ "url", "title" ],
       "additionalProperties": false
-    } |}]
+    }
+    |}]
 
 type 'a poly_variant =
   | A
@@ -2295,5 +2321,58 @@ let%expect_test "multi_param_variant_as_string" =
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [ { "const": "North" }, { "const": "South" } ]
+    }
+    |}]
+
+type nullable_fields = {
+  plain : string option;
+  drop_simple : string option; [@jsonschema.option]
+  drop_complex : int list option; [@jsonschema.option]
+}
+[@@deriving jsonschema]
+
+let%expect_test "nullable_fields" =
+  print_schema nullable_fields_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "drop_complex": {
+          "anyOf": [
+            { "type": "array", "items": { "type": "integer" } },
+            { "type": "null" }
+          ]
+        },
+        "drop_simple": { "type": [ "string", "null" ] },
+        "plain": { "type": [ "string", "null" ] }
+      },
+      "required": [ "plain" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type composing_type = string
+let composing_type_jsonschema = `Assoc [ "type", `String "string"; "description", `String "A string" ]
+
+type composing_record = { composing_type : composing_type option [@jsonschema.option] } [@@deriving jsonschema]
+
+let%expect_test "nullable_option_composing" =
+  print_schema composing_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "composing_type": {
+          "anyOf": [
+            { "type": "string", "description": "A string" }, { "type": "null" }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
     }
     |}]
