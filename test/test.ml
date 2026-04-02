@@ -2386,7 +2386,6 @@ let%expect_test "nullable_option_composing" =
     }
     |}]
 
-
 (* Parametric recursive type: the recursive call carries type arguments *)
 type 'a grade' =
   | A of 'a
@@ -2401,7 +2400,8 @@ type 'a grade = 'a grade' =
 
 let%expect_test "grade" =
   print_schema (grade_jsonschema int_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "urn:jsonschema:grade",
@@ -2448,8 +2448,7 @@ let%expect_test "grade" =
     |}]
 
 (* Recursive type referenced in two fields of the same parent record *)
-type self_ref = { children : self_ref list }
-[@@deriving jsonschema]
+type self_ref = { children : self_ref list } [@@deriving jsonschema]
 
 type two_self_refs = {
   a : self_ref;
@@ -2459,7 +2458,8 @@ type two_self_refs = {
 
 let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
   print_schema two_self_refs_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -2517,7 +2517,8 @@ type ('atom, 'group_atom) bool_filter =
 
 let%expect_test "polymorphic_recursive_ref" =
   print_schema (filter_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "urn:jsonschema:filter",
@@ -2563,7 +2564,8 @@ type outer_rec =
 
 let%expect_test "parametric_recursive_cross_ref" =
   print_schema outer_rec_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "urn:jsonschema:outer_rec",
@@ -2619,7 +2621,8 @@ let%expect_test "parametric_recursive_cross_ref" =
 
 let%expect_test "polymorphic_recursive_ref_bool_filter" =
   print_schema (bool_filter_jsonschema int_jsonschema string_jsonschema);
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "urn:jsonschema:bool_filter",
