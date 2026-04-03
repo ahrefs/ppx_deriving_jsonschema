@@ -484,6 +484,7 @@ let%expect_test "recursive_record" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:recursive_record",
       "$defs": {
         "recursive_record": {
           "type": "object",
@@ -513,6 +514,7 @@ let%expect_test "recursive_variant" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:recursive_variant",
       "$defs": {
         "recursive_variant": {
           "anyOf": [
@@ -555,6 +557,7 @@ let%expect_test "tree" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:tree",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -621,6 +624,7 @@ let%expect_test "mutually_recursive_foo" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:foo",
       "$defs": {
         "foo": {
           "type": "object",
@@ -649,6 +653,7 @@ let%expect_test "mutually_recursive_bar" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:bar",
       "$defs": {
         "foo": {
           "type": "object",
@@ -692,6 +697,7 @@ let%expect_test "mutually_recursive_expr" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:expr",
       "$defs": {
         "expr": {
           "anyOf": [
@@ -815,6 +821,7 @@ let%expect_test "three_way_mutual_recursion" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:node_a",
       "$defs": {
         "node_a": {
           "type": "object",
@@ -872,6 +879,7 @@ let%expect_test "recursive_tuple" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:recursive_tuple",
       "$defs": {
         "recursive_tuple": {
           "anyOf": [
@@ -917,6 +925,7 @@ let%expect_test "recursive_abstract_alias" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:test/test.ml:920:23215",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -2374,5 +2383,307 @@ let%expect_test "nullable_option_composing" =
       },
       "required": [],
       "additionalProperties": false
+    }
+    |}]
+
+(* Parametric recursive type: the recursive call carries type arguments *)
+type 'a grade' =
+  | A of 'a
+  | B of ('a grade' * 'a grade')
+  | C
+
+type 'a grade = 'a grade' =
+  | A of 'a
+  | B of ('a grade * 'a grade)
+  | C
+[@@deriving jsonschema]
+
+let%expect_test "grade" =
+  print_schema (grade_jsonschema int_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:grade",
+      "$defs": {
+        "grade": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "B" },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    { "$ref": "#/$defs/grade" }, { "$ref": "#/$defs/grade" }
+                  ],
+                  "unevaluatedItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "C" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/grade"
+    }
+    |}]
+
+(* Recursive type referenced in two fields of the same parent record *)
+type self_ref = { children : self_ref list } [@@deriving jsonschema]
+
+type two_self_refs = {
+  a : self_ref;
+  b : self_ref;
+}
+[@@deriving jsonschema]
+
+let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
+  print_schema two_self_refs_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "b": {
+          "$id": "urn:jsonschema:test/test.ml:2456:65714",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        },
+        "a": {
+          "$id": "urn:jsonschema:test/test.ml:2455:65698",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        }
+      },
+      "required": [ "b", "a" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Polymorphic recursive type: the recursive reference carries type arguments *)
+type ('atom, 'group_atom) filter =
+  | Atom of 'atom
+  | Group of ('atom, 'group_atom) filter list * 'group_atom
+[@@deriving jsonschema]
+
+type ('atom, 'group_atom) bool_filter =
+  | BoolAtom of ('atom, 'group_atom) filter
+  | BoolFilterGroup of ('atom, 'group_atom) bool_filter list
+[@@deriving jsonschema]
+
+let%expect_test "polymorphic_recursive_ref" =
+  print_schema (filter_jsonschema int_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:filter",
+      "$defs": {
+        "filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Atom" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Group" },
+                { "type": "array", "items": { "$ref": "#/$defs/filter" } },
+                { "type": "string" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/filter"
+    }
+    |}]
+
+(* Cross-$ref bug: outer recursive type uses a parametric recursive type with
+   itself as the type argument *)
+type 'a rec_wrapper =
+  | RWrap of 'a
+  | RNested of 'a rec_wrapper
+[@@deriving jsonschema]
+
+type outer_rec =
+  | ORLeaf of int
+  | ORNode of outer_rec rec_wrapper
+[@@deriving jsonschema]
+
+let%expect_test "parametric_recursive_cross_ref" =
+  print_schema outer_rec_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:outer_rec",
+      "$defs": {
+        "outer_rec": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "ORLeaf" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "ORNode" },
+                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "rec_wrapper__2561_68692": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RWrap" }, { "$ref": "#/$defs/outer_rec" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RNested" },
+                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/outer_rec"
+    }
+    |}]
+
+let%expect_test "polymorphic_recursive_ref_bool_filter" =
+  print_schema (bool_filter_jsonschema int_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "urn:jsonschema:bool_filter",
+      "$defs": {
+        "bool_filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolAtom" },
+                {
+                  "$id": "urn:jsonschema:test/test.ml:2514:67360",
+                  "$defs": {
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Atom" }, { "type": "integer" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Group" },
+                            {
+                              "type": "array",
+                              "items": { "$ref": "#/$defs/filter" }
+                            },
+                            { "type": "string" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 3,
+                          "maxItems": 3
+                        }
+                      ]
+                    }
+                  },
+                  "$ref": "#/$defs/filter"
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolFilterGroup" },
+                { "type": "array", "items": { "$ref": "#/$defs/bool_filter" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/bool_filter"
     }
     |}]
