@@ -2582,8 +2582,7 @@ let%expect_test "parametric_recursive_cross_ref" =
             {
               "type": "array",
               "prefixItems": [
-                { "const": "ORNode" },
-                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+                { "const": "ORNode" }, { "$ref": "#/$defs/rec_wrapper" }
               ],
               "unevaluatedItems": false,
               "minItems": 2,
@@ -2591,7 +2590,7 @@ let%expect_test "parametric_recursive_cross_ref" =
             }
           ]
         },
-        "rec_wrapper__2561_68692": {
+        "rec_wrapper": {
           "anyOf": [
             {
               "type": "array",
@@ -2605,8 +2604,7 @@ let%expect_test "parametric_recursive_cross_ref" =
             {
               "type": "array",
               "prefixItems": [
-                { "const": "RNested" },
-                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+                { "const": "RNested" }, { "$ref": "#/$defs/rec_wrapper" }
               ],
               "unevaluatedItems": false,
               "minItems": 2,

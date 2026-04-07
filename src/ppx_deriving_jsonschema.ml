@@ -237,55 +237,17 @@ let rec type_of_core ~config ?(recursive_types = []) ?extra_defs_var core_type =
         (* A recursive $ref was passed as an arg to a parametric type.
            The parametric type's schema will have {$id, $defs, $ref}; the $id
            creates a JSON Schema resource boundary so internal $refs like
-           "#/$defs/outer" would resolve against the inner $id — wrong.
-           Fix: hoist the inner $defs into the outer type's _ppx_eds accumulator
-           with unique suffixed names, and return just a renamed $ref. *)
-        let suffix = estring ~loc (Printf.sprintf "%d_%d" loc.loc_start.pos_lnum loc.loc_start.pos_cnum) in
+           "#/$defs/outer" would resolve against the inner $id — wrong. *)
         ( [%expr
-            let _ppx_sub = [%e schema] in
-            match _ppx_sub with
-            | `Assoc _ppx_pairs when List.mem_assoc "$defs" _ppx_pairs ->
-              let _ppx_inner_defs =
-                match List.assoc_opt "$defs" _ppx_pairs with
-                | Some (`Assoc d) -> d
-                | _ -> []
-              in
-              let _ppx_suffix = [%e suffix] in
-              let _ppx_mk n = n ^ "__" ^ _ppx_suffix in
-              let _ppx_rmap = List.map (fun (n, _) -> n, _ppx_mk n) _ppx_inner_defs in
-              let rec _ppx_ren t =
-                match t with
-                | `Assoc pairs ->
-                  `Assoc
-                    (List.map
-                       (fun (k, v) ->
-                         let v' =
-                           if k = "$ref" then (
-                             match v with
-                             | `String r when String.length r > 8 && String.sub r 0 8 = "#/$defs/" ->
-                               let n = String.sub r 8 (String.length r - 8) in
-                               `String
-                                 ("#/$defs/"
-                                 ^
-                                 match List.assoc_opt n _ppx_rmap with
-                                 | Some m -> m
-                                 | None -> n)
-                             | _ -> v)
-                           else _ppx_ren v
-                         in
-                         k, v')
-                       pairs)
-                | `List xs -> `List (List.map _ppx_ren xs)
-                | other -> other
-              in
-              let _ppx_hoisted = List.map (fun (n, b) -> _ppx_mk n, _ppx_ren b) _ppx_inner_defs in
-              [%e edv] := ![%e edv] @ _ppx_hoisted;
-              (match List.assoc_opt "$ref" _ppx_pairs with
-              | Some (`String _ppx_r) when String.length _ppx_r > 8 && String.sub _ppx_r 0 8 = "#/$defs/" ->
-                let _ppx_n = String.sub _ppx_r 8 (String.length _ppx_r - 8) in
-                `Assoc [ "$ref", `String ("#/$defs/" ^ _ppx_mk _ppx_n) ]
-              | _ -> `Assoc (List.filter (fun (k, _) -> k <> "$id") _ppx_pairs))
-            | _ppx_other -> _ppx_other],
+            match [%e schema] with
+            | `Assoc ppx_pairs ->
+              (match List.assoc_opt "$defs" ppx_pairs with
+              | Some (`Assoc ppx_defs) ->
+                [%e edv] :=
+                  ![%e edv] @ List.filter (fun (n, _) -> not (List.mem_assoc n ![%e edv])) ppx_defs;
+                `Assoc (List.filter (fun (k, _) -> k <> "$id" && k <> "$defs") ppx_pairs)
+              | _ -> `Assoc ppx_pairs)
+            | ppx_other -> ppx_other],
           true )
       | _ ->
         (* Non-recursive arg (or no accumulator): add a location-based $id to mark
@@ -469,14 +431,14 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     let _, raw_schema, is_rec, params, params_prefix = derive_single_type ~loc ~config ~recursive_types type_decl in
     (* Apply with_defs before wrap_type_params so params wrap the full schema.
        For recursive types, do a second pass with extra_defs_var so hoisting
-       code referencing _ppx_eds is generated in the body expression. *)
+       code referencing ppx_eds is generated in the body expression. *)
     let schema =
       if is_rec then (
-        let edv = evar ~loc "_ppx_eds" in
-        let _, raw_schema2, _, _, _ = derive_single_type ~loc ~config ~recursive_types ~extra_defs_var:edv type_decl in
+        let edv = evar ~loc "ppx_eds" in
+        let _, raw_schema', _, _, _ = derive_single_type ~loc ~config ~recursive_types ~extra_defs_var:edv type_decl in
         [%expr
-          let _ppx_eds = ref [] in
-          [%e Schema.with_defs ~loc type_name ~extra_defs_var:edv raw_schema2]])
+          let ppx_eds = ref [] in
+          [%e Schema.with_defs ~loc type_name ~extra_defs_var:edv raw_schema']])
       else raw_schema
     in
     let schema = wrap_type_params ~loc ~prefix:params_prefix params schema in
@@ -492,20 +454,20 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
     let any_recursive = List.exists (fun (_, _, is_rec, _, _) -> is_rec) raw_results in
     if any_recursive then (
       (* Second pass: regenerate with extra_defs_var so hoisting code is emitted *)
-      let edv = evar ~loc "_ppx_eds" in
+      let edv = evar ~loc "ppx_eds" in
       let raw_results2 =
         List.map (fun td -> derive_single_type ~loc ~config ~recursive_types ~extra_defs_var:edv td) type_decls
       in
       let defs2 = List.map (fun (name, raw, _, _, _) -> name, raw) raw_results2 in
       (* Build $defs from raw schemas, then wrap the combined schema with type params.
-         Each binding gets its own _ppx_eds ref so hoisted defs don't leak across. *)
+         Each binding gets its own ppx_eds ref so hoisted defs don't leak across. *)
       let primary_value =
         let _, _, _, params, prefix = List.find (fun (name, _, _, _, _) -> name = primary_type) raw_results2 in
         let schema_inner = Schema.with_multi_defs ~loc ~primary_type ~extra_defs_var:edv defs2 in
         let schema =
           wrap_type_params ~loc ~prefix params
             [%expr
-              let _ppx_eds = ref [] in
+              let ppx_eds = ref [] in
               [%e schema_inner]]
         in
         create_value ~loc primary_type schema
@@ -519,7 +481,7 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
               let schema =
                 wrap_type_params ~loc ~prefix params
                   [%expr
-                    let _ppx_eds = ref [] in
+                    let ppx_eds = ref [] in
                     [%e schema_inner]]
               in
               Some (create_value ~loc name schema)))
@@ -535,9 +497,9 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 
-let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } []
 
 let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple =
+  let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } []
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   match ast with
   | _, [ td ] ->

@@ -4451,73 +4451,27 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "ORNode"))];
-                       (let _ppx_sub =
-                          rec_wrapper_jsonschema
-                            (`Assoc [("$ref", (`String "#/$defs/outer_rec"))]) in
-                        match _ppx_sub with
-                        | `Assoc _ppx_pairs when
-                            List.mem_assoc "$defs" _ppx_pairs ->
-                            let _ppx_inner_defs =
-                              match List.assoc_opt "$defs" _ppx_pairs with
-                              | Some (`Assoc d) -> d
-                              | _ -> [] in
-                            let _ppx_suffix = "2561_68692" in
-                            let _ppx_mk n = n ^ ("__" ^ _ppx_suffix) in
-                            let _ppx_rmap =
-                              List.map (fun (n, _) -> (n, (_ppx_mk n)))
-                                _ppx_inner_defs in
-                            let rec _ppx_ren t =
-                              match t with
-                              | `Assoc pairs ->
+                       (match rec_wrapper_jsonschema
+                                (`Assoc
+                                   [("$ref", (`String "#/$defs/outer_rec"))])
+                        with
+                        | `Assoc ppx_pairs ->
+                            (match List.assoc_opt "$defs" ppx_pairs with
+                             | Some (`Assoc ppx_defs) ->
+                                 (_ppx_eds :=
+                                    ((!_ppx_eds) @
+                                       (List.filter
+                                          (fun (n, _) ->
+                                             not
+                                               (List.mem_assoc n (!_ppx_eds)))
+                                          ppx_defs));
                                   `Assoc
-                                    (List.map
-                                       (fun (k, v) ->
-                                          let v' =
-                                            if k = "$ref"
-                                            then
-                                              match v with
-                                              | `String r when
-                                                  ((String.length r) > 8) &&
-                                                    ((String.sub r 0 8) =
-                                                       "#/$defs/")
-                                                  ->
-                                                  let n =
-                                                    String.sub r 8
-                                                      ((String.length r) - 8) in
-                                                  `String
-                                                    ("#/$defs/" ^
-                                                       ((match List.assoc_opt
-                                                                 n _ppx_rmap
-                                                         with
-                                                         | Some m -> m
-                                                         | None -> n)))
-                                              | _ -> v
-                                            else _ppx_ren v in
-                                          (k, v')) pairs)
-                              | `List xs -> `List (List.map _ppx_ren xs)
-                              | other -> other in
-                            let _ppx_hoisted =
-                              List.map
-                                (fun (n, b) -> ((_ppx_mk n), (_ppx_ren b)))
-                                _ppx_inner_defs in
-                            (_ppx_eds := ((!_ppx_eds) @ _ppx_hoisted);
-                             (match List.assoc_opt "$ref" _ppx_pairs with
-                              | Some (`String _ppx_r) when
-                                  ((String.length _ppx_r) > 8) &&
-                                    ((String.sub _ppx_r 0 8) = "#/$defs/")
-                                  ->
-                                  let _ppx_n =
-                                    String.sub _ppx_r 8
-                                      ((String.length _ppx_r) - 8) in
-                                  `Assoc
-                                    [("$ref",
-                                       (`String
-                                          ("#/$defs/" ^ (_ppx_mk _ppx_n))))]
-                              | _ ->
-                                  `Assoc
-                                    (List.filter (fun (k, _) -> k <> "$id")
-                                       _ppx_pairs)))
-                        | _ppx_other -> _ppx_other)]));
+                                    (List.filter
+                                       (fun (k, _) ->
+                                          (k <> "$id") && (k <> "$defs"))
+                                       ppx_pairs))
+                             | _ -> `Assoc ppx_pairs)
+                        | ppx_other -> ppx_other)]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -4547,8 +4501,7 @@ include
             {
               "type": "array",
               "prefixItems": [
-                { "const": "ORNode" },
-                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+                { "const": "ORNode" }, { "$ref": "#/$defs/rec_wrapper" }
               ],
               "unevaluatedItems": false,
               "minItems": 2,
@@ -4556,7 +4509,7 @@ include
             }
           ]
         },
-        "rec_wrapper__2561_68692": {
+        "rec_wrapper": {
           "anyOf": [
             {
               "type": "array",
@@ -4570,8 +4523,7 @@ include
             {
               "type": "array",
               "prefixItems": [
-                { "const": "RNested" },
-                { "$ref": "#/$defs/rec_wrapper__2561_68692" }
+                { "const": "RNested" }, { "$ref": "#/$defs/rec_wrapper" }
               ],
               "unevaluatedItems": false,
               "minItems": 2,
@@ -4599,7 +4551,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "urn:jsonschema:test/test.ml:2514:67360",
+                  "$id": "urn:jsonschema:test/test.ml:2505:67189",
                   "$defs": {
                     "filter": {
                       "anyOf": [
