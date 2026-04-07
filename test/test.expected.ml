@@ -751,8 +751,8 @@ type recursive_record = {
 include
   struct
     let recursive_record_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -768,7 +768,7 @@ include
           ("additionalProperties", (`Bool false))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:recursive_record"));
-        ("$defs", (`Assoc (("recursive_record", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("recursive_record", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/recursive_record"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -802,8 +802,8 @@ type recursive_variant =
 include
   struct
     let recursive_variant_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -826,7 +826,7 @@ include
                   ("maxItems", (`Int 1))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:recursive_variant"));
-        ("$defs", (`Assoc (("recursive_variant", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("recursive_variant", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/recursive_variant"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -871,8 +871,8 @@ type tree =
 include
   struct
     let tree_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -909,7 +909,7 @@ include
                   ("maxItems", (`Int 2))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:tree"));
-        ("$defs", (`Assoc (("tree", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("tree", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/tree"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -990,8 +990,8 @@ and bar = {
 include
   struct
     let foo_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body_0 =
+      let ppx_eds = ref [] in
+      let ppx_body_0 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1007,7 +1007,7 @@ include
                              (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "bar"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_1 =
+      let ppx_body_1 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1026,12 +1026,11 @@ include
       `Assoc
         [("$id", (`String "urn:jsonschema:foo"));
         ("$defs",
-          (`Assoc
-             ([("foo", _ppx_body_0); ("bar", _ppx_body_1)] @ (!_ppx_eds))));
+          (`Assoc ([("foo", ppx_body_0); ("bar", ppx_body_1)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/foo"))][@@warning "-32-39"]
     let bar_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body_0 =
+      let ppx_eds = ref [] in
+      let ppx_body_0 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1047,7 +1046,7 @@ include
                              (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "bar"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_1 =
+      let ppx_body_1 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1066,8 +1065,7 @@ include
       `Assoc
         [("$id", (`String "urn:jsonschema:bar"));
         ("$defs",
-          (`Assoc
-             ([("foo", _ppx_body_0); ("bar", _ppx_body_1)] @ (!_ppx_eds))));
+          (`Assoc ([("foo", ppx_body_0); ("bar", ppx_body_1)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/bar"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -1141,8 +1139,8 @@ and stmt =
 include
   struct
     let expr_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body_0 =
+      let ppx_eds = ref [] in
+      let ppx_body_0 =
         `Assoc
           [("anyOf",
              (`List
@@ -1177,7 +1175,7 @@ include
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
-      let _ppx_body_1 =
+      let ppx_body_1 =
         `Assoc
           [("anyOf",
              (`List
@@ -1232,12 +1230,11 @@ include
       `Assoc
         [("$id", (`String "urn:jsonschema:expr"));
         ("$defs",
-          (`Assoc
-             ([("expr", _ppx_body_0); ("stmt", _ppx_body_1)] @ (!_ppx_eds))));
+          (`Assoc ([("expr", ppx_body_0); ("stmt", ppx_body_1)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/expr"))][@@warning "-32-39"]
     let stmt_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body_0 =
+      let ppx_eds = ref [] in
+      let ppx_body_0 =
         `Assoc
           [("anyOf",
              (`List
@@ -1272,7 +1269,7 @@ include
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
-      let _ppx_body_1 =
+      let ppx_body_1 =
         `Assoc
           [("anyOf",
              (`List
@@ -1327,8 +1324,7 @@ include
       `Assoc
         [("$id", (`String "urn:jsonschema:stmt"));
         ("$defs",
-          (`Assoc
-             ([("expr", _ppx_body_0); ("stmt", _ppx_body_1)] @ (!_ppx_eds))));
+          (`Assoc ([("expr", ppx_body_0); ("stmt", ppx_body_1)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/stmt"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -1469,8 +1465,8 @@ and node_c = {
 include
   struct
     let node_a_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body_0 =
+      let ppx_eds = ref [] in
+      let ppx_body_0 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1494,7 +1490,7 @@ include
                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "c"; `String "b"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_1 =
+      let ppx_body_1 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1518,7 +1514,7 @@ include
                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "c"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_2 =
+      let ppx_body_2 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1546,13 +1542,13 @@ include
         [("$id", (`String "urn:jsonschema:node_a"));
         ("$defs",
           (`Assoc
-             ([("node_a", _ppx_body_0);
-              ("node_b", _ppx_body_1);
-              ("node_c", _ppx_body_2)] @ (!_ppx_eds))));
+             ([("node_a", ppx_body_0);
+              ("node_b", ppx_body_1);
+              ("node_c", ppx_body_2)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/node_a"))][@@warning "-32-39"]
     let node_b_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body_0 =
+      let ppx_eds = ref [] in
+      let ppx_body_0 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1576,7 +1572,7 @@ include
                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "c"; `String "b"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_1 =
+      let ppx_body_1 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1600,7 +1596,7 @@ include
                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "c"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_2 =
+      let ppx_body_2 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1628,13 +1624,13 @@ include
         [("$id", (`String "urn:jsonschema:node_b"));
         ("$defs",
           (`Assoc
-             ([("node_a", _ppx_body_0);
-              ("node_b", _ppx_body_1);
-              ("node_c", _ppx_body_2)] @ (!_ppx_eds))));
+             ([("node_a", ppx_body_0);
+              ("node_b", ppx_body_1);
+              ("node_c", ppx_body_2)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/node_b"))][@@warning "-32-39"]
     let node_c_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body_0 =
+      let ppx_eds = ref [] in
+      let ppx_body_0 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1658,7 +1654,7 @@ include
                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "c"; `String "b"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_1 =
+      let ppx_body_1 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1682,7 +1678,7 @@ include
                             (`List [s; `Assoc [("type", (`String "null"))]]))])))]));
           ("required", (`List [`String "c"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
-      let _ppx_body_2 =
+      let ppx_body_2 =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -1710,9 +1706,9 @@ include
         [("$id", (`String "urn:jsonschema:node_c"));
         ("$defs",
           (`Assoc
-             ([("node_a", _ppx_body_0);
-              ("node_b", _ppx_body_1);
-              ("node_c", _ppx_body_2)] @ (!_ppx_eds))));
+             ([("node_a", ppx_body_0);
+              ("node_b", ppx_body_1);
+              ("node_c", ppx_body_2)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/node_c"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -1773,8 +1769,8 @@ type recursive_tuple =
 include
   struct
     let recursive_tuple_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -1810,7 +1806,7 @@ include
                   ("maxItems", (`Int 2))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:recursive_tuple"));
-        ("$defs", (`Assoc (("recursive_tuple", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("recursive_tuple", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/recursive_tuple"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -4085,8 +4081,8 @@ type 'a grade = 'a grade' =
 include
   struct
     let grade_jsonschema a =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -4123,7 +4119,7 @@ include
                   ("maxItems", (`Int 1))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:grade"));
-        ("$defs", (`Assoc (("grade", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("grade", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/grade"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -4180,8 +4176,8 @@ type self_ref = {
 include
   struct
     let self_ref_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("type", (`String "object"));
           ("properties",
@@ -4195,7 +4191,7 @@ include
           ("additionalProperties", (`Bool false))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:self_ref"));
-        ("$defs", (`Assoc (("self_ref", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("self_ref", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/self_ref"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type two_self_refs = {
@@ -4213,7 +4209,7 @@ include
                   | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                       `Assoc
                         (("$id",
-                           (`String "urn:jsonschema:test.ml:2456:65714"))
+                           (`String "urn:jsonschema:test.ml:2455:65717"))
                         :: (List.filter (fun (k, _) -> k <> "$id") pairs))
                   | other -> other)));
              ("a",
@@ -4221,7 +4217,7 @@ include
                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                      `Assoc
                        (("$id",
-                          (`String "urn:jsonschema:test.ml:2455:65698"))
+                          (`String "urn:jsonschema:test.ml:2454:65701"))
                        :: (List.filter (fun (k, _) -> k <> "$id") pairs))
                  | other -> other)))]));
         ("required", (`List [`String "b"; `String "a"]));
@@ -4237,7 +4233,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "urn:jsonschema:test/test.ml:2456:65714",
+          "$id": "urn:jsonschema:test/test.ml:2455:65717",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -4254,7 +4250,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "urn:jsonschema:test/test.ml:2455:65698",
+          "$id": "urn:jsonschema:test/test.ml:2454:65701",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -4282,8 +4278,8 @@ type ('atom, 'group_atom) filter =
 include
   struct
     let filter_jsonschema atom group_atom =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -4309,7 +4305,7 @@ include
                   ("maxItems", (`Int 3))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:filter"));
-        ("$defs", (`Assoc (("filter", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("filter", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/filter"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type ('atom, 'group_atom) bool_filter =
@@ -4319,8 +4315,8 @@ type ('atom, 'group_atom) bool_filter =
 include
   struct
     let bool_filter_jsonschema atom group_atom =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -4334,7 +4330,7 @@ include
                              `Assoc
                                (("$id",
                                   (`String
-                                     "urn:jsonschema:test.ml:2514:67360"))
+                                     "urn:jsonschema:test.ml:2514:67367"))
                                ::
                                (List.filter (fun (k, _) -> k <> "$id") pairs))
                          | other -> other)]));
@@ -4356,7 +4352,7 @@ include
                   ("maxItems", (`Int 2))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:bool_filter"));
-        ("$defs", (`Assoc (("bool_filter", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("bool_filter", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/bool_filter"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -4400,8 +4396,8 @@ type 'a rec_wrapper =
 include
   struct
     let rec_wrapper_jsonschema a =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -4423,7 +4419,7 @@ include
                   ("maxItems", (`Int 2))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:rec_wrapper"));
-        ("$defs", (`Assoc (("rec_wrapper", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("rec_wrapper", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/rec_wrapper"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type outer_rec =
@@ -4432,8 +4428,8 @@ type outer_rec =
 include
   struct
     let outer_rec_jsonschema =
-      let _ppx_eds = ref [] in
-      let _ppx_body =
+      let ppx_eds = ref [] in
+      let ppx_body =
         `Assoc
           [("anyOf",
              (`List
@@ -4458,12 +4454,12 @@ include
                         | `Assoc ppx_pairs ->
                             (match List.assoc_opt "$defs" ppx_pairs with
                              | Some (`Assoc ppx_defs) ->
-                                 (_ppx_eds :=
-                                    ((!_ppx_eds) @
+                                 (ppx_eds :=
+                                    ((!ppx_eds) @
                                        (List.filter
                                           (fun (n, _) ->
                                              not
-                                               (List.mem_assoc n (!_ppx_eds)))
+                                               (List.mem_assoc n (!ppx_eds)))
                                           ppx_defs));
                                   `Assoc
                                     (List.filter
@@ -4477,7 +4473,7 @@ include
                   ("maxItems", (`Int 2))]]))] in
       `Assoc
         [("$id", (`String "urn:jsonschema:outer_rec"));
-        ("$defs", (`Assoc (("outer_rec", _ppx_body) :: (!_ppx_eds))));
+        ("$defs", (`Assoc (("outer_rec", ppx_body) :: (!ppx_eds))));
         ("$ref", (`String "#/$defs/outer_rec"))][@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
@@ -4551,7 +4547,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "urn:jsonschema:test/test.ml:2505:67189",
+                  "$id": "urn:jsonschema:test/test.ml:2514:67367",
                   "$defs": {
                     "filter": {
                       "anyOf": [

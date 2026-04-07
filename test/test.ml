@@ -2465,7 +2465,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "urn:jsonschema:test/test.ml:2456:65714",
+          "$id": "urn:jsonschema:test/test.ml:2455:65717",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2482,7 +2482,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "urn:jsonschema:test/test.ml:2455:65698",
+          "$id": "urn:jsonschema:test/test.ml:2454:65701",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2632,7 +2632,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "urn:jsonschema:test/test.ml:2514:67360",
+                  "$id": "urn:jsonschema:test/test.ml:2514:67367",
                   "$defs": {
                     "filter": {
                       "anyOf": [

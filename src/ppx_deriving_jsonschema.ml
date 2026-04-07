@@ -129,21 +129,21 @@ module Schema = struct
 
   let with_defs ~loc type_name ~extra_defs_var schema =
     [%expr
-      let _ppx_body = [%e schema] in
+      let ppx_body = [%e schema] in
       `Assoc
         [
           "$id", `String [%e estring ~loc ("urn:jsonschema:" ^ type_name)];
-          "$defs", `Assoc (([%e estring ~loc type_name], _ppx_body) :: ![%e extra_defs_var]);
+          "$defs", `Assoc (([%e estring ~loc type_name], ppx_body) :: ![%e extra_defs_var]);
           "$ref", `String [%e estring ~loc ("#/$defs/" ^ type_name)];
         ]]
 
   (* For mutually recursive types: multiple definitions, ref to first type.
-     Schemas are bound to _ppx_body_N variables so they execute before !extra_defs_var
+     Schemas are bound to ppx_body_N variables so they execute before !extra_defs_var
      is read — this ensures any hoisted $defs accumulate into extra_defs_var first. *)
   let with_multi_defs ~loc ~primary_type ~extra_defs_var defs =
     let id = "urn:jsonschema:" ^ primary_type in
     let indexed = List.mapi (fun i (name, schema) -> i, name, schema) defs in
-    let body_vars = List.map (fun (i, name, _) -> name, Printf.sprintf "_ppx_body_%d" i) indexed in
+    let body_vars = List.map (fun (i, name, _) -> name, Printf.sprintf "ppx_body_%d" i) indexed in
     let pairs_expr =
       elist ~loc (List.map (fun (name, vname) -> [%expr [%e estring ~loc name], [%e evar ~loc vname]]) body_vars)
     in
@@ -158,7 +158,7 @@ module Schema = struct
     in
     List.fold_right
       (fun (i, _name, schema) acc ->
-        let vname = Printf.sprintf "_ppx_body_%d" i in
+        let vname = Printf.sprintf "ppx_body_%d" i in
         [%expr
           let [%p ppat_var ~loc { txt = vname; loc }] = [%e schema] in
           [%e acc]])
@@ -243,8 +243,7 @@ let rec type_of_core ~config ?(recursive_types = []) ?extra_defs_var core_type =
             | `Assoc ppx_pairs ->
               (match List.assoc_opt "$defs" ppx_pairs with
               | Some (`Assoc ppx_defs) ->
-                [%e edv] :=
-                  ![%e edv] @ List.filter (fun (n, _) -> not (List.mem_assoc n ![%e edv])) ppx_defs;
+                [%e edv] := ![%e edv] @ List.filter (fun (n, _) -> not (List.mem_assoc n ![%e edv])) ppx_defs;
                 `Assoc (List.filter (fun (k, _) -> k <> "$id" && k <> "$defs") ppx_pairs)
               | _ -> `Assoc ppx_pairs)
             | ppx_other -> ppx_other],
@@ -497,9 +496,8 @@ let derive_jsonschema ~ctxt ast flag_variant_as_string flag_polymorphic_variant_
 
 let generator () = Deriving.Generator.V2.make ~attributes (args ()) derive_jsonschema
 
-
 let derive_jsonschema_sig ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple =
-  let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } []
+  let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } [] in
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   match ast with
   | _, [ td ] ->
