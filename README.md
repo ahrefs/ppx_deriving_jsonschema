@@ -67,6 +67,49 @@ Type `'a ref` is treated as `'a`.
 
 Type `unit` is converted to `{ "type": "null" }`.
 
+#### Option
+
+Option types are converted to `{ "type": ["...", "null"] }` and added to the `required` list.
+
+```ocaml
+type t = {
+  name : string option;
+} [@@deriving jsonschema]
+```
+
+```json
+{ 
+  "type": "object", 
+  "properties": { 
+    "name": { 
+      "type": [ "string", "null" ] 
+    },
+  },
+  "required": [ "name" ], 
+  "additionalProperties": false 
+}
+```
+
+To make a field optional, use the `[@@jsonschema.option]` attribute:
+
+```ocaml
+type t = {
+  name : string option; [@jsonschema.option]
+} [@@deriving jsonschema]
+```
+
+```json
+{ 
+  "type": "object", 
+  "properties": { 
+    "name": { 
+      "type": [ "string", "null" ] 
+    },
+  },
+  "required": [], 
+  "additionalProperties": false 
+}
+```
 #### List and arrays
 
 OCaml lists and arrays are converted to `{ "type": "array", "items": { "type": "..." } }`.
