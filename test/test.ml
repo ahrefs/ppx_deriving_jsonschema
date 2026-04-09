@@ -484,7 +484,6 @@ let%expect_test "recursive_record" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:recursive_record",
       "$defs": {
         "recursive_record": {
           "type": "object",
@@ -514,7 +513,6 @@ let%expect_test "recursive_variant" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:recursive_variant",
       "$defs": {
         "recursive_variant": {
           "anyOf": [
@@ -557,7 +555,6 @@ let%expect_test "tree" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:tree",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -624,7 +621,6 @@ let%expect_test "mutually_recursive_foo" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:foo",
       "$defs": {
         "foo": {
           "type": "object",
@@ -653,7 +649,6 @@ let%expect_test "mutually_recursive_bar" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:bar",
       "$defs": {
         "foo": {
           "type": "object",
@@ -697,7 +692,6 @@ let%expect_test "mutually_recursive_expr" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:expr",
       "$defs": {
         "expr": {
           "anyOf": [
@@ -821,7 +815,6 @@ let%expect_test "three_way_mutual_recursion" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:node_a",
       "$defs": {
         "node_a": {
           "type": "object",
@@ -879,7 +872,6 @@ let%expect_test "recursive_tuple" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:recursive_tuple",
       "$defs": {
         "recursive_tuple": {
           "anyOf": [
@@ -925,7 +917,7 @@ let%expect_test "recursive_abstract_alias" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:test/test.ml:920:23215",
+      "$id": "file://test/test.ml:912:22891",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -2404,7 +2396,6 @@ let%expect_test "grade" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:grade",
       "$defs": {
         "grade": {
           "anyOf": [
@@ -2465,7 +2456,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "urn:jsonschema:test/test.ml:2455:65717",
+          "$id": "file://test/test.ml:2446:65348",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2482,7 +2473,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "urn:jsonschema:test/test.ml:2454:65701",
+          "$id": "file://test/test.ml:2445:65332",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2521,7 +2512,6 @@ let%expect_test "polymorphic_recursive_ref" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:filter",
       "$defs": {
         "filter": {
           "anyOf": [
@@ -2568,7 +2558,6 @@ let%expect_test "parametric_recursive_cross_ref" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:outer_rec",
       "$defs": {
         "outer_rec": {
           "anyOf": [
@@ -2623,7 +2612,6 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "urn:jsonschema:bool_filter",
       "$defs": {
         "bool_filter": {
           "anyOf": [
@@ -2632,7 +2620,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "urn:jsonschema:test/test.ml:2514:67367",
+                  "$id": "file://test/test.ml:2505:66982",
                   "$defs": {
                     "filter": {
                       "anyOf": [
