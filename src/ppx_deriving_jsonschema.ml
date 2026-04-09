@@ -69,15 +69,14 @@ let deriving =
                the resource boundary so that any internal $defs refs resolve correctly. *)
             let unique_id =
               estring ~loc
-                (Printf.sprintf "file://%s:%d:%d" loc.loc_start.pos_fname loc.loc_start.pos_lnum
-                   loc.loc_start.pos_cnum)
+                (Printf.sprintf "file://%s:%d:%d" loc.loc_start.pos_fname loc.loc_start.pos_lnum loc.loc_start.pos_cnum)
             in
             ( [%expr
                 match [%e schema] with
-                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                    `Assoc (("$id", `String [%e unique_id]) :: List.filter (fun (k, _) -> k <> "$id") pairs)
-                  | other -> other],
-                is_rec )))
+                | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                  `Assoc (("$id", `String [%e unique_id]) :: List.filter (fun (k, _) -> k <> "$id") pairs)
+                | other -> other],
+              is_rec )))
       | Ptyp_tuple types ->
         let results = List.map (self#schema_of_core_type ~config ~recursive_types) types in
         let ts = List.map fst results in
