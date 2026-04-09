@@ -1,6 +1,7 @@
 (library
  (public_name ppx_deriving_jsonschema)
  (kind ppx_deriver)
+ (modules attrs schema ppx_deriving_jsonschema)
  (libraries ppxlib)
  (preprocess
   (pps ppxlib.metaquot))
