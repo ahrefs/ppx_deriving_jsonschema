@@ -2352,7 +2352,8 @@ let%expect_test "field_description" =
       },
       "required": [ "max_results", "query" ],
       "additionalProperties": false
-    } |}]
+    }
+    |}]
 
 type described_record = {
   name : string; [@jsonschema.description "The user's full name"]
@@ -2374,7 +2375,8 @@ let%expect_test "type_and_field_description" =
       },
       "required": [ "name" ],
       "additionalProperties": false
-    } |}]
+    }
+    |}]
 
 type with_key_and_desc = {
   opt : int option; [@key "opt_int"] [@jsonschema.option] [@jsonschema.description "An optional integer"]
@@ -2396,12 +2398,14 @@ let%expect_test "field_description_with_key" =
       },
       "required": [],
       "additionalProperties": false
-    } |}]
+    }
+    |}]
 
 type described_variant =
   | Plain [@jsonschema.description "No payload"]
   | With_int of int [@jsonschema.description "Single integer tag"]
   | Pair of string * int [@jsonschema.description "String and int"]
+  | Description_value of (string[@jsonschema.description "A string value"])
 [@@deriving jsonschema]
 
 let%expect_test "variant_constructor_description" =
@@ -2436,9 +2440,20 @@ let%expect_test "variant_constructor_description" =
           "unevaluatedItems": false,
           "minItems": 3,
           "maxItems": 3
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Description_value" },
+            { "description": "A string value", "type": "string" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
         }
       ]
-    } |}]
+    }
+    |}]
 
 type described_variant_inline_record =
   | Point of {
@@ -2474,7 +2489,8 @@ let%expect_test "variant_inline_record_constructor_description" =
           "maxItems": 2
         }
       ]
-    } |}]
+    }
+    |}]
 
 type described_variant_string =
   | A [@jsonschema.description "First choice"]
@@ -2491,7 +2507,8 @@ let%expect_test "variant_constructor_description_variant_as_string" =
         { "description": "First choice", "const": "A" },
         { "description": "Second choice", "const": "B" }
       ]
-    } |}]
+    }
+    |}]
 
 (* Top-level @@jsonschema.description on a variant (whole anyOf schema). *)
 type computation_result =
@@ -2522,7 +2539,8 @@ let%expect_test "variant_type_level_description" =
           "maxItems": 2
         }
       ]
-    } |}]
+    }
+    |}]
 
 type nullable_fields = {
   plain : string option;
@@ -2574,6 +2592,73 @@ let%expect_test "nullable_option_composing" =
       },
       "required": [],
       "additionalProperties": false
+    }
+    |}]
+
+type with_format = string [@@jsonschema.format "date-time"] [@@deriving jsonschema]
+
+let%expect_test "with_format" =
+  print_schema with_format_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "format": "date-time",
+      "type": "string"
+    }
+    |}]
+
+type with_format_record = { with_format : string [@jsonschema.format "date-time"] } [@@deriving jsonschema]
+
+let%expect_test "with_format_record" =
+  print_schema with_format_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "with_format": { "format": "date-time", "type": "string" }
+      },
+      "required": [ "with_format" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type with_format_variant =
+  | A of (string[@jsonschema.format "date-time"] [@jsonschema.description "A date-time string"])
+  | B
+[@@deriving jsonschema]
+
+let%expect_test "with_format_variant" =
+  print_schema with_format_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "description": "A date-time string",
+              "format": "date-time",
+              "type": "string"
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "B" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
     }
     |}]
 
@@ -2655,7 +2740,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2645",
+          "$id": "file://test/test.ml:2730",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2672,7 +2757,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2644",
+          "$id": "file://test/test.ml:2729",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2819,7 +2904,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2704",
+                  "$id": "file://test/test.ml:2789",
                   "$defs": {
                     "filter": {
                       "anyOf": [
