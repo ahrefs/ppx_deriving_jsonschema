@@ -97,7 +97,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
             | Some name -> name.txt
             | None -> name.txt
           in
-          `Tag (name, []) :: constrs, is_rec
+          `Tag (name, [], None) :: constrs, is_rec
         | Rtag (name, false, [ typ ]) ->
           let name =
             match Attribute.get Attrs.jsonschema_polymorphic_variant_name row_field with
@@ -115,7 +115,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
           let results = List.map (schema_of_core_type ~config ~recursive_types) raw_typs in
           let typs = List.map fst results in
           let typs_rec = List.exists snd results in
-          `Tag (name, typs) :: constrs, is_rec || typs_rec
+          `Tag (name, typs, None) :: constrs, is_rec || typs_rec
         | Rtag (_, true, [ _ ]) | Rtag (_, _, _ :: _ :: _) ->
           Location.raise_errorf ~loc "ppx_deriving_jsonschema: polymorphic_variant/Rtag/&"
         | Rinherit core_type ->
@@ -184,18 +184,23 @@ let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) var
           | Some name -> name.txt
           | None -> name
         in
+        let description_opt =
+          match Attribute.get Attrs.jsonschema_cd_description var with
+          | Some d -> Some d.txt
+          | None -> None
+        in
         match pcd_args with
         | Pcstr_record label_declarations ->
           let allow_extra_fields = Attribute.get Attrs.jsonschema_cd_allow_extra_fields var |> Option.is_some in
           let obj_schema, obj_rec =
             schema_of_record ~loc ~config ~recursive_types label_declarations allow_extra_fields
           in
-          `Tag (name, [ obj_schema ]) :: variants, is_rec || obj_rec
+          `Tag (name, [ obj_schema ], description_opt) :: variants, is_rec || obj_rec
         | Pcstr_tuple typs ->
           let results = List.map (schema_of_core_type ~config ~recursive_types) typs in
           let types = List.map fst results in
           let typs_rec = List.exists snd results in
-          `Tag (name, types) :: variants, is_rec || typs_rec)
+          `Tag (name, types, description_opt) :: variants, is_rec || typs_rec)
       ([], false) variants
   in
   let variants = List.rev variants in

@@ -4598,6 +4598,294 @@ include
       "required": [],
       "additionalProperties": false
     } |}]]
+type described_variant =
+  | Plain [@jsonschema.description "No payload"]
+  | With_int of int [@jsonschema.description "Single integer tag"]
+  | Pair of string * int [@jsonschema.description "String and int"][@@deriving
+                                                                    jsonschema]
+include
+  struct
+    let described_variant_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [(match `Assoc
+                          [("type", (`String "array"));
+                          ("prefixItems",
+                            (`List [`Assoc [("const", (`String "Plain"))]]));
+                          ("unevaluatedItems", (`Bool false));
+                          ("minItems", (`Int 1));
+                          ("maxItems", (`Int 1))]
+                  with
+                  | `Assoc fields ->
+                      `Assoc (("description", (`String "No payload")) ::
+                        fields)
+                  | s -> s);
+                (match `Assoc
+                         [("type", (`String "array"));
+                         ("prefixItems",
+                           (`List
+                              [`Assoc [("const", (`String "With_int"))];
+                              `Assoc [("type", (`String "integer"))]]));
+                         ("unevaluatedItems", (`Bool false));
+                         ("minItems", (`Int 2));
+                         ("maxItems", (`Int 2))]
+                 with
+                 | `Assoc fields ->
+                     `Assoc (("description", (`String "Single integer tag"))
+                       :: fields)
+                 | s -> s);
+                (match `Assoc
+                         [("type", (`String "array"));
+                         ("prefixItems",
+                           (`List
+                              [`Assoc [("const", (`String "Pair"))];
+                              `Assoc [("type", (`String "string"))];
+                              `Assoc [("type", (`String "integer"))]]));
+                         ("unevaluatedItems", (`Bool false));
+                         ("minItems", (`Int 3));
+                         ("maxItems", (`Int 3))]
+                 with
+                 | `Assoc fields ->
+                     `Assoc (("description", (`String "String and int")) ::
+                       fields)
+                 | s -> s)]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "variant_constructor_description" =
+    print_schema described_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "description": "String and int",
+          "type": "array",
+          "prefixItems": [
+            { "const": "Pair" }, { "type": "string" }, { "type": "integer" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    } |}]]
+type described_variant_inline_record =
+  | Point of {
+  x: int ;
+  y: int } [@jsonschema.description "A 2D point"][@@deriving jsonschema]
+include
+  struct
+    let described_variant_inline_record_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [(match `Assoc
+                          [("type", (`String "array"));
+                          ("prefixItems",
+                            (`List
+                               [`Assoc [("const", (`String "Point"))];
+                               `Assoc
+                                 [("type", (`String "object"));
+                                 ("properties",
+                                   (`Assoc
+                                      [("y",
+                                         (`Assoc
+                                            [("type", (`String "integer"))]));
+                                      ("x",
+                                        (`Assoc
+                                           [("type", (`String "integer"))]))]));
+                                 ("required",
+                                   (`List [`String "y"; `String "x"]));
+                                 ("additionalProperties", (`Bool false))]]));
+                          ("unevaluatedItems", (`Bool false));
+                          ("minItems", (`Int 2));
+                          ("maxItems", (`Int 2))]
+                  with
+                  | `Assoc fields ->
+                      `Assoc (("description", (`String "A 2D point")) ::
+                        fields)
+                  | s -> s)]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "variant_inline_record_constructor_description" =
+    print_schema described_variant_inline_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "A 2D point",
+          "type": "array",
+          "prefixItems": [
+            { "const": "Point" },
+            {
+              "type": "object",
+              "properties": {
+                "y": { "type": "integer" },
+                "x": { "type": "integer" }
+              },
+              "required": [ "y", "x" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    } |}]]
+type described_variant_string =
+  | A [@jsonschema.description "First choice"]
+  | B [@jsonschema.description "Second choice"][@@deriving
+                                                 jsonschema
+                                                   ~variant_as_string]
+include
+  struct
+    let described_variant_string_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [(match `Assoc [("const", (`String "A"))] with
+                  | `Assoc fields ->
+                      `Assoc (("description", (`String "First choice")) ::
+                        fields)
+                  | s -> s);
+                (match `Assoc [("const", (`String "B"))] with
+                 | `Assoc fields ->
+                     `Assoc (("description", (`String "Second choice")) ::
+                       fields)
+                 | s -> s)]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "variant_constructor_description_variant_as_string" =
+    print_schema described_variant_string_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "description": "First choice", "const": "A" },
+        { "description": "Second choice", "const": "B" }
+      ]
+    } |}]]
+type computation_result =
+  | Ok 
+  | Err of string [@@deriving jsonschema][@@jsonschema.description
+                                           "Either success or an error message string"]
+include
+  struct
+    let computation_result_jsonschema =
+      match let ppx_eds = ref [] in
+            let ppx_result =
+              `Assoc
+                [("anyOf",
+                   (`List
+                      [`Assoc
+                         [("type", (`String "array"));
+                         ("prefixItems",
+                           (`List [`Assoc [("const", (`String "Ok"))]]));
+                         ("unevaluatedItems", (`Bool false));
+                         ("minItems", (`Int 1));
+                         ("maxItems", (`Int 1))];
+                      `Assoc
+                        [("type", (`String "array"));
+                        ("prefixItems",
+                          (`List
+                             [`Assoc [("const", (`String "Err"))];
+                             `Assoc [("type", (`String "string"))]]));
+                        ("unevaluatedItems", (`Bool false));
+                        ("minItems", (`Int 2));
+                        ("maxItems", (`Int 2))]]))] in
+            match !ppx_eds with
+            | [] -> ppx_result
+            | ppx_defs ->
+                (match ppx_result with
+                 | `Assoc ppx_pairs ->
+                     `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                       (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+                 | other -> other)
+      with
+      | `Assoc fields ->
+          `Assoc
+            (("description",
+               (`String "Either success or an error message string"))
+            :: fields)
+      | s -> s[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "variant_type_level_description" =
+    print_schema computation_result_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Either success or an error message string",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Ok" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Err" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    } |}]]
 type nullable_fields =
   {
   plain: string option ;
@@ -4685,7 +4973,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2433"))
+                                   (("$id", (`String "file://test.ml:2557"))
                                    ::
                                    (List.filter (fun (k, _) -> k <> "$id")
                                       pairs))
@@ -4857,13 +5145,13 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2519")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2643")) ::
                           (List.filter (fun (k, _) -> k <> "$id") pairs))
                     | other -> other)));
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2518")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2642")) ::
                          (List.filter (fun (k, _) -> k <> "$id") pairs))
                    | other -> other)))]));
           ("required", (`List [`String "b"; `String "a"]));
@@ -4887,7 +5175,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2519",
+          "$id": "file://test/test.ml:2643",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -4904,7 +5192,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2518",
+          "$id": "file://test/test.ml:2642",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -4980,7 +5268,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2578"))
+                             `Assoc (("$id", (`String "file://test.ml:2702"))
                                ::
                                (List.filter (fun (k, _) -> k <> "$id") pairs))
                          | other -> other)]));
@@ -5192,7 +5480,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2578",
+                  "$id": "file://test/test.ml:2702",
                   "$defs": {
                     "filter": {
                       "anyOf": [

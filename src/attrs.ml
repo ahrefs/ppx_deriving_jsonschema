@@ -52,6 +52,11 @@ let jsonschema_td_description =
     Ast_pattern.(single_expr_payload (estring __'))
     (fun x -> x)
 
+let jsonschema_cd_description =
+  Attribute.declare "jsonschema.description" Attribute.Context.constructor_declaration
+    Ast_pattern.(single_expr_payload (estring __'))
+    (fun x -> x)
+
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -63,6 +68,7 @@ let attributes =
     Attribute.T jsonschema_option;
     Attribute.T jsonschema_ld_description;
     Attribute.T jsonschema_td_description;
+    Attribute.T jsonschema_cd_description;
   ]
 
 let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple")
