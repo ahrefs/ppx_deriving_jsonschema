@@ -2655,7 +2655,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2643",
+          "$id": "file://test/test.ml:2645",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2672,7 +2672,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2642",
+          "$id": "file://test/test.ml:2644",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2819,7 +2819,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2702",
+                  "$id": "file://test/test.ml:2704",
                   "$defs": {
                     "filter": {
                       "anyOf": [

@@ -4973,7 +4973,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2557"))
+                                   (("$id", (`String "file://test.ml:2559"))
                                    ::
                                    (List.filter (fun (k, _) -> k <> "$id")
                                       pairs))
@@ -5145,13 +5145,13 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2643")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2645")) ::
                           (List.filter (fun (k, _) -> k <> "$id") pairs))
                     | other -> other)));
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2642")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2644")) ::
                          (List.filter (fun (k, _) -> k <> "$id") pairs))
                    | other -> other)))]));
           ("required", (`List [`String "b"; `String "a"]));
@@ -5175,7 +5175,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2643",
+          "$id": "file://test/test.ml:2645",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5192,7 +5192,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2642",
+          "$id": "file://test/test.ml:2644",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5268,7 +5268,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2702"))
+                             `Assoc (("$id", (`String "file://test.ml:2704"))
                                ::
                                (List.filter (fun (k, _) -> k <> "$id") pairs))
                          | other -> other)]));
@@ -5480,7 +5480,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2702",
+                  "$id": "file://test/test.ml:2704",
                   "$defs": {
                     "filter": {
                       "anyOf": [
