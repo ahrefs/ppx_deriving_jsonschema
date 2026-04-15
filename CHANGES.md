@@ -1,5 +1,10 @@
+# Next release
+- make option types nullable in generated JSON Schema (e.g. `int option` → `{"type":["integer","null"]}`); add `[@@jsonschema.option]` attribute to opt a field out of `required` without making its type nullable
+- fix schema generation for parametric recursive types (e.g. `type 'a t = ... | B of 'a t`)
+- fix broken `$ref` scoping when a recursive type uses a parametric recursive type with itself as a type argument (e.g. `type t = ... | N of t wrapper` where `wrapper` is also recursive); inner `$defs` are now hoisted into the root schema's `$defs` namespace
+
 # 0.0.6
-- update jsonschema derivation to use t instead of Yojson.Basic for type signatures 
+- update jsonschema derivation to use t instead of Yojson.Basic for type signatures
 
 # 0.0.5
 

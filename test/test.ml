@@ -435,7 +435,7 @@ let%expect_test "event" =
         },
         "l": { "type": "array", "items": { "type": "string" } },
         "a": { "type": "array", "items": { "type": "number" } },
-        "opt_int": { "type": "integer" },
+        "opt_int": { "type": [ "integer", "null" ] },
         "comment": { "type": "string" },
         "kind_f": {
           "anyOf": [
@@ -466,7 +466,7 @@ let%expect_test "event" =
       },
       "required": [
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l", "a",
-        "comment", "kind_f", "date"
+        "opt_int", "comment", "kind_f", "date"
       ],
       "additionalProperties": false
     }
@@ -624,14 +624,18 @@ let%expect_test "mutually_recursive_foo" =
       "$defs": {
         "foo": {
           "type": "object",
-          "properties": { "bar": { "$ref": "#/$defs/bar" } },
-          "required": [],
+          "properties": {
+            "bar": { "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ] }
+          },
+          "required": [ "bar" ],
           "additionalProperties": false
         },
         "bar": {
           "type": "object",
-          "properties": { "foo": { "$ref": "#/$defs/foo" } },
-          "required": [],
+          "properties": {
+            "foo": { "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ] }
+          },
+          "required": [ "foo" ],
           "additionalProperties": false
         }
       },
@@ -648,14 +652,18 @@ let%expect_test "mutually_recursive_bar" =
       "$defs": {
         "foo": {
           "type": "object",
-          "properties": { "bar": { "$ref": "#/$defs/bar" } },
-          "required": [],
+          "properties": {
+            "bar": { "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ] }
+          },
+          "required": [ "bar" ],
           "additionalProperties": false
         },
         "bar": {
           "type": "object",
-          "properties": { "foo": { "$ref": "#/$defs/foo" } },
-          "required": [],
+          "properties": {
+            "foo": { "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ] }
+          },
+          "required": [ "foo" ],
           "additionalProperties": false
         }
       },
@@ -735,11 +743,13 @@ let%expect_test "mutually_recursive_expr" =
                 {
                   "type": "object",
                   "properties": {
-                    "else_": { "$ref": "#/$defs/stmt" },
+                    "else_": {
+                      "anyOf": [ { "$ref": "#/$defs/stmt" }, { "type": "null" } ]
+                    },
                     "then_": { "$ref": "#/$defs/stmt" },
                     "cond": { "$ref": "#/$defs/expr" }
                   },
-                  "required": [ "then_", "cond" ],
+                  "required": [ "else_", "then_", "cond" ],
                   "additionalProperties": false
                 }
               ],
@@ -809,28 +819,40 @@ let%expect_test "three_way_mutual_recursion" =
         "node_a": {
           "type": "object",
           "properties": {
-            "c": { "$ref": "#/$defs/node_c" },
-            "b": { "$ref": "#/$defs/node_b" }
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "c", "b" ],
           "additionalProperties": false
         },
         "node_b": {
           "type": "object",
           "properties": {
-            "c": { "$ref": "#/$defs/node_c" },
-            "a": { "$ref": "#/$defs/node_a" }
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "c", "a" ],
           "additionalProperties": false
         },
         "node_c": {
           "type": "object",
           "properties": {
-            "b": { "$ref": "#/$defs/node_b" },
-            "a": { "$ref": "#/$defs/node_a" }
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
           },
-          "required": [],
+          "required": [ "b", "a" ],
           "additionalProperties": false
         }
       },
@@ -895,6 +917,7 @@ let%expect_test "recursive_abstract_alias" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "file://test/test.ml:912",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -975,7 +998,7 @@ let%expect_test "events" =
           },
           "l": { "type": "array", "items": { "type": "string" } },
           "a": { "type": "array", "items": { "type": "number" } },
-          "opt_int": { "type": "integer" },
+          "opt_int": { "type": [ "integer", "null" ] },
           "comment": { "type": "string" },
           "kind_f": {
             "anyOf": [
@@ -1006,7 +1029,7 @@ let%expect_test "events" =
         },
         "required": [
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-          "a", "comment", "kind_f", "date"
+          "a", "opt_int", "comment", "kind_f", "date"
         ],
         "additionalProperties": false
       }
@@ -1059,7 +1082,7 @@ let%expect_test "eventss" =
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1090,7 +1113,7 @@ let%expect_test "eventss" =
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         }
@@ -1143,7 +1166,7 @@ let%expect_test "event_comment" =
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1174,7 +1197,7 @@ let%expect_test "event_comment" =
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         },
@@ -1233,7 +1256,7 @@ let%expect_test "event_comments'" =
               },
               "l": { "type": "array", "items": { "type": "string" } },
               "a": { "type": "array", "items": { "type": "number" } },
-              "opt_int": { "type": "integer" },
+              "opt_int": { "type": [ "integer", "null" ] },
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
@@ -1264,7 +1287,7 @@ let%expect_test "event_comments'" =
             },
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-              "l", "a", "comment", "kind_f", "date"
+              "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
             "additionalProperties": false
           },
@@ -1324,7 +1347,7 @@ let%expect_test "event_n" =
               },
               "l": { "type": "array", "items": { "type": "string" } },
               "a": { "type": "array", "items": { "type": "number" } },
-              "opt_int": { "type": "integer" },
+              "opt_int": { "type": [ "integer", "null" ] },
               "comment": { "type": "string" },
               "kind_f": {
                 "anyOf": [
@@ -1355,7 +1378,7 @@ let%expect_test "event_n" =
             },
             "required": [
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
-              "l", "a", "comment", "kind_f", "date"
+              "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
             "additionalProperties": false
           },
@@ -1414,7 +1437,7 @@ let%expect_test "events_array" =
             },
             "l": { "type": "array", "items": { "type": "string" } },
             "a": { "type": "array", "items": { "type": "number" } },
-            "opt_int": { "type": "integer" },
+            "opt_int": { "type": [ "integer", "null" ] },
             "comment": { "type": "string" },
             "kind_f": {
               "anyOf": [
@@ -1445,7 +1468,7 @@ let%expect_test "events_array" =
           },
           "required": [
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
-            "a", "comment", "kind_f", "date"
+            "a", "opt_int", "comment", "kind_f", "date"
           ],
           "additionalProperties": false
         }
@@ -1469,11 +1492,13 @@ type opt = int option [@@deriving jsonschema]
 
 let%expect_test "opt" =
   print_schema opt_jsonschema;
-  [%expect {|
+  [%expect
+    {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "type": "integer"
-    } |}]
+      "type": [ "integer", "null" ]
+    }
+    |}]
 
 type using_m = { m : Mod1.m_1 } [@@deriving jsonschema]
 
@@ -1619,11 +1644,11 @@ let%expect_test "t" =
           "required": [ "zip", "city", "street" ],
           "additionalProperties": false
         },
-        "email": { "type": "string" },
+        "email": { "type": [ "string", "null" ] },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
-      "required": [ "address", "age", "name" ],
+      "required": [ "address", "email", "age", "name" ],
       "additionalProperties": false
     }
     |}]
@@ -1661,12 +1686,12 @@ let%expect_test "tt" =
         "retreat_address": { "$ref": "#/$defs/shared_address" },
         "work_address": { "$ref": "#/$defs/shared_address" },
         "home_address": { "$ref": "#/$defs/shared_address" },
-        "email": { "type": "string" },
+        "email": { "type": [ "string", "null" ] },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
       "required": [
-        "retreat_address", "work_address", "home_address", "age", "name"
+        "retreat_address", "work_address", "home_address", "email", "age", "name"
       ],
       "additionalProperties": false
     }
@@ -2139,11 +2164,12 @@ let%expect_test "parameterized_record" =
       "type": "object",
       "properties": {
         "url": { "type": "string" },
-        "title": { "type": "string" }
+        "title": { "type": [ "string", "null" ] }
       },
-      "required": [ "url" ],
+      "required": [ "url", "title" ],
       "additionalProperties": false
-    } |}]
+    }
+    |}]
 
 type string_link_traffic = string generic_link_traffic [@@deriving jsonschema]
 
@@ -2156,11 +2182,12 @@ let%expect_test "instantiated_parameterized_record" =
       "type": "object",
       "properties": {
         "url": { "type": "string" },
-        "title": { "type": "string" }
+        "title": { "type": [ "string", "null" ] }
       },
-      "required": [ "url" ],
+      "required": [ "url", "title" ],
       "additionalProperties": false
-    } |}]
+    }
+    |}]
 
 type 'a poly_variant =
   | A
@@ -2329,7 +2356,7 @@ let%expect_test "field_description" =
 
 type described_record = {
   name : string; [@jsonschema.description "The user's full name"]
-  age : int option; [@jsonschema.description "The user's age"]
+  age : int option; [@jsonschema.option] [@jsonschema.description "The user's age"]
 }
 [@@deriving jsonschema] [@@jsonschema.description "A user object"]
 
@@ -2342,14 +2369,16 @@ let%expect_test "type_and_field_description" =
       "description": "A user object",
       "type": "object",
       "properties": {
-        "age": { "description": "The user's age", "type": "integer" },
+        "age": { "description": "The user's age", "type": [ "integer", "null" ] },
         "name": { "description": "The user's full name", "type": "string" }
       },
       "required": [ "name" ],
       "additionalProperties": false
     } |}]
 
-type with_key_and_desc = { opt : int option [@key "opt_int"] [@jsonschema.description "An optional integer"] }
+type with_key_and_desc = {
+  opt : int option; [@key "opt_int"] [@jsonschema.option] [@jsonschema.description "An optional integer"]
+}
 [@@deriving jsonschema]
 
 let%expect_test "field_description_with_key" =
@@ -2360,8 +2389,360 @@ let%expect_test "field_description_with_key" =
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "opt_int": { "description": "An optional integer", "type": "integer" }
+        "opt_int": {
+          "description": "An optional integer",
+          "type": [ "integer", "null" ]
+        }
       },
       "required": [],
       "additionalProperties": false
     } |}]
+
+type nullable_fields = {
+  plain : string option;
+  drop_simple : string option; [@jsonschema.option]
+  drop_complex : int list option; [@jsonschema.option]
+}
+[@@deriving jsonschema]
+
+let%expect_test "nullable_fields" =
+  print_schema nullable_fields_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "drop_complex": {
+          "anyOf": [
+            { "type": "array", "items": { "type": "integer" } },
+            { "type": "null" }
+          ]
+        },
+        "drop_simple": { "type": [ "string", "null" ] },
+        "plain": { "type": [ "string", "null" ] }
+      },
+      "required": [ "plain" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type composing_type = string
+let composing_type_jsonschema = `Assoc [ "type", `String "string"; "description", `String "A string" ]
+
+type composing_record = { composing_type : composing_type option [@jsonschema.option] } [@@deriving jsonschema]
+
+let%expect_test "nullable_option_composing" =
+  print_schema composing_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "composing_type": {
+          "anyOf": [
+            { "type": "string", "description": "A string" }, { "type": "null" }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Parametric recursive type: the recursive call carries type arguments *)
+type 'a grade' =
+  | A of 'a
+  | B of ('a grade' * 'a grade')
+  | C
+
+type 'a grade = 'a grade' =
+  | A of 'a
+  | B of ('a grade * 'a grade)
+  | C
+[@@deriving jsonschema]
+
+let%expect_test "grade" =
+  print_schema (grade_jsonschema int_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "grade": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "B" },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    { "$ref": "#/$defs/grade" }, { "$ref": "#/$defs/grade" }
+                  ],
+                  "unevaluatedItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "C" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/grade"
+    }
+    |}]
+
+(* Recursive type referenced in two fields of the same parent record *)
+type self_ref = { children : self_ref list } [@@deriving jsonschema]
+
+type two_self_refs = {
+  a : self_ref;
+  b : self_ref;
+}
+[@@deriving jsonschema]
+
+let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
+  print_schema two_self_refs_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "b": {
+          "$id": "file://test/test.ml:2519",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        },
+        "a": {
+          "$id": "file://test/test.ml:2518",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        }
+      },
+      "required": [ "b", "a" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Polymorphic recursive type: the recursive reference carries type arguments *)
+type ('atom, 'group_atom) filter =
+  | Atom of 'atom
+  | Group of ('atom, 'group_atom) filter list * 'group_atom
+[@@deriving jsonschema]
+
+type ('atom, 'group_atom) bool_filter =
+  | BoolAtom of ('atom, 'group_atom) filter
+  | BoolFilterGroup of ('atom, 'group_atom) bool_filter list
+[@@deriving jsonschema]
+
+let%expect_test "polymorphic_recursive_ref" =
+  print_schema (filter_jsonschema int_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Atom" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Group" },
+                { "type": "array", "items": { "$ref": "#/$defs/filter" } },
+                { "type": "string" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/filter"
+    }
+    |}]
+
+(* Cross-$ref bug: outer recursive type uses a parametric recursive type with
+   itself as the type argument *)
+type 'a rec_wrapper =
+  | RWrap of 'a
+  | RNested of 'a rec_wrapper
+[@@deriving jsonschema]
+
+type outer_rec =
+  | ORLeaf of int
+  | ORNode of outer_rec rec_wrapper
+[@@deriving jsonschema]
+
+let%expect_test "parametric_recursive_cross_ref" =
+  print_schema outer_rec_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "outer_rec": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "ORLeaf" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "ORNode" }, { "$ref": "#/$defs/rec_wrapper" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "rec_wrapper": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RWrap" }, { "$ref": "#/$defs/outer_rec" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RNested" }, { "$ref": "#/$defs/rec_wrapper" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/outer_rec"
+    }
+    |}]
+
+let%expect_test "polymorphic_recursive_ref_bool_filter" =
+  print_schema (bool_filter_jsonschema int_jsonschema string_jsonschema);
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "bool_filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolAtom" },
+                {
+                  "$id": "file://test/test.ml:2578",
+                  "$defs": {
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Atom" }, { "type": "integer" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Group" },
+                            {
+                              "type": "array",
+                              "items": { "$ref": "#/$defs/filter" }
+                            },
+                            { "type": "string" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 3,
+                          "maxItems": 3
+                        }
+                      ]
+                    }
+                  },
+                  "$ref": "#/$defs/filter"
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolFilterGroup" },
+                { "type": "array", "items": { "$ref": "#/$defs/bool_filter" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/bool_filter"
+    }
+    |}]
