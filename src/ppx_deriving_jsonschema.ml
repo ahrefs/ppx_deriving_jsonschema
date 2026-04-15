@@ -67,8 +67,6 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
       | false ->
         (* Non-recursive arg (or no accumulator): add a location-based $id to mark
            the resource boundary so that any internal $defs refs resolve correctly. *)
-        (* Line only — [pos_cnum] is a byte offset and varies across compiler/ppx
-           versions, breaking snapshot tests. *)
         let unique_id = estring ~loc (Printf.sprintf "file://%s:%d" loc.loc_start.pos_fname loc.loc_start.pos_lnum) in
         ( [%expr
             match [%e schema] with
