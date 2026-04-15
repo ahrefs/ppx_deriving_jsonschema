@@ -917,7 +917,7 @@ let%expect_test "recursive_abstract_alias" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "file://test/test.ml:912:22891",
+      "$id": "file://test/test.ml:912",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -2325,6 +2325,205 @@ let%expect_test "multi_param_variant_as_string" =
     }
     |}]
 
+(* Description attribute tests *)
+
+type tool_params = {
+  query : string; [@jsonschema.description "The search query to execute"]
+  max_results : int; [@jsonschema.description "Maximum number of results to return"]
+}
+[@@deriving jsonschema]
+
+let%expect_test "field_description" =
+  print_schema tool_params_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "max_results": {
+          "description": "Maximum number of results to return",
+          "type": "integer"
+        },
+        "query": {
+          "description": "The search query to execute",
+          "type": "string"
+        }
+      },
+      "required": [ "max_results", "query" ],
+      "additionalProperties": false
+    } |}]
+
+type described_record = {
+  name : string; [@jsonschema.description "The user's full name"]
+  age : int option; [@jsonschema.option] [@jsonschema.description "The user's age"]
+}
+[@@deriving jsonschema] [@@jsonschema.description "A user object"]
+
+let%expect_test "type_and_field_description" =
+  print_schema described_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A user object",
+      "type": "object",
+      "properties": {
+        "age": { "description": "The user's age", "type": [ "integer", "null" ] },
+        "name": { "description": "The user's full name", "type": "string" }
+      },
+      "required": [ "name" ],
+      "additionalProperties": false
+    } |}]
+
+type with_key_and_desc = {
+  opt : int option; [@key "opt_int"] [@jsonschema.option] [@jsonschema.description "An optional integer"]
+}
+[@@deriving jsonschema]
+
+let%expect_test "field_description_with_key" =
+  print_schema with_key_and_desc_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "opt_int": {
+          "description": "An optional integer",
+          "type": [ "integer", "null" ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    } |}]
+
+type described_variant =
+  | Plain [@jsonschema.description "No payload"]
+  | With_int of int [@jsonschema.description "Single integer tag"]
+  | Pair of string * int [@jsonschema.description "String and int"]
+[@@deriving jsonschema]
+
+let%expect_test "variant_constructor_description" =
+  print_schema described_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "description": "String and int",
+          "type": "array",
+          "prefixItems": [
+            { "const": "Pair" }, { "type": "string" }, { "type": "integer" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    } |}]
+
+type described_variant_inline_record =
+  | Point of {
+      x : int;
+      y : int;
+    } [@jsonschema.description "A 2D point"]
+[@@deriving jsonschema]
+
+let%expect_test "variant_inline_record_constructor_description" =
+  print_schema described_variant_inline_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "A 2D point",
+          "type": "array",
+          "prefixItems": [
+            { "const": "Point" },
+            {
+              "type": "object",
+              "properties": {
+                "y": { "type": "integer" },
+                "x": { "type": "integer" }
+              },
+              "required": [ "y", "x" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    } |}]
+
+type described_variant_string =
+  | A [@jsonschema.description "First choice"]
+  | B [@jsonschema.description "Second choice"]
+[@@deriving jsonschema ~variant_as_string]
+
+let%expect_test "variant_constructor_description_variant_as_string" =
+  print_schema described_variant_string_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "description": "First choice", "const": "A" },
+        { "description": "Second choice", "const": "B" }
+      ]
+    } |}]
+
+(* Top-level @@jsonschema.description on a variant (whole anyOf schema). *)
+type computation_result =
+  | Ok
+  | Err of string
+[@@deriving jsonschema] [@@jsonschema.description "Either success or an error message string"]
+
+let%expect_test "variant_type_level_description" =
+  print_schema computation_result_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Either success or an error message string",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Ok" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Err" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    } |}]
+
 type nullable_fields = {
   plain : string option;
   drop_simple : string option; [@jsonschema.option]
@@ -2456,7 +2655,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2446:65348",
+          "$id": "file://test/test.ml:2645",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2473,7 +2672,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2445:65332",
+          "$id": "file://test/test.ml:2644",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2620,7 +2819,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2505:66982",
+                  "$id": "file://test/test.ml:2704",
                   "$defs": {
                     "filter": {
                       "anyOf": [

@@ -59,17 +59,23 @@ let nullable ~loc schema =
   | [%expr `Assoc [ "type", `String [%e? t] ]] -> [%expr `Assoc [ "type", `List [ `String [%e t]; `String "null" ] ]]
   | s -> [%expr `Assoc [ "anyOf", `List [ [%e s]; `Assoc [ "type", `String "null" ] ] ]]
 
-let description ~loc ~description schema =
-  match schema with
-  | [%expr `Assoc [%e? fields]] ->
-    [%expr `Assoc ([%e fields] @ [ "description", `String [%e estring ~loc description] ])]
-  | s -> s
+let description ~loc ~description:d schema_expr =
+  [%expr
+    match [%e schema_expr] with
+    | `Assoc fields -> `Assoc (("description", `String [%e estring ~loc d]) :: fields)
+    | s -> s]
+
+let variant_branch ~loc ~description_opt name typs ~as_string =
+  let branch = if as_string then const ~loc name else tuple ~loc (const ~loc name :: typs) in
+  match description_opt with
+  | Some d -> description ~loc ~description:d branch
+  | None -> branch
 
 let variant_as_string ~loc constrs =
   anyOf ~loc
     (List.map
        (function
-         | `Tag (name, _typs) -> const ~loc name
+         | `Tag (name, _typs, desc) -> variant_branch ~loc ~description_opt:desc name [] ~as_string:true
          | `Inherit typ -> typ)
        constrs)
 
@@ -77,6 +83,6 @@ let variant_as_array ~loc constrs =
   anyOf ~loc
     (List.map
        (function
-         | `Tag (name, typs) -> tuple ~loc (const ~loc name :: typs)
+         | `Tag (name, typs, desc) -> variant_branch ~loc ~description_opt:desc name typs ~as_string:false
          | `Inherit typ -> typ)
        constrs)

@@ -67,10 +67,7 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
       | false ->
         (* Non-recursive arg (or no accumulator): add a location-based $id to mark
            the resource boundary so that any internal $defs refs resolve correctly. *)
-        let unique_id =
-          estring ~loc
-            (Printf.sprintf "file://%s:%d:%d" loc.loc_start.pos_fname loc.loc_start.pos_lnum loc.loc_start.pos_cnum)
-        in
+        let unique_id = estring ~loc (Printf.sprintf "file://%s:%d" loc.loc_start.pos_fname loc.loc_start.pos_lnum) in
         ( [%expr
             match [%e schema] with
             | `Assoc pairs when List.mem_assoc "$defs" pairs ->
@@ -98,7 +95,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
             | Some name -> name.txt
             | None -> name.txt
           in
-          `Tag (name, []) :: constrs, is_rec
+          `Tag (name, [], None) :: constrs, is_rec
         | Rtag (name, false, [ typ ]) ->
           let name =
             match Attribute.get Attrs.jsonschema_polymorphic_variant_name row_field with
@@ -116,7 +113,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
           let results = List.map (schema_of_core_type ~config ~recursive_types) raw_typs in
           let typs = List.map fst results in
           let typs_rec = List.exists snd results in
-          `Tag (name, typs) :: constrs, is_rec || typs_rec
+          `Tag (name, typs, None) :: constrs, is_rec || typs_rec
         | Rtag (_, true, [ _ ]) | Rtag (_, _, _ :: _ :: _) ->
           Location.raise_errorf ~loc "ppx_deriving_jsonschema: polymorphic_variant/Rtag/&"
         | Rinherit core_type ->
@@ -154,6 +151,11 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
             Schema.nullable ~loc s, r
           | _ -> schema_of_core_type ~config ~recursive_types pld_type
         in
+        let type_def =
+          match Attribute.get Attrs.jsonschema_ld_description field with
+          | Some desc -> Schema.description ~loc ~description:desc.txt type_def
+          | None -> type_def
+        in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           (if drop_required then required else { txt = name; loc } :: required),
           is_rec || field_rec ))
@@ -180,18 +182,23 @@ let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) var
           | Some name -> name.txt
           | None -> name
         in
+        let description_opt =
+          match Attribute.get Attrs.jsonschema_cd_description var with
+          | Some d -> Some d.txt
+          | None -> None
+        in
         match pcd_args with
         | Pcstr_record label_declarations ->
           let allow_extra_fields = Attribute.get Attrs.jsonschema_cd_allow_extra_fields var |> Option.is_some in
           let obj_schema, obj_rec =
             schema_of_record ~loc ~config ~recursive_types label_declarations allow_extra_fields
           in
-          `Tag (name, [ obj_schema ]) :: variants, is_rec || obj_rec
+          `Tag (name, [ obj_schema ], description_opt) :: variants, is_rec || obj_rec
         | Pcstr_tuple typs ->
           let results = List.map (schema_of_core_type ~config ~recursive_types) typs in
           let types = List.map fst results in
           let typs_rec = List.exists snd results in
-          `Tag (name, types) :: variants, is_rec || typs_rec)
+          `Tag (name, types, description_opt) :: variants, is_rec || typs_rec)
       ([], false) variants
   in
   let variants = List.rev variants in
@@ -281,6 +288,11 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
           [%e apply_defs ~loc (`NonRec raw_schema)]]
     in
     let schema = wrap_type_params ~loc ~prefix:params_prefix params schema in
+    let schema =
+      match Attribute.get Attrs.jsonschema_td_description type_decl with
+      | Some desc -> Schema.description ~loc ~description:desc.txt schema
+      | None -> schema
+    in
     [ create_value ~loc type_name schema ]
   (* Multiple type declarations (mutually recursive types) *)
   | _, type_decls when List.length type_decls > 1 ->
@@ -291,22 +303,34 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
       let defs = List.map (fun (name, raw, _, _, _) -> name, raw) raw_results in
       List.map
         (fun (name, _, _, params, prefix) ->
+          let td = List.find (fun td -> td.ptype_name.txt = name) type_decls in
           let schema =
             wrap_type_params ~loc ~prefix params
               [%expr
                 let ppx_eds = ref [] in
                 [%e apply_defs ~loc (`Rec (name, defs))]]
           in
+          let schema =
+            match Attribute.get Attrs.jsonschema_td_description td with
+            | Some desc -> Schema.description ~loc ~description:desc.txt schema
+            | None -> schema
+          in
           create_value ~loc name schema)
         raw_results)
     else
       List.map
         (fun (name, raw, _, params, prefix) ->
+          let td = List.find (fun td -> td.ptype_name.txt = name) type_decls in
           let schema =
             wrap_type_params ~loc ~prefix params
               [%expr
                 let ppx_eds = ref [] in
                 [%e apply_defs ~loc (`NonRec raw)]]
+          in
+          let schema =
+            match Attribute.get Attrs.jsonschema_td_description td with
+            | Some desc -> Schema.description ~loc ~description:desc.txt schema
+            | None -> schema
           in
           create_value ~loc name schema)
         raw_results
