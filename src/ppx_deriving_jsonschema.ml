@@ -212,9 +212,7 @@ let schema_of_type_decl ~loc ~(config : Attrs.config) ~recursive_types type_decl
     let schema, is_rec, params_prefix = schema_of_variants ~loc ~config ~recursive_types variants in
     type_name, schema, is_rec, params, params_prefix
   | Ptype_record label_declarations ->
-    let schema, is_rec =
-      schema_of_record ~loc ~config ~recursive_types label_declarations allow_extra_fields
-    in
+    let schema, is_rec = schema_of_record ~loc ~config ~recursive_types label_declarations allow_extra_fields in
     type_name, schema, is_rec, params, ""
   | Ptype_abstract ->
     (match type_decl.ptype_manifest with
@@ -228,8 +226,7 @@ let schema_of_type_decl ~loc ~(config : Attrs.config) ~recursive_types type_decl
     let msg = "ppx_deriving_jsonschema: open types not supported" in
     type_name, [%expr [%ocaml.error [%e estring ~loc msg]]], false, params, ""
 
-let apply_defs ~loc =
-  function
+let apply_defs ~loc = function
   | `Rec (primary, defs) ->
     let edv = evar ~loc "ppx_eds" in
     let vname name = "ppx_body_" ^ name in
@@ -239,9 +236,7 @@ let apply_defs ~loc =
     let base_expr =
       [%expr
         `Assoc
-          [
-            "$defs", `Assoc ([%e pairs_expr] @ ![%e edv]); "$ref", `String [%e estring ~loc ("#/$defs/" ^ primary)];
-          ]]
+          [ "$defs", `Assoc ([%e pairs_expr] @ ![%e edv]); "$ref", `String [%e estring ~loc ("#/$defs/" ^ primary)] ]]
     in
     List.fold_right
       (fun (name, s) acc ->

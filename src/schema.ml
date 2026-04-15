@@ -56,8 +56,8 @@ let enum_string ~loc values =
 
 let nullable ~loc schema =
   match schema with
-    | [%expr`Assoc [ ("type", `String [%e? t]) ]] -> [%expr `Assoc [ "type", `List [ `String [%e t]; `String "null" ] ]]
-    | s -> [%expr `Assoc [ "anyOf", `List [ [%e s]; `Assoc [ "type", `String "null" ] ] ]]
+  | [%expr `Assoc [ "type", `String [%e? t] ]] -> [%expr `Assoc [ "type", `List [ `String [%e t]; `String "null" ] ]]
+  | s -> [%expr `Assoc [ "anyOf", `List [ [%e s]; `Assoc [ "type", `String "null" ] ] ]]
 
 let description ~loc ~description schema =
   match schema with
