@@ -2642,8 +2642,8 @@ let%expect_test "with_format_variant" =
           "prefixItems": [
             { "const": "A" },
             {
-              "description": "A date-time string",
               "format": "date-time",
+              "description": "A date-time string",
               "type": "string"
             }
           ],
@@ -3048,5 +3048,135 @@ let%expect_test "attrs_type_decl" =
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "description": "A plain integer",
       "type": "integer"
+    }
+    |}]
+
+(* [@jsonschema.minimum] and [@jsonschema.maximum] — all annotation contexts *)
+
+(* core type: int *)
+type minimum_core_type_int =
+  (int[@jsonschema.minimum 0] [@jsonschema.maximum 100])
+[@@deriving jsonschema]
+
+let%expect_test "minimum_maximum_core_type_int" =
+  print_schema minimum_core_type_int_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0,
+      "maximum": 100,
+      "type": "integer"
+    }
+    |}]
+
+(* core type: float *)
+type minimum_core_type_float =
+  (float[@jsonschema.minimum 0.0] [@jsonschema.maximum 1.0])
+[@@deriving jsonschema]
+
+let%expect_test "minimum_maximum_core_type_float" =
+  print_schema minimum_core_type_float_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "type": "number"
+    }
+    |}]
+
+(* label declaration: int and float fields *)
+type minimum_maximum_record = {
+  score : int; [@jsonschema.minimum 0] [@jsonschema.maximum 100]
+  ratio : float; [@jsonschema.minimum 0.0] [@jsonschema.maximum 1.0]
+}
+[@@deriving jsonschema]
+
+let%expect_test "minimum_maximum_record" =
+  print_schema minimum_maximum_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ratio": { "minimum": 0.0, "maximum": 1.0, "type": "number" },
+        "score": { "minimum": 0, "maximum": 100, "type": "integer" }
+      },
+      "required": [ "ratio", "score" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* type declaration: int *)
+type minimum_maximum_type_decl_int = int
+[@@jsonschema.minimum 0] [@@jsonschema.maximum 255]
+[@@deriving jsonschema]
+
+let%expect_test "minimum_maximum_type_decl_int" =
+  print_schema minimum_maximum_type_decl_int_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0,
+      "maximum": 255,
+      "type": "integer"
+    }
+    |}]
+
+(* type declaration: float *)
+type minimum_maximum_type_decl_float = float
+[@@jsonschema.minimum 0.0] [@@jsonschema.maximum 1.0]
+[@@deriving jsonschema]
+
+let%expect_test "minimum_maximum_type_decl_float" =
+  print_schema minimum_maximum_type_decl_float_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "type": "number"
+    }
+    |}]
+
+(* variant payload: core type annotation *)
+type minimum_maximum_variant =
+  | Percentage of (int[@jsonschema.minimum 0] [@jsonschema.maximum 100])
+  | Factor of (float[@jsonschema.minimum 0.0] [@jsonschema.maximum 1.0])
+[@@deriving jsonschema]
+
+let%expect_test "minimum_maximum_variant" =
+  print_schema minimum_maximum_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Percentage" },
+            { "minimum": 0, "maximum": 100, "type": "integer" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Factor" },
+            { "minimum": 0.0, "maximum": 1.0, "type": "number" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
     }
     |}]

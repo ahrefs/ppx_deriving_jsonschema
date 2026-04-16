@@ -5075,8 +5075,8 @@ include
                      (`List
                         [`Assoc [("const", (`String "A"))];
                         `Assoc
-                          [("description", (`String "A date-time string"));
-                          ("format", (`String "date-time"));
+                          [("format", (`String "date-time"));
+                          ("description", (`String "A date-time string"));
                           ("type", (`String "string"))]]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
@@ -5110,8 +5110,8 @@ include
           "prefixItems": [
             { "const": "A" },
             {
-              "description": "A date-time string",
               "format": "date-time",
+              "description": "A date-time string",
               "type": "string"
             }
           ],
@@ -5852,5 +5852,263 @@ include
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "description": "A plain integer",
       "type": "integer"
+    }
+    |}]]
+type minimum_core_type_int =
+  ((int)[@jsonschema.minimum 0][@jsonschema.maximum 100])[@@deriving
+                                                           jsonschema]
+include
+  struct
+    let minimum_core_type_int_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("minimum", (`Int 0));
+          ("maximum", (`Int 100));
+          ("type", (`String "integer"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "minimum_maximum_core_type_int" =
+    print_schema minimum_core_type_int_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0,
+      "maximum": 100,
+      "type": "integer"
+    }
+    |}]]
+type minimum_core_type_float =
+  ((float)[@jsonschema.minimum 0.0][@jsonschema.maximum 1.0])[@@deriving
+                                                               jsonschema]
+include
+  struct
+    let minimum_core_type_float_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("minimum", (`Float 0.0));
+          ("maximum", (`Float 1.0));
+          ("type", (`String "number"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "minimum_maximum_core_type_float" =
+    print_schema minimum_core_type_float_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "type": "number"
+    }
+    |}]]
+type minimum_maximum_record =
+  {
+  score: int [@jsonschema.minimum 0][@jsonschema.maximum 100];
+  ratio: float [@jsonschema.minimum 0.0][@jsonschema.maximum 1.0]}[@@deriving
+                                                                    jsonschema]
+include
+  struct
+    let minimum_maximum_record_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("ratio",
+                  (`Assoc
+                     [("minimum", (`Float 0.0));
+                     ("maximum", (`Float 1.0));
+                     ("type", (`String "number"))]));
+               ("score",
+                 (`Assoc
+                    [("minimum", (`Int 0));
+                    ("maximum", (`Int 100));
+                    ("type", (`String "integer"))]))]));
+          ("required", (`List [`String "ratio"; `String "score"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "minimum_maximum_record" =
+    print_schema minimum_maximum_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ratio": { "minimum": 0.0, "maximum": 1.0, "type": "number" },
+        "score": { "minimum": 0, "maximum": 100, "type": "integer" }
+      },
+      "required": [ "ratio", "score" ],
+      "additionalProperties": false
+    }
+    |}]]
+type minimum_maximum_type_decl_int = int[@@jsonschema.minimum 0][@@jsonschema.maximum
+                                                                  255]
+[@@deriving jsonschema]
+include
+  struct
+    let minimum_maximum_type_decl_int_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("minimum", (`Int 0));
+          ("maximum", (`Int 255));
+          ("type", (`String "integer"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "minimum_maximum_type_decl_int" =
+    print_schema minimum_maximum_type_decl_int_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0,
+      "maximum": 255,
+      "type": "integer"
+    }
+    |}]]
+type minimum_maximum_type_decl_float = float[@@jsonschema.minimum 0.0]
+[@@jsonschema.maximum 1.0][@@deriving jsonschema]
+include
+  struct
+    let minimum_maximum_type_decl_float_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("minimum", (`Float 0.0));
+          ("maximum", (`Float 1.0));
+          ("type", (`String "number"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "minimum_maximum_type_decl_float" =
+    print_schema minimum_maximum_type_decl_float_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "type": "number"
+    }
+    |}]]
+type minimum_maximum_variant =
+  | Percentage of ((int)[@jsonschema.minimum 0][@jsonschema.maximum 100]) 
+  | Factor of ((float)[@jsonschema.minimum 0.0][@jsonschema.maximum 1.0]) 
+[@@deriving jsonschema]
+include
+  struct
+    let minimum_maximum_variant_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "Percentage"))];
+                        `Assoc
+                          [("minimum", (`Int 0));
+                          ("maximum", (`Int 100));
+                          ("type", (`String "integer"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Factor"))];
+                       `Assoc
+                         [("minimum", (`Float 0.0));
+                         ("maximum", (`Float 1.0));
+                         ("type", (`String "number"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "minimum_maximum_variant" =
+    print_schema minimum_maximum_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Percentage" },
+            { "minimum": 0, "maximum": 100, "type": "integer" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Factor" },
+            { "minimum": 0.0, "maximum": 1.0, "type": "number" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
     }
     |}]]
