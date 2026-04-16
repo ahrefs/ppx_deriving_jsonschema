@@ -259,7 +259,8 @@ let apply_defs ~loc = function
       | [] -> ppx_result
       | ppx_defs ->
       match ppx_result with
-      | `Assoc ppx_pairs -> `Assoc (("$defs", `Assoc ppx_defs) :: List.filter (fun (k, _) -> not (String.equal k "$defs")) ppx_pairs)
+      | `Assoc ppx_pairs ->
+        `Assoc (("$defs", `Assoc ppx_defs) :: List.filter (fun (k, _) -> not (String.equal k "$defs")) ppx_pairs)
       | other -> other]
 
 let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
