@@ -2989,9 +2989,7 @@ let%expect_test "with_maximum" =
 (* [@jsonschema.attrs] — composite attribute bundling multiple annotations *)
 
 type attrs_core_type =
-  (int
-  [@jsonschema.attrs
-    { maximum = 100; minimum = 0; description = "Integer percentage value (0-100 inclusive)" }])
+  (int[@jsonschema.attrs { maximum = 100; minimum = 0; description = "Integer percentage value (0-100 inclusive)" }])
 [@@deriving jsonschema]
 
 let%expect_test "attrs_core_type" =
@@ -3054,9 +3052,7 @@ let%expect_test "attrs_type_decl" =
 (* [@jsonschema.minimum] and [@jsonschema.maximum] — all annotation contexts *)
 
 (* core type: int *)
-type minimum_core_type_int =
-  (int[@jsonschema.minimum 0] [@jsonschema.maximum 100])
-[@@deriving jsonschema]
+type minimum_core_type_int = (int[@jsonschema.minimum 0] [@jsonschema.maximum 100]) [@@deriving jsonschema]
 
 let%expect_test "minimum_maximum_core_type_int" =
   print_schema minimum_core_type_int_jsonschema;
@@ -3071,9 +3067,7 @@ let%expect_test "minimum_maximum_core_type_int" =
     |}]
 
 (* core type: float *)
-type minimum_core_type_float =
-  (float[@jsonschema.minimum 0.0] [@jsonschema.maximum 1.0])
-[@@deriving jsonschema]
+type minimum_core_type_float = (float[@jsonschema.minimum 0.0] [@jsonschema.maximum 1.0]) [@@deriving jsonschema]
 
 let%expect_test "minimum_maximum_core_type_float" =
   print_schema minimum_core_type_float_jsonschema;
@@ -3111,9 +3105,7 @@ let%expect_test "minimum_maximum_record" =
     |}]
 
 (* type declaration: int *)
-type minimum_maximum_type_decl_int = int
-[@@jsonschema.minimum 0] [@@jsonschema.maximum 255]
-[@@deriving jsonschema]
+type minimum_maximum_type_decl_int = int [@@jsonschema.minimum 0] [@@jsonschema.maximum 255] [@@deriving jsonschema]
 
 let%expect_test "minimum_maximum_type_decl_int" =
   print_schema minimum_maximum_type_decl_int_jsonschema;
@@ -3129,8 +3121,7 @@ let%expect_test "minimum_maximum_type_decl_int" =
 
 (* type declaration: float *)
 type minimum_maximum_type_decl_float = float
-[@@jsonschema.minimum 0.0] [@@jsonschema.maximum 1.0]
-[@@deriving jsonschema]
+[@@jsonschema.minimum 0.0] [@@jsonschema.maximum 1.0] [@@deriving jsonschema]
 
 let%expect_test "minimum_maximum_type_decl_float" =
   print_schema minimum_maximum_type_decl_float_jsonschema;

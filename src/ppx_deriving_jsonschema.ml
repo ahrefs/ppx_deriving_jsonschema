@@ -75,7 +75,8 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
               match [%e schema] with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                 `Assoc
-                  (("$id", `String [%e unique_id]) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs)
+                  (("$id", `String [%e unique_id])
+                  :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs)
               | other -> other],
             is_rec )))
     | Ptyp_tuple types ->
