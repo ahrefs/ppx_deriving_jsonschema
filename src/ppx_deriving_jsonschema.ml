@@ -62,9 +62,9 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
               | `Assoc ppx_pairs ->
                 (match List.assoc_opt "$defs" ppx_pairs with
                 | Some (`Assoc ppx_defs) ->
-                  [%e edv] := ![%e edv] @ List.filter (fun (n, _) -> not (List.mem_assoc n ![%e edv])) ppx_defs
-                | _ -> ());
-                `Assoc (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs)
+                  [%e edv] := ![%e edv] @ List.filter (fun (n, _) -> not (List.mem_assoc n ![%e edv])) ppx_defs;
+                  `Assoc (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$defs")) ppx_pairs)
+                | _ -> `Assoc ppx_pairs)
               | ppx_other -> ppx_other],
             is_rec )
         | false ->
@@ -74,7 +74,8 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
           ( [%expr
               match [%e schema] with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                `Assoc (("$id", `String [%e unique_id]) :: List.filter (fun (k, _) -> k <> "$id") pairs)
+                `Assoc
+                  (("$id", `String [%e unique_id]) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs)
               | other -> other],
             is_rec )))
     | Ptyp_tuple types ->
@@ -271,7 +272,8 @@ let apply_defs ~loc = function
       | [] -> ppx_result
       | ppx_defs ->
       match ppx_result with
-      | `Assoc ppx_pairs -> `Assoc (("$defs", `Assoc ppx_defs) :: List.filter (fun (k, _) -> k <> "$defs") ppx_pairs)
+      | `Assoc ppx_pairs ->
+        `Assoc (("$defs", `Assoc ppx_defs) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$defs")) ppx_pairs)
       | other -> other]
 
 let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
