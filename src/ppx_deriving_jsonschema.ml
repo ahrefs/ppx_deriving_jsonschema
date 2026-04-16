@@ -93,6 +93,7 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
     |> Schema.Annotation.add_format ~loc (Attrs.jsonschema_ct_format, core_type) core_type
     |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_ct_maximum, core_type) core_type
     |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_ct_minimum, core_type) core_type
+    |> Schema.Annotation.add_annotations ~loc ~core_type (Attribute.get Attrs.jsonschema_ct_attrs core_type)
   in
   schema, is_rec
 
@@ -165,6 +166,7 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
           |> Schema.Annotation.add_format ~loc (Attrs.jsonschema_ld_format, field) pld_type
           |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_ld_maximum, field) pld_type
           |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_ld_minimum, field) pld_type
+          |> Schema.Annotation.add_annotations ~loc ~core_type:pld_type (Attribute.get Attrs.jsonschema_ld_attrs field)
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           (if drop_required then required else { txt = name; loc } :: required),
@@ -290,6 +292,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
     let raw_schema =
       raw_schema
       |> Schema.Annotation.add_description ~loc (Attrs.jsonschema_td_description, type_decl)
+      |> Schema.Annotation.add_annotations ~loc (Attribute.get Attrs.jsonschema_td_attrs type_decl)
     in
     let raw_schema =
       Option.fold ~none:raw_schema

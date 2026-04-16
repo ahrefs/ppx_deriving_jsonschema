@@ -5718,3 +5718,139 @@ include
       "additionalProperties": false
     }
     |}]]
+type attrs_core_type =
+  ((int)[@jsonschema.attrs
+          {
+            maximum = 100;
+            minimum = 0;
+            description = "Integer percentage value (0-100 inclusive)"
+          }])[@@deriving jsonschema]
+include
+  struct
+    let attrs_core_type_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description",
+             (`String "Integer percentage value (0-100 inclusive)"));
+          ("minimum", (`Int 0));
+          ("maximum", (`Int 100));
+          ("type", (`String "integer"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "attrs_core_type" =
+    print_schema attrs_core_type_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Integer percentage value (0-100 inclusive)",
+      "minimum": 0,
+      "maximum": 100,
+      "type": "integer"
+    }
+    |}]]
+type attrs_record =
+  {
+  score: int
+    [@jsonschema.attrs
+      { maximum = 100; minimum = 0; description = "Score out of 100" }];
+  label: string
+    [@jsonschema.attrs
+      { format = "date-time"; description = "An ISO date-time" }]}[@@deriving
+                                                                    jsonschema]
+include
+  struct
+    let attrs_record_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("label",
+                  (`Assoc
+                     [("description", (`String "An ISO date-time"));
+                     ("format", (`String "date-time"));
+                     ("type", (`String "string"))]));
+               ("score",
+                 (`Assoc
+                    [("description", (`String "Score out of 100"));
+                    ("minimum", (`Int 0));
+                    ("maximum", (`Int 100));
+                    ("type", (`String "integer"))]))]));
+          ("required", (`List [`String "label"; `String "score"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "attrs_record" =
+    print_schema attrs_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "An ISO date-time",
+          "format": "date-time",
+          "type": "string"
+        },
+        "score": {
+          "description": "Score out of 100",
+          "minimum": 0,
+          "maximum": 100,
+          "type": "integer"
+        }
+      },
+      "required": [ "label", "score" ],
+      "additionalProperties": false
+    }
+    |}]]
+type attrs_type_decl = int[@@jsonschema.attrs
+                            { description = "A plain integer" }][@@deriving
+                                                                  jsonschema]
+include
+  struct
+    let attrs_type_decl_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description", (`String "A plain integer"));
+          ("type", (`String "integer"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "attrs_type_decl" =
+    print_schema attrs_type_decl_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A plain integer",
+      "type": "integer"
+    }
+    |}]]

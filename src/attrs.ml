@@ -48,6 +48,10 @@ let jsonschema_td_minimum = expr_attr "jsonschema.minimum" Attribute.Context.typ
 let jsonschema_ld_minimum = expr_attr "jsonschema.minimum" Attribute.Context.label_declaration
 let jsonschema_ct_minimum = expr_attr "jsonschema.minimum" Attribute.Context.core_type
 
+let jsonschema_ct_attrs = expr_attr "jsonschema.attrs" Attribute.Context.core_type
+let jsonschema_td_attrs = expr_attr "jsonschema.attrs" Attribute.Context.type_declaration
+let jsonschema_ld_attrs = expr_attr "jsonschema.attrs" Attribute.Context.label_declaration
+
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -70,6 +74,9 @@ let attributes =
     Attribute.T jsonschema_td_minimum;
     Attribute.T jsonschema_ld_minimum;
     Attribute.T jsonschema_ct_minimum;
+    Attribute.T jsonschema_ct_attrs;
+    Attribute.T jsonschema_td_attrs;
+    Attribute.T jsonschema_ld_attrs;
   ]
 
 let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple")

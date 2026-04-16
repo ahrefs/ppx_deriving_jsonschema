@@ -123,4 +123,58 @@ module Annotation = struct
 
   let add_description ~loc attr = add_schema_attr attr (fun desc schema -> description ~loc desc.txt schema)
 
+  let add_annotations ~loc ?core_type attrs schema =
+    let require_core_type field =
+      match core_type with
+      | Some t -> t
+      | None ->
+        Location.raise_errorf ~loc
+          "[@jsonschema.attrs] '%s' requires a type context (use the individual [@jsonschema.%s] attribute instead)"
+          field field
+    in
+    match attrs with
+    | None -> schema
+    | Some expr ->
+    match expr.pexp_desc with
+    | Pexp_record (fields, None) ->
+      List.fold_left
+        (fun schema ({ txt = label; loc = label_loc }, value) ->
+          match label with
+          | Lident "description" ->
+            (match value.pexp_desc with
+            | Pexp_constant (Pconst_string (s, _, _)) -> description ~loc s schema
+            | _ ->
+              Location.raise_errorf ~loc:value.pexp_loc "[@jsonschema.attrs] 'description' must be a string literal")
+          | Lident "format" ->
+            let ct = require_core_type "format" in
+            (match value.pexp_desc with
+            | Pexp_constant (Pconst_string (s, _, _)) ->
+              (match ct with
+              | [%type: string] | [%type: bytes] | [%type: string option] | [%type: bytes option] ->
+                format ~loc s schema
+              | _ ->
+                Location.raise_errorf ~loc:ct.ptyp_loc
+                  "[@jsonschema.attrs] 'format' can only be applied to string types")
+            | _ -> Location.raise_errorf ~loc:value.pexp_loc "[@jsonschema.attrs] 'format' must be a string literal")
+          | Lident "maximum" ->
+            let ct = require_core_type "maximum" in
+            (match ct with
+            | [%type: int] | [%type: int32] | [%type: nativeint] -> maximum ~loc [%expr `Int [%e value]] schema
+            | [%type: float] -> maximum ~loc [%expr `Float [%e value]] schema
+            | _ ->
+              Location.raise_errorf ~loc:ct.ptyp_loc
+                "[@jsonschema.attrs] 'maximum' can only be applied to numeric types")
+          | Lident "minimum" ->
+            let ct = require_core_type "minimum" in
+            (match ct with
+            | [%type: int] | [%type: int32] | [%type: nativeint] -> minimum ~loc [%expr `Int [%e value]] schema
+            | [%type: float] -> minimum ~loc [%expr `Float [%e value]] schema
+            | _ ->
+              Location.raise_errorf ~loc:ct.ptyp_loc
+                "[@jsonschema.attrs] 'minimum' can only be applied to numeric types")
+          | Lident name -> Location.raise_errorf ~loc:label_loc "[@jsonschema.attrs] unknown field: '%s'" name
+          | _ -> Location.raise_errorf ~loc:label_loc "[@jsonschema.attrs] expected a simple field name")
+        schema fields
+    | _ ->
+      Location.raise_errorf ~loc:expr.pexp_loc "[@jsonschema.attrs] expects a record expression: { field = value; ... }"
 end

@@ -2985,3 +2985,68 @@ let%expect_test "with_maximum" =
       "additionalProperties": false
     }
     |}]
+
+(* [@jsonschema.attrs] — composite attribute bundling multiple annotations *)
+
+type attrs_core_type =
+  (int
+  [@jsonschema.attrs
+    { maximum = 100; minimum = 0; description = "Integer percentage value (0-100 inclusive)" }])
+[@@deriving jsonschema]
+
+let%expect_test "attrs_core_type" =
+  print_schema attrs_core_type_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Integer percentage value (0-100 inclusive)",
+      "minimum": 0,
+      "maximum": 100,
+      "type": "integer"
+    }
+    |}]
+
+type attrs_record = {
+  score : int; [@jsonschema.attrs { maximum = 100; minimum = 0; description = "Score out of 100" }]
+  label : string; [@jsonschema.attrs { format = "date-time"; description = "An ISO date-time" }]
+}
+[@@deriving jsonschema]
+
+let%expect_test "attrs_record" =
+  print_schema attrs_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "An ISO date-time",
+          "format": "date-time",
+          "type": "string"
+        },
+        "score": {
+          "description": "Score out of 100",
+          "minimum": 0,
+          "maximum": 100,
+          "type": "integer"
+        }
+      },
+      "required": [ "label", "score" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type attrs_type_decl = int [@@jsonschema.attrs { description = "A plain integer" }] [@@deriving jsonschema]
+
+let%expect_test "attrs_type_decl" =
+  print_schema attrs_type_decl_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A plain integer",
+      "type": "integer"
+    }
+    |}]
