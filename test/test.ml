@@ -2957,3 +2957,31 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
       "$ref": "#/$defs/bool_filter"
     }
     |}]
+
+type with_maximum = int [@@jsonschema.maximum 100] [@@deriving jsonschema]
+
+let%expect_test "with_maximum" =
+  print_schema with_maximum_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "maximum": 100,
+      "type": "integer"
+    }
+    |}]
+
+type with_maximum_record = { field : int [@jsonschema.maximum 100] } [@@deriving jsonschema]
+
+let%expect_test "with_maximum" =
+  print_schema with_maximum_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "field": { "maximum": 100, "type": "integer" } },
+      "required": [ "field" ],
+      "additionalProperties": false
+    }
+    |}]

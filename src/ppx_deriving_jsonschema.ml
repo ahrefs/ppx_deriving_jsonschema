@@ -16,11 +16,6 @@ let wrap_type_params ~loc ?(prefix = "") params body =
     (fun param body -> [%expr fun [%p ppat_var ~loc { txt = prefix ^ param; loc }] -> [%e body]])
     params body
 
-let apply_attr attr node f schema =
-  match Attribute.get attr node with
-  | Some v -> f v schema
-  | None -> schema
-
 (* schema_of_core_type and schema_of_poly_variant are mutually recursive.
    All other functions only call downward and use plain let. *)
 let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) core_type =
@@ -94,8 +89,10 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
   in
   let schema =
     schema
-    |> apply_attr Attrs.jsonschema_ct_format core_type (fun fmt -> Schema.format ~loc fmt.txt)
-    |> apply_attr Attrs.jsonschema_ct_description core_type (fun desc -> Schema.description ~loc desc.txt)
+    |> Schema.Annotation.add_description ~loc (Attrs.jsonschema_ct_description, core_type)
+    |> Schema.Annotation.add_format ~loc (Attrs.jsonschema_ct_format, core_type) core_type
+    |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_ct_maximum, core_type) core_type
+    |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_ct_minimum, core_type) core_type
   in
   schema, is_rec
 
@@ -138,7 +135,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
       ([], false) row_fields
   in
   let constrs = List.rev constrs in
-  let v = Schema.variant ~loc ~as_string:config.Attrs.variant_as_string constrs in
+  let v = Schema.variants ~loc ~as_string:config.Attrs.variant_as_string constrs in
   v, is_rec
 
 (* Returns (schema_expression, is_recursive) *)
@@ -164,8 +161,10 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
         in
         let type_def =
           type_def
-          |> apply_attr Attrs.jsonschema_ld_description field (fun desc -> Schema.description ~loc desc.txt)
-          |> apply_attr Attrs.jsonschema_ld_format field (fun fmt -> Schema.format ~loc fmt.txt)
+          |> Schema.Annotation.add_description ~loc (Attrs.jsonschema_ld_description, field)
+          |> Schema.Annotation.add_format ~loc (Attrs.jsonschema_ld_format, field) pld_type
+          |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_ld_maximum, field) pld_type
+          |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_ld_minimum, field) pld_type
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,
           (if drop_required then required else { txt = name; loc } :: required),
@@ -215,8 +214,8 @@ let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) var
   let variants = List.rev variants in
   let schema, params_prefix =
     match config.Attrs.variant_as_string with
-    | true -> Schema.variant ~loc ~as_string:true variants, "_"
-    | false -> Schema.variant ~loc variants, ""
+    | true -> Schema.variants ~loc ~as_string:true variants, "_"
+    | false -> Schema.variants ~loc variants, ""
   in
   schema, is_rec, params_prefix
 
@@ -290,8 +289,15 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
     in
     let raw_schema =
       raw_schema
-      |> apply_attr Attrs.jsonschema_td_description type_decl (fun desc -> Schema.description ~loc desc.txt)
-      |> apply_attr Attrs.jsonschema_td_format type_decl (fun fmt -> Schema.format ~loc fmt.txt)
+      |> Schema.Annotation.add_description ~loc (Attrs.jsonschema_td_description, type_decl)
+    in
+    let raw_schema =
+      Option.fold ~none:raw_schema
+        ~some:(fun core_type ->
+          Schema.Annotation.add_format ~loc (Attrs.jsonschema_td_format, type_decl) core_type raw_schema
+          |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_td_maximum, type_decl) core_type
+          |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_td_minimum, type_decl) core_type)
+        type_decl.ptype_manifest
     in
     let schema =
       if is_rec then
@@ -319,10 +325,14 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
       List.map
         (fun (name, raw, _, params, prefix) ->
           let td = List.find (fun td -> td.ptype_name.txt = name) type_decls in
+          let raw = raw |> Schema.Annotation.add_description ~loc (Attrs.jsonschema_td_description, td) in
           let raw =
-            raw
-            |> apply_attr Attrs.jsonschema_td_description td (fun desc -> Schema.description ~loc desc.txt)
-            |> apply_attr Attrs.jsonschema_td_format td (fun fmt -> Schema.format ~loc fmt.txt)
+            Option.fold ~none:raw
+              ~some:(fun core_type ->
+                Schema.Annotation.add_format ~loc (Attrs.jsonschema_td_format, td) core_type raw
+                |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_td_maximum, td) core_type
+                |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_td_minimum, td) core_type)
+              td.ptype_manifest
           in
           let defs = List.map (fun (n, r, _, _, _) -> n, if n = name then raw else r) raw_results in
           let schema =
@@ -343,9 +353,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
                 let ppx_eds = ref [] in
                 [%e apply_defs ~loc (`NonRec raw)]]
           in
-          let schema =
-            schema |> apply_attr Attrs.jsonschema_td_description td (fun desc -> Schema.description ~loc desc.txt)
-          in
+          let schema = schema |> Schema.Annotation.add_description ~loc (Attrs.jsonschema_td_description, td) in
           create_value ~loc name schema)
         raw_results
   | _, _ -> [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]

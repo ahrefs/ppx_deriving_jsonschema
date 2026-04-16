@@ -5653,3 +5653,68 @@ include
       "$ref": "#/$defs/bool_filter"
     }
     |}]]
+type with_maximum = int[@@jsonschema.maximum 100][@@deriving jsonschema]
+include
+  struct
+    let with_maximum_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc [("maximum", (`Int 100)); ("type", (`String "integer"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "with_maximum" =
+    print_schema with_maximum_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "maximum": 100,
+      "type": "integer"
+    }
+    |}]]
+type with_maximum_record = {
+  field: int [@jsonschema.maximum 100]}[@@deriving jsonschema]
+include
+  struct
+    let with_maximum_record_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("field",
+                  (`Assoc
+                     [("maximum", (`Int 100)); ("type", (`String "integer"))]))]));
+          ("required", (`List [`String "field"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter (fun (k, _) -> k <> "$defs") ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "with_maximum" =
+    print_schema with_maximum_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "field": { "maximum": 100, "type": "integer" } },
+      "required": [ "field" ],
+      "additionalProperties": false
+    }
+    |}]]
