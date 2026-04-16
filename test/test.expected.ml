@@ -41,7 +41,7 @@ module Mod1 =
                | `Assoc ppx_pairs ->
                    `Assoc (("$defs", (`Assoc ppx_defs)) ::
                      (List.filter
-                        (fun (k, _) -> not (String.equal k "$defs"))
+                        (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                         ppx_pairs))
                | other -> other)[@@warning "-32-39"]
       end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -104,8 +104,8 @@ module Mod1 =
                    | `Assoc ppx_pairs ->
                        `Assoc (("$defs", (`Assoc ppx_defs)) ::
                          (List.filter
-                            (fun (k, _) -> not (String.equal k "$defs"))
-                            ppx_pairs))
+                            (fun (k, _) ->
+                               not (Stdlib.String.equal k "$defs")) ppx_pairs))
                    | other -> other)[@@warning "-32-39"]
           end[@@ocaml.doc "@inline"][@@merlin.hide ]
         [%%expect_test
@@ -152,14 +152,16 @@ include
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                         `Assoc (("$id", (`String "file://test.ml:78")) ::
                           (List.filter
-                             (fun (k, _) -> not (String.equal k "$id")) pairs))
+                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                             pairs))
                     | other -> other)));
                ("m",
                  ((match Mod1.m_1_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                        `Assoc (("$id", (`String "file://test.ml:77")) ::
                          (List.filter
-                            (fun (k, _) -> not (String.equal k "$id")) pairs))
+                            (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                            pairs))
                    | other -> other)))]));
           ("required", (`List [`String "m2"; `String "m"]));
           ("additionalProperties", (`Bool false))] in
@@ -169,7 +171,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -262,7 +265,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -319,7 +323,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -371,7 +376,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -427,7 +433,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -484,7 +491,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -543,7 +551,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -587,7 +596,8 @@ include
                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                      `Assoc (("$id", (`String "file://test.ml:305")) ::
                        (List.filter
-                          (fun (k, _) -> not (String.equal k "$id")) pairs))
+                          (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                          pairs))
                  | other -> other)]))] in
       match !ppx_eds with
       | [] -> ppx_result
@@ -595,7 +605,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -667,7 +678,8 @@ include
                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                      `Assoc (("$id", (`String "file://test.ml:362")) ::
                        (List.filter
-                          (fun (k, _) -> not (String.equal k "$id")) pairs))
+                          (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                          pairs))
                  | other -> other)]))] in
       match !ppx_eds with
       | [] -> ppx_result
@@ -675,7 +687,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -769,7 +782,8 @@ include
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                        `Assoc (("$id", (`String "file://test.ml:384")) ::
                          (List.filter
-                            (fun (k, _) -> not (String.equal k "$id")) pairs))
+                            (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                            pairs))
                    | other -> other)));
                ("date", (`Assoc [("type", (`String "number"))]))]));
           ("required",
@@ -793,7 +807,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -1105,7 +1120,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -1535,7 +1551,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
     let beta_jsonschema =
@@ -1553,7 +1570,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -1942,7 +1960,8 @@ include
         match tree_jsonschema with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
             `Assoc (("$id", (`String "file://test.ml:912")) ::
-              (List.filter (fun (k, _) -> not (String.equal k "$id")) pairs))
+              (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                 pairs))
         | other -> other in
       match !ppx_eds with
       | [] -> ppx_result
@@ -1950,7 +1969,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2009,7 +2029,8 @@ include
             ((match event_jsonschema with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                   `Assoc (("$id", (`String "file://test.ml:957")) ::
-                    (List.filter (fun (k, _) -> not (String.equal k "$id"))
+                    (List.filter
+                       (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
               | other -> other)))] in
       match !ppx_eds with
@@ -2018,7 +2039,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2118,7 +2140,8 @@ include
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                        `Assoc (("$id", (`String "file://test.ml:1039")) ::
                          (List.filter
-                            (fun (k, _) -> not (String.equal k "$id")) pairs))
+                            (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                            pairs))
                    | other -> other)))]))] in
       match !ppx_eds with
       | [] -> ppx_result
@@ -2126,7 +2149,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2227,7 +2251,8 @@ include
                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                      `Assoc (("$id", (`String "file://test.ml:1124")) ::
                        (List.filter
-                          (fun (k, _) -> not (String.equal k "$id")) pairs))
+                          (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                          pairs))
                  | other -> other);
                `Assoc [("type", (`String "string"))]]));
           ("unevaluatedItems", (`Bool false));
@@ -2239,7 +2264,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2341,7 +2367,8 @@ include
             ((match event_comment_jsonschema with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                   `Assoc (("$id", (`String "file://test.ml:1212")) ::
-                    (List.filter (fun (k, _) -> not (String.equal k "$id"))
+                    (List.filter
+                       (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
               | other -> other)))] in
       match !ppx_eds with
@@ -2350,7 +2377,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2460,8 +2488,8 @@ include
                       | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                           `Assoc (("$id", (`String "file://test.ml:1303")) ::
                             (List.filter
-                               (fun (k, _) -> not (String.equal k "$id"))
-                               pairs))
+                               (fun (k, _) ->
+                                  not (Stdlib.String.equal k "$id")) pairs))
                       | other -> other);
                     `Assoc [("type", (`String "integer"))]]));
                ("unevaluatedItems", (`Bool false));
@@ -2473,7 +2501,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2578,7 +2607,8 @@ include
             ((match events_jsonschema with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                   `Assoc (("$id", (`String "file://test.ml:1394")) ::
-                    (List.filter (fun (k, _) -> not (String.equal k "$id"))
+                    (List.filter
+                       (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
               | other -> other)))] in
       match !ppx_eds with
@@ -2587,7 +2617,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2689,7 +2720,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2716,7 +2748,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2746,7 +2779,8 @@ include
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                         `Assoc (("$id", (`String "file://test.ml:1503")) ::
                           (List.filter
-                             (fun (k, _) -> not (String.equal k "$id")) pairs))
+                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                             pairs))
                     | other -> other)))]));
           ("required", (`List [`String "m"]));
           ("additionalProperties", (`Bool false))] in
@@ -2756,7 +2790,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2806,7 +2841,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2858,7 +2894,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2920,7 +2957,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2971,7 +3009,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -2994,7 +3033,8 @@ include
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                         `Assoc (("$id", (`String "file://test.ml:1625")) ::
                           (List.filter
-                             (fun (k, _) -> not (String.equal k "$id")) pairs))
+                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                             pairs))
                     | other -> other)));
                ("email",
                  (`Assoc
@@ -3014,7 +3054,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3088,7 +3129,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3143,7 +3185,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3179,7 +3222,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3248,7 +3292,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3319,7 +3364,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3368,7 +3414,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3416,7 +3463,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3463,7 +3511,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3513,7 +3562,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3556,7 +3606,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3617,7 +3668,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3680,7 +3732,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3741,7 +3794,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3811,7 +3865,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3873,7 +3928,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3935,7 +3991,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -3989,7 +4046,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4009,7 +4067,8 @@ include
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                         `Assoc (("$id", (`String "file://test.ml:2099")) ::
                           (List.filter
-                             (fun (k, _) -> not (String.equal k "$id")) pairs))
+                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                             pairs))
                     | other -> other)))]));
           ("required", (`List [`String "obj2"]));
           ("additionalProperties", (`Bool false))] in
@@ -4019,7 +4078,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4039,7 +4099,8 @@ include
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                         `Assoc (("$id", (`String "file://test.ml:2100")) ::
                           (List.filter
-                             (fun (k, _) -> not (String.equal k "$id")) pairs))
+                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                             pairs))
                     | other -> other)))]));
           ("required", (`List [`String "obj1"]));
           ("additionalProperties", (`Bool true))] in
@@ -4049,7 +4110,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4102,7 +4164,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4130,7 +4193,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4165,7 +4229,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4196,7 +4261,8 @@ include
         with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
             `Assoc (("$id", (`String "file://test.ml:2174")) ::
-              (List.filter (fun (k, _) -> not (String.equal k "$id")) pairs))
+              (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                 pairs))
         | other -> other in
       match !ppx_eds with
       | [] -> ppx_result
@@ -4204,7 +4270,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4255,7 +4322,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4308,7 +4376,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4340,7 +4409,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4385,7 +4455,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4423,7 +4494,8 @@ include
         match either_jsonschema a b with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
             `Assoc (("$id", (`String "file://test.ml:2286")) ::
-              (List.filter (fun (k, _) -> not (String.equal k "$id")) pairs))
+              (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                 pairs))
         | other -> other in
       match !ppx_eds with
       | [] -> ppx_result
@@ -4431,7 +4503,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4479,7 +4552,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4532,7 +4606,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4601,7 +4676,7 @@ include
                  | `Assoc ppx_pairs ->
                      `Assoc (("$defs", (`Assoc ppx_defs)) ::
                        (List.filter
-                          (fun (k, _) -> not (String.equal k "$defs"))
+                          (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                           ppx_pairs))
                  | other -> other)
       with
@@ -4658,7 +4733,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4739,7 +4815,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4823,7 +4900,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4885,7 +4963,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -4936,7 +5015,7 @@ include
                  | `Assoc ppx_pairs ->
                      `Assoc (("$defs", (`Assoc ppx_defs)) ::
                        (List.filter
-                          (fun (k, _) -> not (String.equal k "$defs"))
+                          (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                           ppx_pairs))
                  | other -> other)
       with
@@ -5009,7 +5088,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -5064,7 +5144,8 @@ include
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
-                                         not (String.equal k "$id")) pairs))
+                                         not (Stdlib.String.equal k "$id"))
+                                      pairs))
                              | other -> other);
                            `Assoc [("type", (`String "null"))]]))]))]));
           ("required", (`List []));
@@ -5075,7 +5156,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -5236,14 +5318,16 @@ include
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                         `Assoc (("$id", (`String "file://test.ml:2645")) ::
                           (List.filter
-                             (fun (k, _) -> not (String.equal k "$id")) pairs))
+                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                             pairs))
                     | other -> other)));
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                        `Assoc (("$id", (`String "file://test.ml:2644")) ::
                          (List.filter
-                            (fun (k, _) -> not (String.equal k "$id")) pairs))
+                            (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                            pairs))
                    | other -> other)))]));
           ("required", (`List [`String "b"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
@@ -5253,7 +5337,8 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter (fun (k, _) -> not (String.equal k "$defs"))
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
@@ -5363,8 +5448,8 @@ include
                              `Assoc (("$id", (`String "file://test.ml:2704"))
                                ::
                                (List.filter
-                                  (fun (k, _) -> not (String.equal k "$id"))
-                                  pairs))
+                                  (fun (k, _) ->
+                                     not (Stdlib.String.equal k "$id")) pairs))
                          | other -> other)]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
@@ -5495,7 +5580,7 @@ include
                                   `Assoc
                                     (List.filter
                                        (fun (k, _) ->
-                                          not (String.equal k "$defs"))
+                                          not (Stdlib.String.equal k "$defs"))
                                        ppx_pairs))
                              | _ -> `Assoc ppx_pairs)
                         | ppx_other -> ppx_other)]));
