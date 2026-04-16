@@ -553,3 +553,123 @@ The secondary type `stmt_jsonschema` is also a self-contained schema, with the s
   "$ref": "#/$defs/stmt"
 }
 ```
+
+
+### Annotations
+
+#### `[@@jsonschema.description]` ([REF](https://www.learnjsonschema.com/2020-12/meta-data/description/))
+
+Add a description to a type or a field. It can be used on a type, a field, a variant constructor, or directly on a core type (e.g. a variant payload).
+
+```ocaml
+type t = {
+  name : string [@jsonschema.description "The user's full name"];
+} [@@deriving jsonschema]
+```
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "description": "The user's full name", "type": "string" }
+  },
+  "required": [ "name" ],
+  "additionalProperties": false
+}
+```
+
+#### `[@@jsonschema.format]` ([REF](https://www.learnjsonschema.com/2020-12/format-annotation/))
+
+Add a format annotation to a string-typed field. It can be used on a type, a field, or directly on a core type (e.g. a variant payload). Only applies to `string` and `bytes` types.
+
+```ocaml
+type t = {
+  name : string [@jsonschema.format "date-time"]; 
+} [@@deriving jsonschema]
+```
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "format": "date-time", "type": "string" }
+  },
+  "required": [ "name" ],
+  "additionalProperties": false
+}
+```
+
+#### `[@@jsonschema.maximum]` ([REF](https://www.learnjsonschema.com/2020-12/validation/maximum/))
+
+Add a maximum value to a type or a field. It can be used on a type, a field, or a variant payload. Only applies to numeric types (`int`, `int32`, `nativeint`, `float`).
+
+```ocaml
+type t = {
+  score : int [@jsonschema.maximum 100];
+} [@@deriving jsonschema]
+```
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "score": { "maximum": 100, "type": "integer" }
+  },
+  "required": [ "score" ],
+  "additionalProperties": false
+}
+```
+
+#### `[@@jsonschema.minimum]` ([REF](https://www.learnjsonschema.com/2020-12/validation/minimum/))
+
+Add a minimum value to a type or a field. It can be used on a type, a field, or a variant payload. Only applies to numeric types (`int`, `int32`, `nativeint`, `float`).
+
+```ocaml
+type t = {
+  score : int [@jsonschema.minimum 0];
+} [@@deriving jsonschema]
+```
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "score": { "minimum": 0, "type": "integer" }
+  },
+  "required": [ "score" ],
+  "additionalProperties": false
+}
+```
+
+#### `[@jsonschema.attrs]`
+
+A composite annotation that bundles multiple schema attributes into a single record expression. Supported fields: `description`, `format`, `maximum`, `minimum`. Type-sensitive fields (`format`, `maximum`, `minimum`) are validated against the annotated type.
+
+Can be used on core types, label declarations, and type declarations.
+
+```ocaml
+type t = {
+  score : int [@jsonschema.attrs { maximum = 100; minimum = 0; description = "Score out of 100" }];
+  created_at : string [@jsonschema.attrs { format = "date-time"; description = "Creation timestamp" }];
+} [@@deriving jsonschema]
+```
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "score": { "minimum": 0, "maximum": 100, "description": "Score out of 100", "type": "integer" },
+    "created_at": { "format": "date-time", "description": "Creation timestamp", "type": "string" }
+  },
+  "required": [ "score", "created_at" ],
+  "additionalProperties": false
+}
+```
+
+It can also be applied directly to a core type in a variant payload:
+
+```ocaml
+type t =
+  | Score of (int [@jsonschema.attrs { maximum = 100; minimum = 0; description = "Percentage" }])
+[@@deriving jsonschema]
+```
