@@ -71,7 +71,8 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
         ( [%expr
             match [%e schema] with
             | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-              `Assoc (("$id", `String [%e unique_id]) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs)
+              `Assoc
+                (("$id", `String [%e unique_id]) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs)
             | other -> other],
           is_rec )))
   | Ptyp_tuple types ->
@@ -259,7 +260,8 @@ let apply_defs ~loc = function
       | [] -> ppx_result
       | ppx_defs ->
       match ppx_result with
-      | `Assoc ppx_pairs -> `Assoc (("$defs", `Assoc ppx_defs) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$defs")) ppx_pairs)
+      | `Assoc ppx_pairs ->
+        `Assoc (("$defs", `Assoc ppx_defs) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$defs")) ppx_pairs)
       | other -> other]
 
 let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
