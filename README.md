@@ -641,6 +641,42 @@ type t = {
 }
 ```
 
+#### `[@jsonschema.default]` ([REF](https://www.learnjsonschema.com/2020-12/meta-data/default/))
+
+Set a default value for a record field. Fields with a default are excluded from `required`.
+
+Primitive literals (`int`, `int32`, `nativeint`, `float`, `string`, `bytes`, `bool`) and their `option`, `list`, and `array` variants are serialized automatically. For non-primitive types (custom variants, records, etc.) a `<type>_to_json : <type> -> Yojson.Basic.t` function must be in scope — e.g. via `[@@deriving json]` from melange-json.
+
+```ocaml
+type status = Active | Inactive [@@deriving jsonschema]
+let status_to_json = function
+  | Active -> `String "Active"
+  | Inactive -> `String "Inactive"
+
+type t = {
+  score    : int option;  [@jsonschema.default 0]
+  label    : string;      [@jsonschema.default "unlabelled"]
+  is_admin : bool;        [@jsonschema.default false]
+  tags     : string list; [@jsonschema.default ["general"]]
+  status   : status;      [@jsonschema.default Active]
+} [@@deriving jsonschema]
+```
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "score":    { "default": 0,             "type": [ "integer", "null" ] },
+    "label":    { "default": "unlabelled",  "type": "string" },
+    "is_admin": { "default": false,         "type": "boolean" },
+    "tags":     { "default": [ "general" ], "type": "array", "items": { "type": "string" } },
+    "status":   { "default": [ "Active" ],  "anyOf": [ ... ] }
+  },
+  "required": [],
+  "additionalProperties": false
+}
+```
+
 #### `[@jsonschema.attrs]`
 
 A composite annotation that bundles multiple schema attributes into a single record expression. Supported fields: `description`, `format`, `maximum`, `minimum`. Type-sensitive fields (`format`, `maximum`, `minimum`) are validated against the annotated type.
