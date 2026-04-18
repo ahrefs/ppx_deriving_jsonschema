@@ -2539,11 +2539,9 @@ let%expect_test "ocaml_doc_fallback_for_record" =
     |}]
 
 (* Without the [~ocaml_doc] flag, doc comments are not turned into descriptions. *)
-type doc_comment_disabled = {
-  name : string;  (** The user's full name *)
-}
-[@@deriving jsonschema]
+
 (** A user object *)
+type doc_comment_disabled = { name : string  (** The user's full name *) } [@@deriving jsonschema]
 
 let%expect_test "ocaml_doc_disabled_by_default" =
   print_schema doc_comment_disabled_jsonschema;

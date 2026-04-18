@@ -114,5 +114,4 @@ let attributes =
     Attribute.T jsonschema_ld_attrs;
   ]
 
-let args () =
-  Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "ocaml_doc")
+let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "ocaml_doc")

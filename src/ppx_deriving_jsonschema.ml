@@ -330,7 +330,9 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
       List.map
         (fun (name, raw, _, params, prefix) ->
           let td = List.find (fun td -> td.ptype_name.txt = name) type_decls in
-          let raw = raw |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc td) in
+          let raw =
+            raw |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc td)
+          in
           let raw =
             Option.fold ~none:raw
               ~some:(fun core_type ->
@@ -358,7 +360,9 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
                 let ppx_eds = ref [] in
                 [%e apply_defs ~loc (`NonRec raw)]]
           in
-          let schema = schema |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc td) in
+          let schema =
+            schema |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc td)
+          in
           create_value ~loc name schema)
         raw_results
   | _, _ -> [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
