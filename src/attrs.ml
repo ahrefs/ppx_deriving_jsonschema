@@ -52,6 +52,38 @@ let jsonschema_ct_attrs = expr_attr "jsonschema.attrs" Attribute.Context.core_ty
 let jsonschema_td_attrs = expr_attr "jsonschema.attrs" Attribute.Context.type_declaration
 let jsonschema_ld_attrs = expr_attr "jsonschema.attrs" Attribute.Context.label_declaration
 
+let find_ocaml_doc attrs =
+  List.find_map
+    (fun attr ->
+      match attr.attr_name.txt with
+      | "ocaml.doc" | "doc" ->
+        (match attr.attr_payload with
+        | PStr [ { pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string (s, sloc, _)); _ }, _); _ } ] ->
+          Some { txt = String.trim s; loc = sloc }
+        | _ -> None)
+      | _ -> None)
+    attrs
+
+let ld_description (ld : label_declaration) =
+  match Attribute.get jsonschema_ld_description ld with
+  | Some _ as x -> x
+  | None -> find_ocaml_doc ld.pld_attributes
+
+let td_description (td : type_declaration) =
+  match Attribute.get jsonschema_td_description td with
+  | Some _ as x -> x
+  | None -> find_ocaml_doc td.ptype_attributes
+
+let cd_description (cd : constructor_declaration) =
+  match Attribute.get jsonschema_cd_description cd with
+  | Some _ as x -> x
+  | None -> find_ocaml_doc cd.pcd_attributes
+
+let ct_description (ct : core_type) =
+  match Attribute.get jsonschema_ct_description ct with
+  | Some _ as x -> x
+  | None -> find_ocaml_doc ct.ptyp_attributes
+
 let attributes =
   [
     Attribute.T jsonschema_key;

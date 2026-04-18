@@ -121,7 +121,10 @@ module Annotation = struct
         | _ ->
           Location.raise_errorf ~loc:core_type.ptyp_loc "[@jsonschema.minimum] can only be applied to numeric types")
 
-  let add_description ~loc attr = add_schema_attr attr (fun desc schema -> description ~loc desc.txt schema)
+  let add_description ~loc desc_opt schema =
+    match desc_opt with
+    | Some desc -> description ~loc desc.txt schema
+    | None -> schema
 
   let add_annotations ~loc ?core_type attrs schema =
     let require_core_type field =

@@ -2510,6 +2510,84 @@ let%expect_test "variant_constructor_description_variant_as_string" =
     }
     |}]
 
+(* ocaml.doc ([** ... *]) comments are used as a fallback for descriptions. *)
+type doc_comment_record = {
+  name : string;  (** The user's full name *)
+  age : int;  (** The user's age *)
+}
+[@@deriving jsonschema]
+(** A user object *)
+
+let%expect_test "ocaml_doc_fallback_for_record" =
+  print_schema doc_comment_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A user object",
+      "type": "object",
+      "properties": {
+        "age": { "description": "The user's age", "type": "integer" },
+        "name": { "description": "The user's full name", "type": "string" }
+      },
+      "required": [ "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Explicit [@jsonschema.description] wins over an ocaml.doc comment on the same node. *)
+type doc_comment_override = {
+  field : string; [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *)
+}
+[@@deriving jsonschema]
+
+let%expect_test "ocaml_doc_overridden_by_jsonschema_description" =
+  print_schema doc_comment_override_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "field": { "description": "explicit wins", "type": "string" }
+      },
+      "required": [ "field" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type doc_comment_variant =
+  | Plain  (** No payload *)
+  | With_int of int  (** Single integer tag *)
+[@@deriving jsonschema]
+
+let%expect_test "ocaml_doc_fallback_for_variant" =
+  print_schema doc_comment_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
 (* Top-level @@jsonschema.description on a variant (whole anyOf schema). *)
 type computation_result =
   | Ok
@@ -2740,7 +2818,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2730",
+          "$id": "file://test/test.ml:2808",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2757,7 +2835,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2729",
+          "$id": "file://test/test.ml:2807",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2904,7 +2982,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2789",
+                  "$id": "file://test/test.ml:2867",
                   "$defs": {
                     "filter": {
                       "anyOf": [

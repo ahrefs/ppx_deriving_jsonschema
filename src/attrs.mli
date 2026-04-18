@@ -31,5 +31,14 @@ val jsonschema_ct_minimum : (Ppxlib.core_type, Ppxlib.expression) Ppxlib.Attribu
 val jsonschema_ct_attrs : (Ppxlib.core_type, Ppxlib.expression) Ppxlib.Attribute.t
 val jsonschema_td_attrs : (Ppxlib.type_declaration, Ppxlib.expression) Ppxlib.Attribute.t
 val jsonschema_ld_attrs : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.Attribute.t
+
+(** [ld_description], [td_description], [cd_description] and [ct_description] resolve a
+    description from [\[@jsonschema.description "..."\]], falling back to an [ocaml.doc]
+    attribute (i.e. a [(** ... *)] comment) when the explicit annotation is absent. *)
+val ld_description : Ppxlib.label_declaration -> string Location.loc option
+val td_description : Ppxlib.type_declaration -> string Location.loc option
+val cd_description : Ppxlib.constructor_declaration -> string Location.loc option
+val ct_description : Ppxlib.core_type -> string Location.loc option
+
 val attributes : Ppxlib.Attribute.packed list
 val args : unit -> (bool -> bool -> 'a, 'a) Ppxlib.Deriving.Args.t
