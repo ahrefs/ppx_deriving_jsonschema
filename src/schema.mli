@@ -40,8 +40,7 @@ module Annotation : sig
     Ppxlib.core_type ->
     Ppxlib.expression ->
     Ppxlib.expression
-  val add_description :
-    loc:Warnings.loc -> string Location.loc option -> Ppxlib.expression -> Ppxlib.expression
+  val add_description : loc:Warnings.loc -> string Location.loc option -> Ppxlib.expression -> Ppxlib.expression
   val add_annotations :
     loc:Warnings.loc ->
     ?core_type:Ppxlib.core_type ->

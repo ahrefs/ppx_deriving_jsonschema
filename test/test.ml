@@ -2511,12 +2511,13 @@ let%expect_test "variant_constructor_description_variant_as_string" =
     |}]
 
 (* ocaml.doc ([** ... *]) comments are used as a fallback for descriptions. *)
+
+(** A user object *)
 type doc_comment_record = {
   name : string;  (** The user's full name *)
   age : int;  (** The user's age *)
 }
 [@@deriving jsonschema]
-(** A user object *)
 
 let%expect_test "ocaml_doc_fallback_for_record" =
   print_schema doc_comment_record_jsonschema;
@@ -2536,9 +2537,7 @@ let%expect_test "ocaml_doc_fallback_for_record" =
     |}]
 
 (* Explicit [@jsonschema.description] wins over an ocaml.doc comment on the same node. *)
-type doc_comment_override = {
-  field : string; [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *)
-}
+type doc_comment_override = { field : string [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *) }
 [@@deriving jsonschema]
 
 let%expect_test "ocaml_doc_overridden_by_jsonschema_description" =

@@ -36,6 +36,7 @@ val jsonschema_ld_attrs : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.A
     description from [\[@jsonschema.description "..."\]], falling back to an [ocaml.doc]
     attribute (i.e. a [(** ... *)] comment) when the explicit annotation is absent. *)
 val ld_description : Ppxlib.label_declaration -> string Location.loc option
+
 val td_description : Ppxlib.type_declaration -> string Location.loc option
 val cd_description : Ppxlib.constructor_declaration -> string Location.loc option
 val ct_description : Ppxlib.core_type -> string Location.loc option
