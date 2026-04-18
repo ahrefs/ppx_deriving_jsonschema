@@ -2510,14 +2510,16 @@ let%expect_test "variant_constructor_description_variant_as_string" =
     }
     |}]
 
-(* ocaml.doc ([** ... *]) comments are used as a fallback for descriptions. *)
+(* The [~ocaml_doc] flag opts into using [(** ... *)] doc comments as a
+   fallback for [@jsonschema.description]. Without the flag, doc comments are
+   ignored (see [ocaml_doc_disabled_by_default] below). *)
 
 (** A user object *)
 type doc_comment_record = {
   name : string;  (** The user's full name *)
   age : int;  (** The user's age *)
 }
-[@@deriving jsonschema]
+[@@deriving jsonschema ~ocaml_doc]
 
 let%expect_test "ocaml_doc_fallback_for_record" =
   print_schema doc_comment_record_jsonschema;
@@ -2536,9 +2538,29 @@ let%expect_test "ocaml_doc_fallback_for_record" =
     }
     |}]
 
+(* Without the [~ocaml_doc] flag, doc comments are not turned into descriptions. *)
+type doc_comment_disabled = {
+  name : string;  (** The user's full name *)
+}
+[@@deriving jsonschema]
+(** A user object *)
+
+let%expect_test "ocaml_doc_disabled_by_default" =
+  print_schema doc_comment_disabled_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "name": { "type": "string" } },
+      "required": [ "name" ],
+      "additionalProperties": false
+    }
+    |}]
+
 (* Explicit [@jsonschema.description] wins over an ocaml.doc comment on the same node. *)
 type doc_comment_override = { field : string [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *) }
-[@@deriving jsonschema]
+[@@deriving jsonschema ~ocaml_doc]
 
 let%expect_test "ocaml_doc_overridden_by_jsonschema_description" =
   print_schema doc_comment_override_jsonschema;
@@ -2558,7 +2580,7 @@ let%expect_test "ocaml_doc_overridden_by_jsonschema_description" =
 type doc_comment_variant =
   | Plain  (** No payload *)
   | With_int of int  (** Single integer tag *)
-[@@deriving jsonschema]
+[@@deriving jsonschema ~ocaml_doc]
 
 let%expect_test "ocaml_doc_fallback_for_variant" =
   print_schema doc_comment_variant_jsonschema;
@@ -2817,7 +2839,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2808",
+          "$id": "file://test/test.ml:2829",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2834,7 +2856,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2807",
+          "$id": "file://test/test.ml:2828",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2981,7 +3003,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2867",
+                  "$id": "file://test/test.ml:2888",
                   "$defs": {
                     "filter": {
                       "anyOf": [

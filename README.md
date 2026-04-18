@@ -578,12 +578,12 @@ type t = {
 }
 ```
 
-As a fallback, an OCaml doc comment (`(** ... *)`, stored in the AST as an `ocaml.doc` attribute) is used as the description when `[@jsonschema.description]` is not provided. The explicit attribute takes precedence.
+When the `~ocaml_doc` flag is passed to the deriver, an OCaml doc comment (`(** ... *)`, stored in the AST as an `ocaml.doc` attribute) is used as the description when `[@jsonschema.description]` is not provided. The explicit attribute takes precedence. Without the flag, doc comments are ignored.
 
 ```ocaml
 type t = {
   name : string;  (** The user's full name *)
-} [@@deriving jsonschema]
+} [@@deriving jsonschema ~ocaml_doc]
 (** A user object *)
 ```
 

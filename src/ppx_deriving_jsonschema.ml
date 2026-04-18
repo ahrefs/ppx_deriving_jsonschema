@@ -91,7 +91,7 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
   in
   let schema =
     schema
-    |> Schema.Annotation.add_description ~loc (Attrs.ct_description core_type)
+    |> Schema.Annotation.add_description ~loc (Attrs.ct_description ~ocaml_doc:config.Attrs.ocaml_doc core_type)
     |> Schema.Annotation.add_format ~loc (Attrs.jsonschema_ct_format, core_type) core_type
     |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_ct_maximum, core_type) core_type
     |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_ct_minimum, core_type) core_type
@@ -164,7 +164,7 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
         in
         let type_def =
           type_def
-          |> Schema.Annotation.add_description ~loc (Attrs.ld_description field)
+          |> Schema.Annotation.add_description ~loc (Attrs.ld_description ~ocaml_doc:config.Attrs.ocaml_doc field)
           |> Schema.Annotation.add_format ~loc (Attrs.jsonschema_ld_format, field) pld_type
           |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_ld_maximum, field) pld_type
           |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_ld_minimum, field) pld_type
@@ -196,7 +196,9 @@ let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) var
           | Some name -> name.txt
           | None -> name
         in
-        let description_opt = Option.map (fun d -> d.txt) (Attrs.cd_description var) in
+        let description_opt =
+          Option.map (fun d -> d.txt) (Attrs.cd_description ~ocaml_doc:config.Attrs.ocaml_doc var)
+        in
         match pcd_args with
         | Pcstr_record label_declarations ->
           let allow_extra_fields = Attribute.get Attrs.jsonschema_cd_allow_extra_fields var |> Option.is_some in
@@ -273,12 +275,13 @@ let apply_defs ~loc = function
         `Assoc (("$defs", `Assoc ppx_defs) :: List.filter (fun (k, _) -> not (Stdlib.String.equal k "$defs")) ppx_pairs)
       | other -> other]
 
-let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple =
+let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple flag_ocaml_doc =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   let config : Attrs.config =
     {
       Attrs.variant_as_string = flag_variant_as_string;
       Attrs.polymorphic_variant_tuple = flag_polymorphic_variant_tuple;
+      Attrs.ocaml_doc = flag_ocaml_doc;
     }
   in
   match ast with
@@ -290,7 +293,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
     in
     let raw_schema =
       raw_schema
-      |> Schema.Annotation.add_description ~loc (Attrs.td_description type_decl)
+      |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc type_decl)
       |> Schema.Annotation.add_annotations ~loc (Attribute.get Attrs.jsonschema_td_attrs type_decl)
     in
     let raw_schema =
@@ -313,7 +316,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
     in
     let schema = wrap_type_params ~loc ~prefix:params_prefix params schema in
     let schema =
-      match Attrs.td_description type_decl with
+      match Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc type_decl with
       | Some desc -> Schema.description ~loc desc.txt schema
       | None -> schema
     in
@@ -327,7 +330,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
       List.map
         (fun (name, raw, _, params, prefix) ->
           let td = List.find (fun td -> td.ptype_name.txt = name) type_decls in
-          let raw = raw |> Schema.Annotation.add_description ~loc (Attrs.td_description td) in
+          let raw = raw |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc td) in
           let raw =
             Option.fold ~none:raw
               ~some:(fun core_type ->
@@ -355,12 +358,12 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
                 let ppx_eds = ref [] in
                 [%e apply_defs ~loc (`NonRec raw)]]
           in
-          let schema = schema |> Schema.Annotation.add_description ~loc (Attrs.td_description td) in
+          let schema = schema |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc td) in
           create_value ~loc name schema)
         raw_results
   | _, _ -> [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
 
-let sig_type_decl ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple =
+let sig_type_decl ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple _flag_ocaml_doc =
   let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } [] in
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   match ast with

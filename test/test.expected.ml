@@ -4961,8 +4961,8 @@ include
 type doc_comment_record =
   {
   name: string [@ocaml.doc " The user's full name "];
-  age: int [@ocaml.doc " The user's age "]}[@@deriving jsonschema][@@ocaml.doc
-                                                                    " A user object "]
+  age: int [@ocaml.doc " The user's age "]}[@@ocaml.doc " A user object "]
+[@@deriving jsonschema ~ocaml_doc]
 include
   struct
     let doc_comment_record_jsonschema =
@@ -5011,11 +5011,50 @@ include
       "additionalProperties": false
     }
     |}]]
+type doc_comment_disabled =
+  {
+  name: string [@ocaml.doc " The user's full name "]}[@@deriving jsonschema]
+[@@ocaml.doc " A user object "]
+include
+  struct
+    let doc_comment_disabled_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc [("name", (`Assoc [("type", (`String "string"))]))]));
+          ("required", (`List [`String "name"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_disabled_by_default" =
+    print_schema doc_comment_disabled_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "name": { "type": "string" } },
+      "required": [ "name" ],
+      "additionalProperties": false
+    }
+    |}]]
 type doc_comment_override =
   {
   field: string
     [@jsonschema.description "explicit wins"][@ocaml.doc " ocaml.doc loses "]}
-[@@deriving jsonschema]
+[@@deriving jsonschema ~ocaml_doc]
 include
   struct
     let doc_comment_override_jsonschema =
@@ -5060,7 +5099,8 @@ include
 type doc_comment_variant =
   | Plain [@ocaml.doc " No payload "]
   | With_int of int [@ocaml.doc " Single integer tag "][@@deriving
-                                                         jsonschema]
+                                                         jsonschema
+                                                           ~ocaml_doc]
 include
   struct
     let doc_comment_variant_jsonschema =
@@ -5281,7 +5321,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2655"))
+                                   (("$id", (`String "file://test.ml:2676"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5609,7 +5649,7 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2808")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2829")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5617,7 +5657,7 @@ include
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2807")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2828")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5645,7 +5685,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2808",
+          "$id": "file://test/test.ml:2829",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5662,7 +5702,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2807",
+          "$id": "file://test/test.ml:2828",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5738,7 +5778,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2867"))
+                             `Assoc (("$id", (`String "file://test.ml:2888"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -5954,7 +5994,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2867",
+                  "$id": "file://test/test.ml:2888",
                   "$defs": {
                     "filter": {
                       "anyOf": [

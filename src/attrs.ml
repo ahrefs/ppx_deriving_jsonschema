@@ -8,6 +8,9 @@ type config = {
   polymorphic_variant_tuple : bool;
     (** Preserve the implicit tuple in a polymorphic variant.
         This option breaks compatibility with yojson derivers. *)
+  ocaml_doc : bool;
+    (** Use [ocaml.doc] attributes (i.e. [(** ... *)] comments) as a fallback
+        for [\[@jsonschema.description\]] when the explicit annotation is absent. *)
 }
 
 let string_attr name ctx = Attribute.declare name ctx Ast_pattern.(single_expr_payload (estring __')) (fun x -> x)
@@ -64,25 +67,25 @@ let find_ocaml_doc attrs =
       | _ -> None)
     attrs
 
-let ld_description (ld : label_declaration) =
+let ld_description ~ocaml_doc (ld : label_declaration) =
   match Attribute.get jsonschema_ld_description ld with
   | Some _ as x -> x
-  | None -> find_ocaml_doc ld.pld_attributes
+  | None -> if ocaml_doc then find_ocaml_doc ld.pld_attributes else None
 
-let td_description (td : type_declaration) =
+let td_description ~ocaml_doc (td : type_declaration) =
   match Attribute.get jsonschema_td_description td with
   | Some _ as x -> x
-  | None -> find_ocaml_doc td.ptype_attributes
+  | None -> if ocaml_doc then find_ocaml_doc td.ptype_attributes else None
 
-let cd_description (cd : constructor_declaration) =
+let cd_description ~ocaml_doc (cd : constructor_declaration) =
   match Attribute.get jsonschema_cd_description cd with
   | Some _ as x -> x
-  | None -> find_ocaml_doc cd.pcd_attributes
+  | None -> if ocaml_doc then find_ocaml_doc cd.pcd_attributes else None
 
-let ct_description (ct : core_type) =
+let ct_description ~ocaml_doc (ct : core_type) =
   match Attribute.get jsonschema_ct_description ct with
   | Some _ as x -> x
-  | None -> find_ocaml_doc ct.ptyp_attributes
+  | None -> if ocaml_doc then find_ocaml_doc ct.ptyp_attributes else None
 
 let attributes =
   [
@@ -111,4 +114,5 @@ let attributes =
     Attribute.T jsonschema_ld_attrs;
   ]
 
-let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple")
+let args () =
+  Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "ocaml_doc")
