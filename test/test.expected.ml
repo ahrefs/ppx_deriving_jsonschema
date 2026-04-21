@@ -4142,13 +4142,10 @@ include
       "additionalProperties": true
     }
     |}]]
-open Melange_json.Primitives
 type x_without_extra = {
-  x: int }[@@deriving (json, jsonschema)][@@allow_extra_fields ]
+  x: int }[@@deriving jsonschema][@@allow_extra_fields ]
 include
   struct
-    [%%ocaml.error
-      "Ppxlib.Deriving: 'json' is not a supported type deriving generator"]
     let x_without_extra_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
@@ -4171,11 +4168,9 @@ include
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type x_with_extra = {
   x: int ;
-  y: int }[@@deriving (json, jsonschema)][@@allow_extra_fields ]
+  y: int }[@@deriving jsonschema][@@allow_extra_fields ]
 include
   struct
-    [%%ocaml.error
-      "Ppxlib.Deriving: 'json' is not a supported type deriving generator"]
     let x_with_extra_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
@@ -4200,8 +4195,6 @@ include
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
 [%%expect_test
   let "extra_fields" =
-    let _check_deseralization_ok =
-      ({ x = 1; y = 1 } |> x_with_extra_to_json) |> x_without_extra_of_json in
     print_schema x_without_extra_jsonschema;
     [%expect
       "\n {\n   \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n   \"type\": \"object\",\n   \"properties\": { \"x\": { \"type\": \"integer\" } },\n   \"required\": [ \"x\" ],\n   \"additionalProperties\": true\n }\n "]]
@@ -4260,7 +4253,7 @@ include
                 (`Assoc [("type", (`String "string"))])
         with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-            `Assoc (("$id", (`String "file://test.ml:2174")) ::
+            `Assoc (("$id", (`String "file://test.ml:2171")) ::
               (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                  pairs))
         | other -> other in
@@ -4493,7 +4486,7 @@ include
       let ppx_result =
         match either_jsonschema a b with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-            `Assoc (("$id", (`String "file://test.ml:2286")) ::
+            `Assoc (("$id", (`String "file://test.ml:2283")) ::
               (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                  pairs))
         | other -> other in
@@ -5114,7 +5107,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2577"))
+                                   (("$id", (`String "file://test.ml:2574"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5442,7 +5435,7 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2730")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2727")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5450,7 +5443,7 @@ include
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2729")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2726")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5478,7 +5471,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2730",
+          "$id": "file://test/test.ml:2727",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5495,7 +5488,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2729",
+          "$id": "file://test/test.ml:2726",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5571,7 +5564,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2789"))
+                             `Assoc (("$id", (`String "file://test.ml:2786"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -5787,7 +5780,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2789",
+                  "$id": "file://test/test.ml:2786",
                   "$defs": {
                     "filter": {
                       "anyOf": [
@@ -6319,5 +6312,322 @@ include
           "maxItems": 2
         }
       ]
+    }
+    |}]]
+type variant_for_default =
+  | A 
+  | B [@@deriving jsonschema]
+include
+  struct
+    let variant_for_default_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "A"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 1));
+                   ("maxItems", (`Int 1))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List [`Assoc [("const", (`String "B"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 1));
+                  ("maxItems", (`Int 1))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let variant_for_default_to_json =
+  function | A -> `List [`String "A"] | B -> `List [`String "B"]
+type record_for_default = {
+  score: int option }[@@deriving jsonschema]
+include
+  struct
+    let record_for_default_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("score",
+                  (`Assoc
+                     [("type", (`List [`String "integer"; `String "null"]))]))]));
+          ("required", (`List [`String "score"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let record_for_default_to_json { score } =
+  `Assoc [("score", ((match score with | None -> `Null | Some x -> `Int x)))]
+type default_value =
+  {
+  score: int option [@default 0];
+  label: string [@jsonschema.default "default"];
+  speed: float [@jsonschema.default 100.0];
+  is_active: bool [@jsonschema.default false];
+  variant: variant_for_default [@jsonschema.default A];
+  record: record_for_default [@jsonschema.default { score = None }];
+  int_list: int list [@jsonschema.default [1; 2; 3]]}[@@deriving jsonschema]
+include
+  struct
+    let default_value_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("int_list",
+                  (`Assoc
+                     [("default",
+                        (((fun xs -> `List (List.map (fun x -> `Int x) xs)))
+                           [1; 2; 3]));
+                     ("type", (`String "array"));
+                     ("items", (`Assoc [("type", (`String "integer"))]))]));
+               ("record",
+                 ((match match record_for_default_jsonschema with
+                         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                             `Assoc (("$id", (`String "file://test.ml:3198"))
+                               ::
+                               (List.filter
+                                  (fun (k, _) ->
+                                     not (Stdlib.String.equal k "$id")) pairs))
+                         | other -> other
+                   with
+                   | `Assoc ppx_fields ->
+                       `Assoc
+                         (("default",
+                            (record_for_default_to_json { score = None }))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)));
+               ("variant",
+                 ((match match variant_for_default_jsonschema with
+                         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                             `Assoc (("$id", (`String "file://test.ml:3197"))
+                               ::
+                               (List.filter
+                                  (fun (k, _) ->
+                                     not (Stdlib.String.equal k "$id")) pairs))
+                         | other -> other
+                   with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", (variant_for_default_to_json A))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)));
+               ("is_active",
+                 (`Assoc
+                    [("default", (((fun x -> `Bool x)) false));
+                    ("type", (`String "boolean"))]));
+               ("speed",
+                 (`Assoc
+                    [("default", (((fun x -> `Float x)) 100.0));
+                    ("type", (`String "number"))]));
+               ("label",
+                 (`Assoc
+                    [("default", (((fun x -> `String x)) "default"));
+                    ("type", (`String "string"))]));
+               ("score",
+                 (`Assoc
+                    [("default", (((fun x -> `Int x)) 0));
+                    ("type", (`List [`String "integer"; `String "null"]))]))]));
+          ("required", (`List []));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "default_value" =
+    print_schema default_value_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "int_list": {
+          "default": [ 1, 2, 3 ],
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "record": {
+          "default": { "score": null },
+          "type": "object",
+          "properties": { "score": { "type": [ "integer", "null" ] } },
+          "required": [ "score" ],
+          "additionalProperties": false
+        },
+        "variant": {
+          "default": [ "A" ],
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "is_active": { "default": false, "type": "boolean" },
+        "speed": { "default": 100.0, "type": "number" },
+        "label": { "default": "default", "type": "string" },
+        "score": { "default": 0, "type": [ "integer", "null" ] }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+    |}]]
+module Status =
+  struct
+    type t =
+      | Active 
+      | Inactive [@@deriving jsonschema]
+    include
+      struct
+        let t_jsonschema =
+          let ppx_eds = ref [] in
+          let ppx_result =
+            `Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List [`Assoc [("const", (`String "Active"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 1));
+                       ("maxItems", (`Int 1))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List [`Assoc [("const", (`String "Inactive"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 1));
+                      ("maxItems", (`Int 1))]]))] in
+          match !ppx_eds with
+          | [] -> ppx_result
+          | ppx_defs ->
+              (match ppx_result with
+               | `Assoc ppx_pairs ->
+                   `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                     (List.filter
+                        (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                        ppx_pairs))
+               | other -> other)[@@warning "-32-39"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+    let to_json =
+      function
+      | Active -> `List [`String "Active"]
+      | Inactive -> `List [`String "Inactive"]
+  end
+type default_with_module_type =
+  {
+  status: Status.t [@jsonschema.default Status.Active]}[@@deriving
+                                                         jsonschema]
+include
+  struct
+    let default_with_module_type_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("status",
+                  ((match match Status.t_jsonschema with
+                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                              `Assoc
+                                (("$id", (`String "file://test.ml:3263")) ::
+                                (List.filter
+                                   (fun (k, _) ->
+                                      not (Stdlib.String.equal k "$id"))
+                                   pairs))
+                          | other -> other
+                    with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("default", (Status.to_json Status.Active))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)))]));
+          ("required", (`List []));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "default_with_module_type" =
+    print_schema default_with_module_type_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "status": {
+          "default": [ "Active" ],
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Active" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Inactive" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
     }
     |}]]

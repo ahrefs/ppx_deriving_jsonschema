@@ -151,7 +151,10 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
           | Some name -> name.txt
           | None -> pld_name.txt
         in
-        let drop_required = Attribute.has_flag Attrs.jsonschema_option field in
+        let drop_required =
+          Attribute.has_flag Attrs.jsonschema_option field
+          || Attribute.get Attrs.jsonschema_ld_default field |> Option.is_some
+        in
         let type_def, field_rec =
           match Attribute.get Attrs.jsonschema_ref field with
           | Some def -> Schema.type_ref ~loc def.txt, false
@@ -168,6 +171,7 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
           |> Schema.Annotation.add_format ~loc (Attrs.jsonschema_ld_format, field) pld_type
           |> Schema.Annotation.add_maximum ~loc (Attrs.jsonschema_ld_maximum, field) pld_type
           |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_ld_minimum, field) pld_type
+          |> Schema.Annotation.add_default ~loc (Attrs.jsonschema_ld_default, field) pld_type
           |> Schema.Annotation.add_annotations ~loc ~core_type:pld_type (Attribute.get Attrs.jsonschema_ld_attrs field)
         in
         ( [%expr [%e estring ~loc name], [%e type_def]] :: fields,

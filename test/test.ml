@@ -2126,17 +2126,14 @@ let%expect_test "nested_obj" =
     }
     |}]
 
-open Melange_json.Primitives
-
-type x_without_extra = { x : int } [@@deriving json, jsonschema] [@@allow_extra_fields]
+type x_without_extra = { x : int } [@@deriving jsonschema] [@@allow_extra_fields]
 type x_with_extra = {
   x : int;
   y : int;
 }
-[@@deriving json, jsonschema] [@@allow_extra_fields]
+[@@deriving jsonschema] [@@allow_extra_fields]
 
 let%expect_test "extra_fields" =
-  let _check_deseralization_ok = { x = 1; y = 1 } |> x_with_extra_to_json |> x_without_extra_of_json in
   print_schema x_without_extra_jsonschema;
   [%expect
     "\n\
@@ -2740,7 +2737,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2730",
+          "$id": "file://test/test.ml:2727",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2757,7 +2754,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2729",
+          "$id": "file://test/test.ml:2726",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2904,7 +2901,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2789",
+                  "$id": "file://test/test.ml:2786",
                   "$defs": {
                     "filter": {
                       "anyOf": [
@@ -3169,5 +3166,131 @@ let%expect_test "minimum_maximum_variant" =
           "maxItems": 2
         }
       ]
+    }
+    |}]
+
+type variant_for_default =
+  | A
+  | B
+[@@deriving jsonschema]
+
+let variant_for_default_to_json = function
+  | A -> `List [ `String "A" ]
+  | B -> `List [ `String "B" ]
+
+type record_for_default = { score : int option } [@@deriving jsonschema]
+
+let record_for_default_to_json { score } =
+  `Assoc
+    [
+      ( "score",
+        match score with
+        | None -> `Null
+        | Some x -> `Int x );
+    ]
+
+type default_value = {
+  score : int option; [@default 0]
+  label : string; [@jsonschema.default "default"]
+  speed : float; [@jsonschema.default 100.0]
+  is_active : bool; [@jsonschema.default false]
+  variant : variant_for_default; [@jsonschema.default A]
+  record : record_for_default; [@jsonschema.default { score = None }]
+  int_list : int list; [@jsonschema.default [ 1; 2; 3 ]]
+}
+[@@deriving jsonschema]
+
+let%expect_test "default_value" =
+  print_schema default_value_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "int_list": {
+          "default": [ 1, 2, 3 ],
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "record": {
+          "default": { "score": null },
+          "type": "object",
+          "properties": { "score": { "type": [ "integer", "null" ] } },
+          "required": [ "score" ],
+          "additionalProperties": false
+        },
+        "variant": {
+          "default": [ "A" ],
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "is_active": { "default": false, "type": "boolean" },
+        "speed": { "default": 100.0, "type": "number" },
+        "label": { "default": "default", "type": "string" },
+        "score": { "default": 0, "type": [ "integer", "null" ] }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+    |}]
+
+module Status = struct
+  type t =
+    | Active
+    | Inactive
+  [@@deriving jsonschema]
+
+  let to_json = function
+    | Active -> `List [ `String "Active" ]
+    | Inactive -> `List [ `String "Inactive" ]
+end
+
+type default_with_module_type = { status : Status.t [@jsonschema.default Status.Active] } [@@deriving jsonschema]
+
+let%expect_test "default_with_module_type" =
+  print_schema default_with_module_type_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "status": {
+          "default": [ "Active" ],
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Active" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Inactive" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
     }
     |}]

@@ -67,6 +67,7 @@ let annotation ~loc (name, value) schema =
 let format ~loc format = annotation ~loc ("format", [%expr `String [%e estring ~loc format]])
 let maximum ~loc maximum = annotation ~loc ("maximum", maximum)
 let minimum ~loc minimum = annotation ~loc ("minimum", minimum)
+let default ~loc value = annotation ~loc ("default", value)
 let description ~loc description schema_expr =
   annotation ~loc ("description", [%expr `String [%e estring ~loc description]]) schema_expr
 
@@ -120,6 +121,51 @@ module Annotation = struct
         | [%type: float], Pexp_constant (Pconst_float _) -> minimum ~loc [%expr `Float [%e expr]] schema
         | _ ->
           Location.raise_errorf ~loc:core_type.ptyp_loc "[@jsonschema.minimum] can only be applied to numeric types")
+
+  let rec serializer_of_core_type ~loc ct =
+    match ct with
+    | [%type: int] | [%type: int32] | [%type: nativeint] -> [%expr fun x -> `Int x]
+    | [%type: float] -> [%expr fun x -> `Float x]
+    | [%type: string] | [%type: bytes] -> [%expr fun x -> `String x]
+    | [%type: bool] -> [%expr fun x -> `Bool x]
+    | [%type: [%t? t] option] ->
+      let s = serializer_of_core_type ~loc t in
+      [%expr
+        fun x ->
+          match x with
+          | None -> `Null
+          | Some v -> [%e s] v]
+    | [%type: [%t? t] list] ->
+      let s = serializer_of_core_type ~loc t in
+      [%expr fun xs -> `List (List.map [%e s] xs)]
+    | [%type: [%t? t] array] ->
+      let s = serializer_of_core_type ~loc t in
+      [%expr fun xs -> `List (Array.to_list (Array.map [%e s] xs))]
+    | { ptyp_desc = Ptyp_var name; _ } -> evar ~loc name
+    | { ptyp_desc = Ptyp_constr (id, args); _ } ->
+      let arg_serializers = List.map (serializer_of_core_type ~loc) args in
+      type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
+    | _ ->
+      Location.raise_errorf ~loc:ct.ptyp_loc
+        "[@jsonschema.default] cannot serialize this type. For non-primitive types, ensure a '<type>_to_json' function \
+         is in scope (e.g., add [@@deriving json] to the type definition)"
+
+  let add_default ~loc attr core_type =
+    add_schema_attr attr (fun expr schema ->
+        let base_type =
+          match core_type with
+          | [%type: [%t? t] option] -> t
+          | t -> t
+        in
+        let serializer = serializer_of_core_type ~loc base_type in
+        let json_value = [%expr [%e serializer] [%e expr]] in
+        match schema with
+        | [%expr `Assoc [%e? fields]] -> [%expr `Assoc (("default", [%e json_value]) :: [%e fields])]
+        | s ->
+          [%expr
+            match [%e s] with
+            | `Assoc ppx_fields -> `Assoc (("default", [%e json_value]) :: ppx_fields)
+            | ppx_other -> ppx_other])
 
   let add_description ~loc attr = add_schema_attr attr (fun desc schema -> description ~loc desc.txt schema)
 
