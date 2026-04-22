@@ -1,5 +1,5 @@
 [@@@ocaml.warning "-37-69"]
-let print_schema ?definitions  ?id  ?title  ?description  s =
+let print_schema ?definitions ?id ?title ?description s =
   let s =
     Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title
       ?description s in

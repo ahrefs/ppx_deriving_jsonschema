@@ -2,12 +2,10 @@ open Ppxlib
 
 type config = {
   variant_as_string : bool;
-    (** Encode variants as string instead of string array.
-        This option breaks compatibility with yojson derivers and
+    (** Encode variants as string instead of string array. This option breaks compatibility with yojson derivers and
         doesn't support constructors with a payload. *)
   polymorphic_variant_tuple : bool;
-    (** Preserve the implicit tuple in a polymorphic variant.
-        This option breaks compatibility with yojson derivers. *)
+    (** Preserve the implicit tuple in a polymorphic variant. This option breaks compatibility with yojson derivers. *)
 }
 
 let string_attr name ctx = Attribute.declare name ctx Ast_pattern.(single_expr_payload (estring __')) (fun x -> x)
