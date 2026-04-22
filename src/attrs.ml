@@ -57,6 +57,10 @@ let jsonschema_ld_attrs = expr_attr "jsonschema.attrs" Attribute.Context.label_d
 
 let string_attr_payload = Ast_pattern.(single_expr_payload (estring __'))
 
+(* We intentionally do not use [Attribute.get] for [ocaml.doc]/[doc]. These are
+   compiler-reserved attributes, and [ppxlib] rejects registering them via
+   [Attribute.declare]. We therefore inspect the raw attribute list directly and
+   use [Ast_pattern.parse_res] to decode the standard string payload shape. *)
 let find_doc_attr attrs =
   let parse attr =
     Ast_pattern.parse_res string_attr_payload attr.attr_loc attr.attr_payload (fun x -> x)
