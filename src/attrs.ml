@@ -55,37 +55,37 @@ let jsonschema_ct_attrs = expr_attr "jsonschema.attrs" Attribute.Context.core_ty
 let jsonschema_td_attrs = expr_attr "jsonschema.attrs" Attribute.Context.type_declaration
 let jsonschema_ld_attrs = expr_attr "jsonschema.attrs" Attribute.Context.label_declaration
 
-let find_ocaml_doc attrs =
+let string_attr_payload = Ast_pattern.(single_expr_payload (estring __'))
+
+let find_doc_attr attrs =
+  let parse attr =
+    Ast_pattern.parse_res string_attr_payload attr.attr_loc attr.attr_payload (fun x -> x)
+    |> Result.to_option
+    |> Option.map (fun ({ txt; loc } : string Location.loc) -> { txt = String.trim txt; loc })
+  in
   List.find_map
     (fun attr ->
       match attr.attr_name.txt with
-      | "ocaml.doc" | "doc" ->
-        (match attr.attr_payload with
-        | PStr [ { pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string (s, sloc, _)); _ }, _); _ } ] ->
-          Some { txt = String.trim s; loc = sloc }
-        | _ -> None)
+      | "ocaml.doc" | "doc" -> parse attr
       | _ -> None)
     attrs
 
-let ld_description ~ocaml_doc (ld : label_declaration) =
-  match Attribute.get jsonschema_ld_description ld with
+let fallback_description ~ocaml_doc explicit_desc attrs node =
+  match Attribute.get explicit_desc node with
   | Some _ as x -> x
-  | None -> if ocaml_doc then find_ocaml_doc ld.pld_attributes else None
+  | None -> if ocaml_doc then find_doc_attr attrs else None
+
+let ld_description ~ocaml_doc (ld : label_declaration) =
+  fallback_description ~ocaml_doc jsonschema_ld_description ld.pld_attributes ld
 
 let td_description ~ocaml_doc (td : type_declaration) =
-  match Attribute.get jsonschema_td_description td with
-  | Some _ as x -> x
-  | None -> if ocaml_doc then find_ocaml_doc td.ptype_attributes else None
+  fallback_description ~ocaml_doc jsonschema_td_description td.ptype_attributes td
 
 let cd_description ~ocaml_doc (cd : constructor_declaration) =
-  match Attribute.get jsonschema_cd_description cd with
-  | Some _ as x -> x
-  | None -> if ocaml_doc then find_ocaml_doc cd.pcd_attributes else None
+  fallback_description ~ocaml_doc jsonschema_cd_description cd.pcd_attributes cd
 
 let ct_description ~ocaml_doc (ct : core_type) =
-  match Attribute.get jsonschema_ct_description ct with
-  | Some _ as x -> x
-  | None -> if ocaml_doc then find_ocaml_doc ct.ptyp_attributes else None
+  fallback_description ~ocaml_doc jsonschema_ct_description ct.ptyp_attributes ct
 
 let attributes =
   [

@@ -5013,8 +5013,9 @@ include
     |}]]
 type doc_comment_disabled =
   {
-  name: string [@ocaml.doc " The user's full name "]}[@@deriving jsonschema]
-[@@ocaml.doc " A user object "]
+  name: string [@ocaml.doc " The user's full name "]}[@@ocaml.doc
+                                                       " A user object "]
+[@@deriving jsonschema]
 include
   struct
     let doc_comment_disabled_jsonschema =
@@ -5163,6 +5164,71 @@ include
           "maxItems": 2
         }
       ]
+    }
+    |}]]
+type doc_comment_core_type = ((string)[@ocaml.doc " A string alias "])
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_core_type_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description", (`String "A string alias"));
+          ("type", (`String "string"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_fallback_for_core_type" =
+    print_schema doc_comment_core_type_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A string alias",
+      "type": "string"
+    }
+    |}]]
+type doc_attribute_alias = ((string)[@doc " Alias fallback "])[@@deriving
+                                                                jsonschema
+                                                                  ~ocaml_doc]
+include
+  struct
+    let doc_attribute_alias_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description", (`String "Alias fallback"));
+          ("type", (`String "string"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "doc_attribute_alias_fallback" =
+    print_schema doc_attribute_alias_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Alias fallback",
+      "type": "string"
     }
     |}]]
 type computation_result =
@@ -5321,7 +5387,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2676"))
+                                   (("$id", (`String "file://test.ml:2700"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5649,7 +5715,7 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2829")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2853")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5657,7 +5723,7 @@ include
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2828")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2852")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5685,7 +5751,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2829",
+          "$id": "file://test/test.ml:2853",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5702,7 +5768,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2828",
+          "$id": "file://test/test.ml:2852",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5778,7 +5844,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2888"))
+                             `Assoc (("$id", (`String "file://test.ml:2912"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -5994,7 +6060,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2888",
+                  "$id": "file://test/test.ml:2912",
                   "$defs": {
                     "filter": {
                       "anyOf": [

@@ -2607,6 +2607,32 @@ let%expect_test "ocaml_doc_fallback_for_variant" =
     }
     |}]
 
+type doc_comment_core_type = (string [@ocaml.doc " A string alias "]) [@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_fallback_for_core_type" =
+  print_schema doc_comment_core_type_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A string alias",
+      "type": "string"
+    }
+    |}]
+
+type doc_attribute_alias = string [@doc " Alias fallback "] [@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "doc_attribute_alias_fallback" =
+  print_schema doc_attribute_alias_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Alias fallback",
+      "type": "string"
+    }
+    |}]
+
 (* Top-level @@jsonschema.description on a variant (whole anyOf schema). *)
 type computation_result =
   | Ok
@@ -2837,7 +2863,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2829",
+          "$id": "file://test/test.ml:2853",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2854,7 +2880,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2828",
+          "$id": "file://test/test.ml:2852",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -3001,7 +3027,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2888",
+                  "$id": "file://test/test.ml:2912",
                   "$defs": {
                     "filter": {
                       "anyOf": [
