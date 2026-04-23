@@ -64,13 +64,23 @@ let jsonschema_ld_attrs = expr_attr "jsonschema.attrs" Attribute.Context.label_d
 let doc_attr_pattern =
   Ast_pattern.(attribute ~name:(string "ocaml.doc" ||| string "doc") ~payload:(single_expr_payload (estring __')))
 
+(* A node can carry several [ocaml.doc]/[doc] attributes — e.g. a user writing
+   one doc comment before a record field and another after. We collect every
+   match and join them with a blank line so each comment reads as its own
+   paragraph. The returned location is that of the first matching attribute. *)
 let find_doc_attr attrs =
-  List.find_map
-    (fun attr ->
-      Ast_pattern.parse_res doc_attr_pattern attr.attr_loc attr Fun.id
-      |> Result.to_option
-      |> Option.map (fun ({ txt; loc } : string Location.loc) -> { txt = String.trim txt; loc }))
-    attrs
+  let matches =
+    List.filter_map
+      (fun attr ->
+        Ast_pattern.parse_res doc_attr_pattern attr.attr_loc attr Fun.id
+        |> Result.to_option
+        |> Option.map (fun ({ txt; loc } : string Location.loc) -> { txt = String.trim txt; loc }))
+      attrs
+  in
+  match matches with
+  | [] -> None
+  | [ single ] -> Some single
+  | first :: _ as all -> Some { txt = String.concat "\n\n" (List.map (fun x -> x.txt) all); loc = first.loc }
 
 let fallback_description ~ocaml_doc explicit_desc attrs node =
   match Attribute.get explicit_desc node with

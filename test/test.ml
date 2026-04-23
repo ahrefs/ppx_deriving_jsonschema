@@ -2694,6 +2694,23 @@ let%expect_test "ocaml_doc_fallback_for_polymorphic_variant" =
     }
     |}]
 
+(* Multiple hand-written [@ocaml.doc] / [@doc] attributes on the same node are
+   joined into a single description with a blank-line separator. *)
+type doc_comment_multiple =
+  (string[@ocaml.doc " first block "] [@ocaml.doc " second block "] [@doc " third block "])
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_multiple_attrs_joined" =
+  print_schema doc_comment_multiple_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "first block\n\nsecond block\n\nthird block",
+      "type": "string"
+    }
+    |}]
+
 (* Explicit [@jsonschema.description] on a polymorphic variant tag takes precedence. *)
 type doc_comment_poly_variant_override =
   [ `Tagged [@jsonschema.description "explicit wins"] (** ocaml.doc loses *) ]
@@ -2948,7 +2965,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2938",
+          "$id": "file://test/test.ml:2955",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2965,7 +2982,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2937",
+          "$id": "file://test/test.ml:2954",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -3112,7 +3129,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2997",
+                  "$id": "file://test/test.ml:3014",
                   "$defs": {
                     "filter": {
                       "anyOf": [

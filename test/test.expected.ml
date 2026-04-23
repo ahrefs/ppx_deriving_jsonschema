@@ -5352,6 +5352,41 @@ include
       ]
     }
     |}]]
+type doc_comment_multiple =
+  ((string)[@ocaml.doc " first block "][@ocaml.doc " second block "][@doc
+                                                                    " third block "])
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_multiple_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description",
+             (`String "first block\n\nsecond block\n\nthird block"));
+          ("type", (`String "string"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_multiple_attrs_joined" =
+    print_schema doc_comment_multiple_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "first block\n\nsecond block\n\nthird block",
+      "type": "string"
+    }
+    |}]]
 type doc_comment_poly_variant_override =
   [
     `Tagged
@@ -5560,7 +5595,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2785"))
+                                   (("$id", (`String "file://test.ml:2802"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5888,7 +5923,7 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2938")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2955")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5896,7 +5931,7 @@ include
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2937")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2954")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5924,7 +5959,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2938",
+          "$id": "file://test/test.ml:2955",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5941,7 +5976,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2937",
+          "$id": "file://test/test.ml:2954",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -6017,7 +6052,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2997"))
+                             `Assoc (("$id", (`String "file://test.ml:3014"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6233,7 +6268,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2997",
+                  "$id": "file://test/test.ml:3014",
                   "$defs": {
                     "filter": {
                       "anyOf": [
