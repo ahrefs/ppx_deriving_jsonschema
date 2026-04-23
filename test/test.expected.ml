@@ -1,22 +1,9 @@
 [@@@ocaml.warning "-37-69"]
-let rec runtime_to_yojson :
-  Ppx_deriving_jsonschema_runtime.t -> Yojson.Basic.t =
-  function
-  | `Null -> `Null
-  | `String s -> `String s
-  | `Float f -> `Float f
-  | `Int i -> `Int i
-  | `Bool b -> `Bool b
-  | `List xs -> `List (List.map runtime_to_yojson xs)
-  | `Assoc fields ->
-      `Assoc (List.map (fun (k, v) -> (k, (runtime_to_yojson v))) fields)
 let print_schema ?definitions ?id ?title ?description s =
-  let s =
-    Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title
-      ?description s in
-  let () =
-    print_endline (Yojson.Basic.pretty_to_string (runtime_to_yojson s)) in
-  ()
+  let s : Yojson.Basic.t =
+    (Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title
+       ?description s :> Yojson.Basic.t) in
+  let () = print_endline (Yojson.Basic.pretty_to_string s) in ()
 let string_jsonschema = `Assoc [("type", (`String "string"))]
 let int_jsonschema = `Assoc [("type", (`String "integer"))]
 let bool_jsonschema = `Assoc [("type", (`String "boolean"))]
@@ -164,7 +151,7 @@ include
                   ((match (Mod1.Mod2.m_2_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                     with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:87")) ::
+                        `Assoc (("$id", (`String "file://test.ml:78")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -173,7 +160,7 @@ include
                  ((match (Mod1.m_1_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                    with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:86")) ::
+                       `Assoc (("$id", (`String "file://test.ml:77")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -610,7 +597,7 @@ include
                 (match (poly_kind_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                  with
                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                     `Assoc (("$id", (`String "file://test.ml:314")) ::
+                     `Assoc (("$id", (`String "file://test.ml:305")) ::
                        (List.filter
                           (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                           pairs))
@@ -693,7 +680,7 @@ include
                 (match (poly_kind_as_string_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                  with
                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                     `Assoc (("$id", (`String "file://test.ml:371")) ::
+                     `Assoc (("$id", (`String "file://test.ml:362")) ::
                        (List.filter
                           (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                           pairs))
@@ -798,7 +785,7 @@ include
                  ((match (kind_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                    with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:393")) ::
+                       `Assoc (("$id", (`String "file://test.ml:384")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -1977,7 +1964,7 @@ include
       let ppx_result =
         match (tree_jsonschema : Ppx_deriving_jsonschema_runtime.t) with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-            `Assoc (("$id", (`String "file://test.ml:921")) ::
+            `Assoc (("$id", (`String "file://test.ml:912")) ::
               (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                  pairs))
         | other -> other in
@@ -1999,7 +1986,7 @@ include
       {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "file://test/test.ml:921",
+      "$id": "file://test/test.ml:912",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -2047,7 +2034,7 @@ include
             ((match (event_jsonschema : Ppx_deriving_jsonschema_runtime.t)
               with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                  `Assoc (("$id", (`String "file://test.ml:966")) ::
+                  `Assoc (("$id", (`String "file://test.ml:957")) ::
                     (List.filter
                        (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
@@ -2158,7 +2145,7 @@ include
                  ((match (event_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                    with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:1048")) ::
+                       `Assoc (("$id", (`String "file://test.ml:1039")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -2270,7 +2257,7 @@ include
                [(match (event_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                  with
                  | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                     `Assoc (("$id", (`String "file://test.ml:1133")) ::
+                     `Assoc (("$id", (`String "file://test.ml:1124")) ::
                        (List.filter
                           (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                           pairs))
@@ -2388,7 +2375,7 @@ include
             ((match (event_comment_jsonschema : Ppx_deriving_jsonschema_runtime.t)
               with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                  `Assoc (("$id", (`String "file://test.ml:1221")) ::
+                  `Assoc (("$id", (`String "file://test.ml:1212")) ::
                     (List.filter
                        (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
@@ -2509,7 +2496,7 @@ include
                     [(match (event_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                       with
                       | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                          `Assoc (("$id", (`String "file://test.ml:1312")) ::
+                          `Assoc (("$id", (`String "file://test.ml:1303")) ::
                             (List.filter
                                (fun (k, _) ->
                                   not (Stdlib.String.equal k "$id")) pairs))
@@ -2630,7 +2617,7 @@ include
             ((match (events_jsonschema : Ppx_deriving_jsonschema_runtime.t)
               with
               | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                  `Assoc (("$id", (`String "file://test.ml:1403")) ::
+                  `Assoc (("$id", (`String "file://test.ml:1394")) ::
                     (List.filter
                        (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
@@ -2802,7 +2789,7 @@ include
                   ((match (Mod1.m_1_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                     with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:1512")) ::
+                        `Assoc (("$id", (`String "file://test.ml:1503")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -3057,7 +3044,7 @@ include
                   ((match (address_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                     with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:1634")) ::
+                        `Assoc (("$id", (`String "file://test.ml:1625")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -4092,7 +4079,7 @@ include
                   ((match (obj2_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                     with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2108")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2099")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -4125,7 +4112,7 @@ include
                   ((match (obj1_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                     with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2109")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2100")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -4281,7 +4268,7 @@ include
                  (`Assoc [("type", (`String "string"))]) : Ppx_deriving_jsonschema_runtime.t)
         with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-            `Assoc (("$id", (`String "file://test.ml:2180")) ::
+            `Assoc (("$id", (`String "file://test.ml:2171")) ::
               (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                  pairs))
         | other -> other in
@@ -4515,7 +4502,7 @@ include
         match (either_jsonschema a b : Ppx_deriving_jsonschema_runtime.t)
         with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-            `Assoc (("$id", (`String "file://test.ml:2292")) ::
+            `Assoc (("$id", (`String "file://test.ml:2283")) ::
               (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                  pairs))
         | other -> other in
@@ -5618,7 +5605,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2805"))
+                                   (("$id", (`String "file://test.ml:2796"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5947,7 +5934,7 @@ include
                   ((match (self_ref_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                     with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2958")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2949")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5956,7 +5943,7 @@ include
                  ((match (self_ref_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                    with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2957")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2948")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5984,7 +5971,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2958",
+          "$id": "file://test/test.ml:2949",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -6001,7 +5988,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2957",
+          "$id": "file://test/test.ml:2948",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -6078,7 +6065,7 @@ include
                         (match (filter_jsonschema atom group_atom : Ppx_deriving_jsonschema_runtime.t)
                          with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3017"))
+                             `Assoc (("$id", (`String "file://test.ml:3008"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6295,7 +6282,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:3017",
+                  "$id": "file://test/test.ml:3008",
                   "$defs": {
                     "filter": {
                       "anyOf": [
@@ -6925,7 +6912,7 @@ include
                  ((match match (record_for_default_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                          with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3429"))
+                             `Assoc (("$id", (`String "file://test.ml:3420"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6965,7 +6952,7 @@ include
                  ((match match (variant_for_default_jsonschema : Ppx_deriving_jsonschema_runtime.t)
                          with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3428"))
+                             `Assoc (("$id", (`String "file://test.ml:3419"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -7139,7 +7126,7 @@ include
                           with
                           | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                               `Assoc
-                                (("$id", (`String "file://test.ml:3494")) ::
+                                (("$id", (`String "file://test.ml:3485")) ::
                                 (List.filter
                                    (fun (k, _) ->
                                       not (Stdlib.String.equal k "$id"))
