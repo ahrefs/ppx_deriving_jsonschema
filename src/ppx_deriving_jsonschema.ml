@@ -5,6 +5,10 @@ let deriver_name = "jsonschema"
 
 let value_name_pattern ~loc type_name = ppat_var ~loc { txt = type_name ^ "_jsonschema"; loc }
 
+let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } []
+
+let jsonschema_value_type td = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> jsonschema_t ~loc)
+
 let create_value ~loc name value = [%stri let[@warning "-32-39"] [%p value_name_pattern ~loc name] = [%e value]]
 
 (* Wraps [body] in nested lambdas, one per type parameter.
@@ -52,6 +56,7 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
         let args = List.map fst results in
         let is_rec = List.exists snd results in
         let schema = type_constr_conv ~loc id ~f:(fun s -> s ^ "_jsonschema") args in
+        let schema = [%expr ([%e schema] : Ppx_deriving_jsonschema_runtime.t)] in
         let edv = evar ~loc "ppx_eds" in
         (match is_rec with
         | true ->
@@ -373,13 +378,13 @@ let sig_type_decl ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tu
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   match ast with
   | _, [ td ] ->
-    let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> jsonschema_t ~loc) in
+    let typ = jsonschema_value_type td in
     let name = { txt = td.ptype_name.txt ^ "_jsonschema"; loc } in
     [ psig_value ~loc (value_description ~loc ~name ~type_:typ ~prim:[]) ]
   | _, type_decls when List.length type_decls > 1 ->
     List.map
       (fun td ->
-        let typ = combinator_type_of_type_declaration td ~f:(fun ~loc _core_type -> jsonschema_t ~loc) in
+        let typ = jsonschema_value_type td in
         let name = { txt = td.ptype_name.txt ^ "_jsonschema"; loc } in
         psig_value ~loc (value_description ~loc ~name ~type_:typ ~prim:[]))
       type_decls

@@ -14,7 +14,7 @@ include struct
     ]
 end
 
-let json_schema ?id ?title ?description ?definitions types =
+let json_schema ?id ?title ?description ?definitions (types : t) : t =
   match types with
   | `Assoc types ->
     let metadata =
@@ -37,3 +37,4 @@ let json_schema ?id ?title ?description ?definitions types =
         ]
     in
     `Assoc (metadata @ types)
+  | _ -> invalid_arg "json_schema expects an object schema"
