@@ -14,6 +14,7 @@ val annotation : loc:Warnings.loc -> string * Ppxlib.expression -> Ppxlib.expres
 val format : loc:Warnings.loc -> string -> Ppxlib.expression -> Ppxlib.expression
 val maximum : loc:Warnings.loc -> Ppxlib.expression -> Ppxlib.expression -> Ppxlib.expression
 val minimum : loc:Warnings.loc -> Ppxlib.expression -> Ppxlib.expression -> Ppxlib.expression
+val default : loc:Warnings.loc -> Ppxlib.expression -> Ppxlib.expression -> Ppxlib.expression
 val description : loc:Warnings.loc -> string -> Ppxlib.expression -> Ppxlib.expression
 val variants :
   loc:Warnings.loc ->
@@ -41,6 +42,12 @@ module Annotation : sig
     Ppxlib.expression ->
     Ppxlib.expression
   val add_description : loc:Warnings.loc -> string Location.loc option -> Ppxlib.expression -> Ppxlib.expression
+  val add_default :
+    loc:Warnings.loc ->
+    ('a, Ppxlib.expression) Ppxlib.Attribute.t * 'a ->
+    Ppxlib.core_type ->
+    Ppxlib.expression ->
+    Ppxlib.expression
   val add_annotations :
     loc:Warnings.loc ->
     ?core_type:Ppxlib.core_type ->

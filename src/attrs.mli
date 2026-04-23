@@ -35,6 +35,7 @@ val jsonschema_ct_minimum : (Ppxlib.core_type, Ppxlib.expression) Ppxlib.Attribu
 val jsonschema_ct_attrs : (Ppxlib.core_type, Ppxlib.expression) Ppxlib.Attribute.t
 val jsonschema_td_attrs : (Ppxlib.type_declaration, Ppxlib.expression) Ppxlib.Attribute.t
 val jsonschema_ld_attrs : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.Attribute.t
+val jsonschema_ld_default : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.Attribute.t
 
 (** [ld_description], [td_description], [cd_description], [ct_description] and
     [rtag_description] resolve a description from [\[@jsonschema.description "..."\]].
@@ -46,6 +47,5 @@ val td_description : ocaml_doc:bool -> Ppxlib.type_declaration -> string Locatio
 val cd_description : ocaml_doc:bool -> Ppxlib.constructor_declaration -> string Location.loc option
 val ct_description : ocaml_doc:bool -> Ppxlib.core_type -> string Location.loc option
 val rtag_description : ocaml_doc:bool -> Ppxlib.row_field -> string Location.loc option
-
 val attributes : Ppxlib.Attribute.packed list
 val args : unit -> (bool -> bool -> bool -> 'a, 'a) Ppxlib.Deriving.Args.t

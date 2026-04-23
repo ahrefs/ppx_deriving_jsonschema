@@ -55,6 +55,7 @@ let jsonschema_ct_minimum = expr_attr "jsonschema.minimum" Attribute.Context.cor
 let jsonschema_ct_attrs = expr_attr "jsonschema.attrs" Attribute.Context.core_type
 let jsonschema_td_attrs = expr_attr "jsonschema.attrs" Attribute.Context.type_declaration
 let jsonschema_ld_attrs = expr_attr "jsonschema.attrs" Attribute.Context.label_declaration
+let jsonschema_ld_default = expr_attr "jsonschema.default" Attribute.Context.label_declaration
 
 (* We intentionally do not use [Attribute.get] for [ocaml.doc]/[doc]. These are
    compiler-reserved attributes, and [ppxlib] rejects registering them via
@@ -101,7 +102,6 @@ let ct_description ~ocaml_doc (ct : core_type) =
 
 let rtag_description ~ocaml_doc (rf : row_field) =
   fallback_description ~ocaml_doc jsonschema_rtag_description rf.prf_attributes rf
-
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -128,6 +128,7 @@ let attributes =
     Attribute.T jsonschema_ct_attrs;
     Attribute.T jsonschema_td_attrs;
     Attribute.T jsonschema_ld_attrs;
+    Attribute.T jsonschema_ld_default;
   ]
 
 let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "ocaml_doc")
