@@ -35,6 +35,8 @@ let schemas =
     json_schema variant_with_payload_jsonschema;
   ]
 
-let schema : Yojson.Basic.t = (`Assoc [ "$schema", `String "https://json-schema.org/draft/2020-12/schema"; "oneOf", `List schemas ] :> Yojson.Basic.t)
+let schema : Yojson.Basic.t =
+  (`Assoc [ "$schema", `String "https://json-schema.org/draft/2020-12/schema"; "oneOf", `List schemas ]
+    :> Yojson.Basic.t)
 
 let () = print_endline (Yojson.Basic.pretty_to_string schema)
