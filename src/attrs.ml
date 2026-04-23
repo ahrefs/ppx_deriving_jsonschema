@@ -55,23 +55,20 @@ let jsonschema_ct_attrs = expr_attr "jsonschema.attrs" Attribute.Context.core_ty
 let jsonschema_td_attrs = expr_attr "jsonschema.attrs" Attribute.Context.type_declaration
 let jsonschema_ld_attrs = expr_attr "jsonschema.attrs" Attribute.Context.label_declaration
 
-let string_attr_payload = Ast_pattern.(single_expr_payload (estring __'))
-
 (* We intentionally do not use [Attribute.get] for [ocaml.doc]/[doc]. These are
    compiler-reserved attributes, and [ppxlib] rejects registering them via
-   [Attribute.declare]. We therefore inspect the raw attribute list directly and
-   use [Ast_pattern.parse_res] to decode the standard string payload shape. *)
+   [Attribute.declare]. We therefore inspect the raw attribute list directly
+   with an [Ast_pattern] that matches both the name and the standard string
+   payload shape in one go. *)
+let doc_attr_pattern =
+  Ast_pattern.(attribute ~name:(string "ocaml.doc" ||| string "doc") ~payload:(single_expr_payload (estring __')))
+
 let find_doc_attr attrs =
-  let parse attr =
-    Ast_pattern.parse_res string_attr_payload attr.attr_loc attr.attr_payload (fun x -> x)
-    |> Result.to_option
-    |> Option.map (fun ({ txt; loc } : string Location.loc) -> { txt = String.trim txt; loc })
-  in
   List.find_map
     (fun attr ->
-      match attr.attr_name.txt with
-      | "ocaml.doc" | "doc" -> parse attr
-      | _ -> None)
+      Ast_pattern.parse_res doc_attr_pattern attr.attr_loc attr Fun.id
+      |> Result.to_option
+      |> Option.map (fun ({ txt; loc } : string Location.loc) -> { txt = String.trim txt; loc }))
     attrs
 
 let fallback_description ~ocaml_doc explicit_desc attrs node =
