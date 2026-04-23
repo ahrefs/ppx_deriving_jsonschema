@@ -95,8 +95,7 @@ let json_like_to_runtime ~loc json_expr =
       | `Int i -> `Int i
       | `Bool b -> `Bool b
       | `List xs -> `List (List.map ppx_deriving_jsonschema_runtime_of_json_like xs)
-      | `Assoc fields ->
-        `Assoc (List.map (fun (k, v) -> k, ppx_deriving_jsonschema_runtime_of_json_like v) fields)
+      | `Assoc fields -> `Assoc (List.map (fun (k, v) -> k, ppx_deriving_jsonschema_runtime_of_json_like v) fields)
     in
     ppx_deriving_jsonschema_runtime_of_json_like [%e json_expr]]
 
