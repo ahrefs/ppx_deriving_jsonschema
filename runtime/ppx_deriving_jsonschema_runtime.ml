@@ -1,6 +1,10 @@
 let schema_version = "https://json-schema.org/draft/2020-12/schema"
 
-(* There is no Yojson.Basic.t in Melange and the Melange_json.t is not compatible with Yojson.Basic.t, so we use our own type to support universal API *)
+(* Melange does not expose Yojson.Basic.t, and Melange_json.t is not directly
+   compatible with it, so the runtime exposes its own JSON type [t]. On native,
+   [t] is structurally compatible with [Yojson.Basic.t], so callers can coerce
+   with [(schema :> Yojson.Basic.t)] when needed. Do not use
+   [Yojson.Safe.to_basic] here: [t] is not a [Yojson.Safe.t]. *)
 
 include struct
   type t =

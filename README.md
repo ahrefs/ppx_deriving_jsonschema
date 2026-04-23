@@ -32,6 +32,17 @@ type t = {
 let schema = Ppx_deriving_jsonschema_runtime.json_schema t_jsonschema
 ```
 
+`Ppx_deriving_jsonschema_runtime.t` is the runtime JSON type produced by the PPX.
+On native OCaml it is structurally compatible with `Yojson.Basic.t`, so if a
+consumer expects `Yojson.Basic.t`, use a coercion:
+
+```ocaml
+let schema : Yojson.Basic.t =
+  (Ppx_deriving_jsonschema_runtime.json_schema t_jsonschema :> Yojson.Basic.t)
+```
+
+Do not use `Yojson.Safe.to_basic` here: the runtime type is not `Yojson.Safe.t`.
+
 Such a type will be turned into a JSON schema like this:
 ```json
 {
@@ -645,7 +656,7 @@ type t = {
 
 Set a default value for a record field. Fields with a default are excluded from `required`.
 
-Primitive literals (`int`, `int32`, `nativeint`, `float`, `string`, `bytes`, `bool`) and their `option`, `list`, and `array` variants are serialized automatically. For non-primitive types (custom variants, records, etc.) a `<type>_to_json : <type> -> Yojson.Basic.t` function must be in scope — e.g. via `[@@deriving json]` from melange-json.
+Primitive literals (`int`, `int32`, `nativeint`, `float`, `string`, `bytes`, `bool`) and their `option`, `list`, and `array` variants are serialized automatically. For non-primitive types (custom variants, records, etc.) a `<type>_to_json` function must be in scope and return Melange-json-compatible JSON. On native that is typically `Yojson.Basic.t`; with Melange this is naturally satisfied by `[@@deriving json]` from melange-json.
 
 ```ocaml
 type status = Active | Inactive [@@deriving jsonschema]
