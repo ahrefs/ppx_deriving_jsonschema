@@ -2633,6 +2633,34 @@ let%expect_test "doc_attribute_alias_fallback" =
     }
     |}]
 
+(* Multi-line doc comments are preserved as-is apart from a [String.trim] on the
+   outermost whitespace. Internal newlines and indentation remain in the
+   generated description. *)
+type doc_comment_multiline = {
+  name : string;
+      (** The user's full name.
+          Must be non-empty and under 100 characters. *)
+}
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_multiline_preserves_internal_whitespace" =
+  print_schema doc_comment_multiline_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The user's full name.\n          Must be non-empty and under 100 characters.",
+          "type": "string"
+        }
+      },
+      "required": [ "name" ],
+      "additionalProperties": false
+    }
+    |}]
+
 (* Top-level @@jsonschema.description on a variant (whole anyOf schema). *)
 type computation_result =
   | Ok
@@ -2863,7 +2891,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2853",
+          "$id": "file://test/test.ml:2881",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2880,7 +2908,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2852",
+          "$id": "file://test/test.ml:2880",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -3027,7 +3055,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2912",
+                  "$id": "file://test/test.ml:2940",
                   "$defs": {
                     "filter": {
                       "anyOf": [
