@@ -2661,6 +2661,63 @@ let%expect_test "ocaml_doc_multiline_preserves_internal_whitespace" =
     }
     |}]
 
+type doc_comment_poly_variant =
+  [ `Plain  (** No payload *)
+  | `With_int of int  (** Single integer tag *)
+  ]
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_fallback_for_polymorphic_variant" =
+  print_schema doc_comment_poly_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+(* Explicit [@jsonschema.description] on a polymorphic variant tag takes precedence. *)
+type doc_comment_poly_variant_override =
+  [ `Tagged [@jsonschema.description "explicit wins"] (** ocaml.doc loses *) ]
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_overridden_on_polymorphic_variant" =
+  print_schema doc_comment_poly_variant_override_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "explicit wins",
+          "type": "array",
+          "prefixItems": [ { "const": "Tagged" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    }
+    |}]
+
 (* Top-level @@jsonschema.description on a variant (whole anyOf schema). *)
 type computation_result =
   | Ok
@@ -2891,7 +2948,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2881",
+          "$id": "file://test/test.ml:2938",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2908,7 +2965,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2880",
+          "$id": "file://test/test.ml:2937",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -3055,7 +3112,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2940",
+                  "$id": "file://test/test.ml:2997",
                   "$defs": {
                     "filter": {
                       "anyOf": [

@@ -103,6 +103,9 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
   let constrs, is_rec =
     List.fold_left
       (fun (constrs, is_rec) row_field ->
+        let description_opt =
+          Option.map (fun d -> d.txt) (Attrs.rtag_description ~ocaml_doc:config.Attrs.ocaml_doc row_field)
+        in
         match row_field.prf_desc with
         | Rtag (name, true, []) ->
           let name =
@@ -110,7 +113,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
             | Some name -> name.txt
             | None -> name.txt
           in
-          `Tag (name, [], None) :: constrs, is_rec
+          `Tag (name, [], description_opt) :: constrs, is_rec
         | Rtag (name, false, [ typ ]) ->
           let name =
             match Attribute.get Attrs.jsonschema_polymorphic_variant_name row_field with
@@ -128,7 +131,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
           let results = List.map (schema_of_core_type ~config ~recursive_types) raw_typs in
           let typs = List.map fst results in
           let typs_rec = List.exists snd results in
-          `Tag (name, typs, None) :: constrs, is_rec || typs_rec
+          `Tag (name, typs, description_opt) :: constrs, is_rec || typs_rec
         | Rtag (_, true, [ _ ]) | Rtag (_, _, _ :: _ :: _) ->
           Location.raise_errorf ~loc "ppx_deriving_jsonschema: polymorphic_variant/Rtag/&"
         | Rinherit core_type ->

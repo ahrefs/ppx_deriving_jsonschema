@@ -38,6 +38,7 @@ let jsonschema_ld_description = string_attr "jsonschema.description" Attribute.C
 let jsonschema_td_description = string_attr "jsonschema.description" Attribute.Context.type_declaration
 let jsonschema_cd_description = string_attr "jsonschema.description" Attribute.Context.constructor_declaration
 let jsonschema_ct_description = string_attr "jsonschema.description" Attribute.Context.core_type
+let jsonschema_rtag_description = string_attr "jsonschema.description" Attribute.Context.rtag
 
 let jsonschema_td_format = string_attr "jsonschema.format" Attribute.Context.type_declaration
 let jsonschema_ld_format = string_attr "jsonschema.format" Attribute.Context.label_declaration
@@ -88,6 +89,9 @@ let cd_description ~ocaml_doc (cd : constructor_declaration) =
 let ct_description ~ocaml_doc (ct : core_type) =
   fallback_description ~ocaml_doc jsonschema_ct_description ct.ptyp_attributes ct
 
+let rtag_description ~ocaml_doc (rf : row_field) =
+  fallback_description ~ocaml_doc jsonschema_rtag_description rf.prf_attributes rf
+
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -101,6 +105,7 @@ let attributes =
     Attribute.T jsonschema_td_description;
     Attribute.T jsonschema_cd_description;
     Attribute.T jsonschema_ct_description;
+    Attribute.T jsonschema_rtag_description;
     Attribute.T jsonschema_td_format;
     Attribute.T jsonschema_ld_format;
     Attribute.T jsonschema_ct_format;

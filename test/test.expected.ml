@@ -5283,6 +5283,127 @@ include
       "additionalProperties": false
     }
     |}]]
+type doc_comment_poly_variant =
+  [ `Plain [@ocaml.doc " No payload "]
+  | `With_int of int [@ocaml.doc " Single integer tag "]][@@deriving
+                                                           jsonschema
+                                                             ~ocaml_doc]
+include
+  struct
+    let doc_comment_poly_variant_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("description", (`String "No payload"));
+                   ("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "Plain"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 1));
+                   ("maxItems", (`Int 1))];
+                `Assoc
+                  [("description", (`String "Single integer tag"));
+                  ("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "With_int"))];
+                       `Assoc [("type", (`String "integer"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_fallback_for_polymorphic_variant" =
+    print_schema doc_comment_poly_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]]
+type doc_comment_poly_variant_override =
+  [
+    `Tagged
+      [@jsonschema.description "explicit wins"][@ocaml.doc
+                                                 " ocaml.doc loses "]]
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_poly_variant_override_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("description", (`String "explicit wins"));
+                   ("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "Tagged"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 1));
+                   ("maxItems", (`Int 1))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_overridden_on_polymorphic_variant" =
+    print_schema doc_comment_poly_variant_override_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "explicit wins",
+          "type": "array",
+          "prefixItems": [ { "const": "Tagged" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    }
+    |}]]
 type computation_result =
   | Ok 
   | Err of string [@@deriving jsonschema][@@jsonschema.description
@@ -5439,7 +5560,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2728"))
+                                   (("$id", (`String "file://test.ml:2785"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5767,7 +5888,7 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2881")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2938")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5775,7 +5896,7 @@ include
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2880")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2937")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5803,7 +5924,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2881",
+          "$id": "file://test/test.ml:2938",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5820,7 +5941,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2880",
+          "$id": "file://test/test.ml:2937",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5896,7 +6017,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2940"))
+                             `Assoc (("$id", (`String "file://test.ml:2997"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6112,7 +6233,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2940",
+                  "$id": "file://test/test.ml:2997",
                   "$defs": {
                     "filter": {
                       "anyOf": [
