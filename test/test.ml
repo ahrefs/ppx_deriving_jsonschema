@@ -1,7 +1,9 @@
 [@@@ocaml.warning "-37-69"]
 
 let print_schema ?definitions ?id ?title ?description s =
-  let s : Yojson.Basic.t = (Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title ?description s :> Yojson.Basic.t) in
+  let s : Yojson.Basic.t =
+    (Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title ?description s :> Yojson.Basic.t)
+  in
   let () = print_endline (Yojson.Basic.pretty_to_string s) in
   ()
 
