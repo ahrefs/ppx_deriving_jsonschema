@@ -2637,8 +2637,7 @@ let%expect_test "doc_attribute_alias_fallback" =
    outermost whitespace. Internal newlines and indentation remain in the
    generated description. *)
 type doc_comment_multiline = {
-  name : string;
-      (** The user's full name.
+  name : string;  (** The user's full name.
           Must be non-empty and under 100 characters. *)
 }
 [@@deriving jsonschema ~ocaml_doc]
@@ -2696,8 +2695,7 @@ let%expect_test "ocaml_doc_fallback_for_polymorphic_variant" =
 
 (* Multiple hand-written [@ocaml.doc] / [@doc] attributes on the same node are
    joined into a single description with a blank-line separator. *)
-type doc_comment_multiple =
-  (string[@ocaml.doc " first block "] [@ocaml.doc " second block "] [@doc " third block "])
+type doc_comment_multiple = (string[@ocaml.doc " first block "] [@ocaml.doc " second block "] [@doc " third block "])
 [@@deriving jsonschema ~ocaml_doc]
 
 let%expect_test "ocaml_doc_multiple_attrs_joined" =
@@ -2712,8 +2710,7 @@ let%expect_test "ocaml_doc_multiple_attrs_joined" =
     |}]
 
 (* Explicit [@jsonschema.description] on a polymorphic variant tag takes precedence. *)
-type doc_comment_poly_variant_override =
-  [ `Tagged [@jsonschema.description "explicit wins"] (** ocaml.doc loses *) ]
+type doc_comment_poly_variant_override = [ `Tagged [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *) ]
 [@@deriving jsonschema ~ocaml_doc]
 
 let%expect_test "ocaml_doc_overridden_on_polymorphic_variant" =
