@@ -85,6 +85,21 @@ let variants ~loc ?(as_string = false) constrs =
          | `Inherit typ -> typ)
        constrs)
 
+let json_like_to_runtime ~loc json_expr =
+  [%expr
+    let rec ppx_deriving_jsonschema_runtime_of_json_like json =
+      match Melange_json.classify json with
+      | `Null -> `Null
+      | `String s -> `String s
+      | `Float f -> `Float f
+      | `Int i -> `Int i
+      | `Bool b -> `Bool b
+      | `List xs -> `List (List.map ppx_deriving_jsonschema_runtime_of_json_like xs)
+      | `Assoc fields ->
+        `Assoc (List.map (fun (k, v) -> k, ppx_deriving_jsonschema_runtime_of_json_like v) fields)
+    in
+    ppx_deriving_jsonschema_runtime_of_json_like [%e json_expr]]
+
 module Annotation = struct
   let add_schema_attr (attr, node) f schema =
     match Attribute.get attr node with
@@ -144,11 +159,14 @@ module Annotation = struct
     | { ptyp_desc = Ptyp_var name; _ } -> evar ~loc name
     | { ptyp_desc = Ptyp_constr (id, args); _ } ->
       let arg_serializers = List.map (serializer_of_core_type ~loc) args in
-      type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
+      let to_json =
+        type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
+      in
+      [%expr fun x -> [%e json_like_to_runtime ~loc [%expr [%e to_json] x]]]
     | _ ->
       Location.raise_errorf ~loc:ct.ptyp_loc
         "[@jsonschema.default] cannot serialize this type. For non-primitive types, ensure a '<type>_to_json' function \
-         is in scope (e.g., add [@@deriving json] to the type definition)"
+         is in scope and returns Melange_json-compatible JSON (e.g., add [@@deriving json] to the type definition)"
 
   let add_default ~loc attr core_type =
     add_schema_attr attr (fun expr schema ->

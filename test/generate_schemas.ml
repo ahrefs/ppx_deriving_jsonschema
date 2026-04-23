@@ -37,4 +37,4 @@ let schemas =
 
 let schema = `Assoc [ "$schema", `String "https://json-schema.org/draft/2020-12/schema"; "oneOf", `List schemas ]
 
-let () = print_endline (Yojson.Basic.pretty_to_string schema)
+let () = print_endline (Yojson.Basic.pretty_to_string (runtime_to_yojson schema))

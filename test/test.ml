@@ -1,8 +1,17 @@
 [@@@ocaml.warning "-37-69"]
 
+let rec runtime_to_yojson : Ppx_deriving_jsonschema_runtime.t -> Yojson.Basic.t = function
+  | `Null -> `Null
+  | `String s -> `String s
+  | `Float f -> `Float f
+  | `Int i -> `Int i
+  | `Bool b -> `Bool b
+  | `List xs -> `List (List.map runtime_to_yojson xs)
+  | `Assoc fields -> `Assoc (List.map (fun (k, v) -> k, runtime_to_yojson v) fields)
+
 let print_schema ?definitions ?id ?title ?description s =
   let s = Ppx_deriving_jsonschema_runtime.json_schema ?definitions ?id ?title ?description s in
-  let () = print_endline (Yojson.Basic.pretty_to_string s) in
+  let () = print_endline (Yojson.Basic.pretty_to_string (runtime_to_yojson s)) in
   ()
 
 let string_jsonschema = `Assoc [ "type", `String "string" ]
@@ -917,7 +926,7 @@ let%expect_test "recursive_abstract_alias" =
     {|
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "file://test/test.ml:912",
+      "$id": "file://test/test.ml:921",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -2959,7 +2968,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2949",
+          "$id": "file://test/test.ml:2958",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2976,7 +2985,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2948",
+          "$id": "file://test/test.ml:2957",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -3123,7 +3132,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:3008",
+                  "$id": "file://test/test.ml:3017",
                   "$defs": {
                     "filter": {
                       "anyOf": [
