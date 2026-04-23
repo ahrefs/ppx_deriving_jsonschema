@@ -3194,9 +3194,12 @@ type default_value = {
   label : string; [@jsonschema.default "default"]
   speed : float; [@jsonschema.default 100.0]
   is_active : bool; [@jsonschema.default false]
+  pair : int * string; [@jsonschema.default 1, "hello"]
+  pairs : (string * string option) list; [@default [ "a", None; "b", Some "b" ]]
   variant : variant_for_default; [@jsonschema.default A]
   record : record_for_default; [@jsonschema.default { score = None }]
   int_list : int list; [@jsonschema.default [ 1; 2; 3 ]]
+  empty_list : int list; [@jsonschema.default []]
 }
 [@@deriving jsonschema]
 
@@ -3208,6 +3211,11 @@ let%expect_test "default_value" =
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
+        "empty_list": {
+          "default": [],
+          "type": "array",
+          "items": { "type": "integer" }
+        },
         "int_list": {
           "default": [ 1, 2, 3 ],
           "type": "array",
@@ -3238,6 +3246,27 @@ let%expect_test "default_value" =
               "maxItems": 1
             }
           ]
+        },
+        "pairs": {
+          "default": [ [ "a", null ], [ "b", "b" ] ],
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              { "type": "string" }, { "type": [ "string", "null" ] }
+            ],
+            "unevaluatedItems": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "pair": {
+          "default": [ 1, "hello" ],
+          "type": "array",
+          "prefixItems": [ { "type": "integer" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
         },
         "is_active": { "default": false, "type": "boolean" },
         "speed": { "default": 100.0, "type": "number" },

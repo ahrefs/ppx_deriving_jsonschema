@@ -1,7 +1,7 @@
 (executable
  (name pp)
  (modules pp)
- (libraries ppx_deriving_jsonschema ppxlib))
+ (libraries ppx_deriving_jsonschema ppxlib ppx_deriving_jsonschema.runtime))
 
 (rule
  (targets test.actual.ml)
@@ -19,7 +19,7 @@
 (library
  (name test)
  (modules test)
- (libraries yojson melange-json)
+ (libraries yojson melange-json ppx_deriving_jsonschema.runtime)
  (inline_tests)
  (preprocess
   (pps ppx_deriving_jsonschema ppx_expect melange-json-native.ppx)))
@@ -30,7 +30,7 @@
 (executable
  (name generate_schemas)
  (modules generate_schemas)
- (libraries test))
+ (libraries test ppx_deriving_jsonschema.runtime))
 
 (rule
  (targets test_schemas.actual.json)

@@ -138,10 +138,19 @@ module Annotation = struct
     | [%type: [%t? t] array] ->
       let s = serializer_of_core_type ~loc t in
       [%expr fun xs -> `List (Array.to_list (Array.map [%e s] xs))]
+    | { ptyp_desc = Ptyp_tuple types; _ } ->
+      let serializers = List.map (serializer_of_core_type ~loc) types in
+      let vars = List.mapi (fun i _ -> Printf.sprintf "ppx_tuple_%d" i) types in
+      let pats = List.map (fun v -> ppat_var ~loc { txt = v; loc }) vars in
+      let exprs = List.map2 (fun s v -> [%expr [%e s] [%e evar ~loc v]]) serializers vars in
+      [%expr fun [%p ppat_tuple ~loc pats] -> `List [%e elist ~loc exprs]]
     | { ptyp_desc = Ptyp_var name; _ } -> evar ~loc name
     | { ptyp_desc = Ptyp_constr (id, args); _ } ->
       let arg_serializers = List.map (serializer_of_core_type ~loc) args in
-      type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
+      let exp =
+        type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
+      in
+      [%expr Ppx_deriving_jsonschema_runtime.classify [%e exp]]
     | _ ->
       Location.raise_errorf ~loc:ct.ptyp_loc
         "[@jsonschema.default] cannot serialize this type. For non-primitive types, ensure a '<type>_to_json' function \
@@ -149,13 +158,19 @@ module Annotation = struct
 
   let add_default ~loc attr core_type =
     add_schema_attr attr (fun expr schema ->
-      let base_type =
-        match core_type with
-        | [%type: [%t? t] option] -> t
-        | t -> t
+      let json_value =
+        match expr.pexp_desc with
+        | Pexp_construct ({ txt = Lident "[]"; _ }, None) -> [%expr `List []]
+        | Pexp_construct ({ txt = Lident "None"; _ }, None) -> [%expr `Null]
+        | _ ->
+          let base_type =
+            match core_type with
+            | [%type: [%t? t] option] -> t
+            | t -> t
+          in
+          let serializer = serializer_of_core_type ~loc base_type in
+          [%expr [%e serializer] [%e expr]]
       in
-      let serializer = serializer_of_core_type ~loc base_type in
-      let json_value = [%expr [%e serializer] [%e expr]] in
       match schema with
       | [%expr `Assoc [%e? fields]] -> [%expr `Assoc (("default", [%e json_value]) :: [%e fields])]
       | s ->
