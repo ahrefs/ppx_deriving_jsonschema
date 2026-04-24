@@ -1,3 +1,5 @@
+(copy_files ../test.ml)
+
 (copy_files ../shared/schema_snapshot.ml)
 
 (copy_files ../shared/generate_schemas_cases.ml)

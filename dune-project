@@ -37,7 +37,6 @@
   (melange-json :with-test)
   (melange-json-native :with-test)
   (yojson :with-test)
-  (ppx_expect :with-test)
   (ocamlformat (and (= "0.29.0") :with-dev-setup))
   (ocaml-lsp-server :with-dev-setup))
  (tags

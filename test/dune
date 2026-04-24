@@ -1,7 +1,11 @@
 (executable
  (name pp)
  (modules pp)
- (libraries ppx_deriving_jsonschema ppxlib ppx_deriving_jsonschema.runtime))
+ (libraries
+  ppx_deriving_jsonschema
+  ppxlib
+  ppx_deriving_jsonschema.runtime
+  melange-json-native.ppx))
 
 (rule
  (targets test.actual.ml)
@@ -26,27 +30,17 @@
  (wrapped false))
 
 (library
- (name generate_schemas_support)
- (modules generate_schemas_cases)
- (wrapped false)
- (libraries
-  melange-json
-  ppx_deriving_jsonschema.runtime
-  schema_snapshot_support)
+ (name test)
+ (modules test)
+ (libraries melange-json ppx_deriving_jsonschema.runtime)
  (preprocess
   (pps ppx_deriving_jsonschema melange-json-native.ppx)))
 
 (library
- (name test)
- (modules test)
- (libraries
-  yojson
-  melange-json
-  ppx_deriving_jsonschema.runtime
-  generate_schemas_support)
- (inline_tests)
- (preprocess
-  (pps ppx_deriving_jsonschema ppx_expect melange-json-native.ppx)))
+ (name generate_schemas_support)
+ (modules generate_schemas_cases)
+ (wrapped false)
+ (libraries ppx_deriving_jsonschema.runtime schema_snapshot_support test))
 
 (cram
  (deps %{exe:pp.exe}))
