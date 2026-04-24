@@ -1,26 +1,5 @@
 open Melange_json.Primitives
 
-let fail name message = failwith (name ^ ": " ^ message)
-
-let assoc name = function
-  | `Assoc fields -> fields
-  | _ -> fail name "expected object"
-
-let field name fields =
-  match List.assoc_opt name fields with
-  | Some value -> value
-  | None -> fail name "missing field"
-
-let property schema key =
-  schema
-  |> Ppx_deriving_jsonschema_runtime.json_schema
-  |> assoc "schema"
-  |> field "properties"
-  |> assoc "properties"
-  |> field key
-
-let default schema key = property schema key |> assoc key |> field "default"
-
 type variant_for_default =
   | A
   | B
@@ -64,24 +43,6 @@ let default_snapshot =
     ]
 
 let default_snapshot_string = Schema_snapshot.json_to_string default_snapshot
-
-let run_default_checks emit =
-  let expect_equal name actual expected =
-    if actual = expected then emit ("ok: " ^ name) else fail name "unexpected value"
-  in
-  expect_equal "default_score" (default default_value_jsonschema "score") (`Int 0);
-  expect_equal "default_label" (default default_value_jsonschema "label") (`String "default");
-  expect_equal "default_speed" (default default_value_jsonschema "speed") (`Float 100.0);
-  expect_equal "default_is_active" (default default_value_jsonschema "is_active") (`Bool false);
-  expect_equal "default_pair" (default default_value_jsonschema "pair") (`List [ `Int 1; `String "hello" ]);
-  expect_equal "default_pairs"
-    (default default_value_jsonschema "pairs")
-    (`List [ `List [ `String "a"; `Null ]; `List [ `String "b"; `String "b" ] ]);
-  expect_equal "default_variant" (default default_value_jsonschema "variant") (`List [ `String "A" ]);
-  expect_equal "default_record" (default default_value_jsonschema "record") (`Assoc [ "score", `Null ]);
-  expect_equal "default_int_list" (default default_value_jsonschema "int_list") (`List [ `Int 1; `Int 2; `Int 3 ]);
-  expect_equal "default_empty_list" (default default_value_jsonschema "empty_list") (`List []);
-  expect_equal "module_t_default" (default default_with_module_type_jsonschema "status") (`List [ `String "Active" ])
 
 let string_jsonschema = `Assoc [ "type", `String "string" ]
 let int_jsonschema = `Assoc [ "type", `String "integer" ]

@@ -38,7 +38,7 @@
 
 (library
  (name test)
- (modules test default_cases_native)
+ (modules test)
  (libraries
   yojson
   melange-json
