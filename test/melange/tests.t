@@ -1,8 +1,13 @@
 melange schemas
   $ node ./output/test/melange/generate_schemas.js > test_schemas.actual.json
-  $ node - <<'EOF'
-  > const fs = require("node:fs");
-  > const actual = JSON.stringify(JSON.parse(fs.readFileSync("test_schemas.actual.json", "utf8")));
-  > const expected = JSON.stringify(JSON.parse(fs.readFileSync("../test_schemas.expected.json", "utf8")));
-  > if (actual !== expected) process.exit(1);
+  $ python3 - <<'EOF' > test_schemas.actual.pretty.json
+  > import json
+  > from pathlib import Path
+  > print(json.dumps(json.loads(Path("test_schemas.actual.json").read_text()), indent=2))
   > EOF
+  $ python3 - <<'EOF' > test_schemas.expected.pretty.json
+  > import json
+  > from pathlib import Path
+  > print(json.dumps(json.loads(Path("../test_schemas.expected.json").read_text()), indent=2))
+  > EOF
+  $ diff -u test_schemas.expected.pretty.json test_schemas.actual.pretty.json
