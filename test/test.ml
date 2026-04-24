@@ -2629,15 +2629,17 @@ let%expect_test "doc_attribute_alias_fallback" =
       "type": "string"
     }
     |}]
-
 (* Multi-line doc comments are preserved as-is apart from a [String.trim] on the
    outermost whitespace. Internal newlines and indentation remain in the
    generated description. *)
+
+[@@@ocamlformat "disable"]
 type doc_comment_multiline = {
   name : string;  (** The user's full name.
           Must be non-empty and under 100 characters. *)
 }
 [@@deriving jsonschema ~ocaml_doc]
+[@@@ocamlformat "enable"]
 
 let%expect_test "ocaml_doc_multiline_preserves_internal_whitespace" =
   print_schema doc_comment_multiline_jsonschema;
@@ -2959,7 +2961,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2949",
+          "$id": "file://test/test.ml:2951",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2976,7 +2978,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2948",
+          "$id": "file://test/test.ml:2950",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -3123,7 +3125,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:3008",
+                  "$id": "file://test/test.ml:3010",
                   "$defs": {
                     "filter": {
                       "anyOf": [

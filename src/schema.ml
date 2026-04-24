@@ -93,34 +93,31 @@ module Annotation = struct
 
   let add_format ~loc attr core_type =
     add_schema_attr attr (fun fmt schema ->
-        match core_type with
-        | [%type: string] | [%type: bytes] | [%type: string option] | [%type: bytes option] ->
-          format ~loc fmt.txt schema
-        | _ ->
-          Location.raise_errorf ~loc:core_type.ptyp_loc
-            "[@jsonschema.format] can only be applied to string or bytes types")
+      match core_type with
+      | [%type: string] | [%type: bytes] | [%type: string option] | [%type: bytes option] -> format ~loc fmt.txt schema
+      | _ ->
+        Location.raise_errorf ~loc:core_type.ptyp_loc
+          "[@jsonschema.format] can only be applied to string or bytes types")
 
   let add_maximum ~loc attr core_type =
     add_schema_attr attr (fun expr schema ->
-        match core_type, expr.pexp_desc with
-        | [%type: int], Pexp_constant (Pconst_integer _)
-        | [%type: int32], Pexp_constant (Pconst_integer _)
-        | [%type: nativeint], Pexp_constant (Pconst_integer _) ->
-          maximum ~loc [%expr `Int [%e expr]] schema
-        | [%type: float], Pexp_constant (Pconst_float _) -> maximum ~loc [%expr `Float [%e expr]] schema
-        | _ ->
-          Location.raise_errorf ~loc:core_type.ptyp_loc "[@jsonschema.maximum] can only be applied to numeric types")
+      match core_type, expr.pexp_desc with
+      | [%type: int], Pexp_constant (Pconst_integer _)
+      | [%type: int32], Pexp_constant (Pconst_integer _)
+      | [%type: nativeint], Pexp_constant (Pconst_integer _) ->
+        maximum ~loc [%expr `Int [%e expr]] schema
+      | [%type: float], Pexp_constant (Pconst_float _) -> maximum ~loc [%expr `Float [%e expr]] schema
+      | _ -> Location.raise_errorf ~loc:core_type.ptyp_loc "[@jsonschema.maximum] can only be applied to numeric types")
 
   let add_minimum ~loc attr core_type =
     add_schema_attr attr (fun expr schema ->
-        match core_type, expr.pexp_desc with
-        | [%type: int], Pexp_constant (Pconst_integer _)
-        | [%type: int32], Pexp_constant (Pconst_integer _)
-        | [%type: nativeint], Pexp_constant (Pconst_integer _) ->
-          minimum ~loc [%expr `Int [%e expr]] schema
-        | [%type: float], Pexp_constant (Pconst_float _) -> minimum ~loc [%expr `Float [%e expr]] schema
-        | _ ->
-          Location.raise_errorf ~loc:core_type.ptyp_loc "[@jsonschema.minimum] can only be applied to numeric types")
+      match core_type, expr.pexp_desc with
+      | [%type: int], Pexp_constant (Pconst_integer _)
+      | [%type: int32], Pexp_constant (Pconst_integer _)
+      | [%type: nativeint], Pexp_constant (Pconst_integer _) ->
+        minimum ~loc [%expr `Int [%e expr]] schema
+      | [%type: float], Pexp_constant (Pconst_float _) -> minimum ~loc [%expr `Float [%e expr]] schema
+      | _ -> Location.raise_errorf ~loc:core_type.ptyp_loc "[@jsonschema.minimum] can only be applied to numeric types")
 
   let rec serializer_of_core_type ~loc ct =
     match ct with
@@ -152,20 +149,20 @@ module Annotation = struct
 
   let add_default ~loc attr core_type =
     add_schema_attr attr (fun expr schema ->
-        let base_type =
-          match core_type with
-          | [%type: [%t? t] option] -> t
-          | t -> t
-        in
-        let serializer = serializer_of_core_type ~loc base_type in
-        let json_value = [%expr [%e serializer] [%e expr]] in
-        match schema with
-        | [%expr `Assoc [%e? fields]] -> [%expr `Assoc (("default", [%e json_value]) :: [%e fields])]
-        | s ->
-          [%expr
-            match [%e s] with
-            | `Assoc ppx_fields -> `Assoc (("default", [%e json_value]) :: ppx_fields)
-            | ppx_other -> ppx_other])
+      let base_type =
+        match core_type with
+        | [%type: [%t? t] option] -> t
+        | t -> t
+      in
+      let serializer = serializer_of_core_type ~loc base_type in
+      let json_value = [%expr [%e serializer] [%e expr]] in
+      match schema with
+      | [%expr `Assoc [%e? fields]] -> [%expr `Assoc (("default", [%e json_value]) :: [%e fields])]
+      | s ->
+        [%expr
+          match [%e s] with
+          | `Assoc ppx_fields -> `Assoc (("default", [%e json_value]) :: ppx_fields)
+          | ppx_other -> ppx_other])
 
   let add_description ~loc desc_opt schema =
     match desc_opt with

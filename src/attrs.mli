@@ -1,14 +1,12 @@
 type config = {
   variant_as_string : bool;
-    (** Encode variants as string instead of string array.
-        This option breaks compatibility with yojson derivers and
+    (** Encode variants as string instead of string array. This option breaks compatibility with yojson derivers and
         doesn't support constructors with a payload. *)
   polymorphic_variant_tuple : bool;
-    (** Preserve the implicit tuple in a polymorphic variant.
-        This option breaks compatibility with yojson derivers. *)
+    (** Preserve the implicit tuple in a polymorphic variant. This option breaks compatibility with yojson derivers. *)
   ocaml_doc : bool;
-    (** Use [ocaml.doc] attributes (i.e. [(** ... *)] comments) as a fallback
-        for [\[@jsonschema.description\]] when the explicit annotation is absent. *)
+    (** Use [ocaml.doc] attributes (i.e. [(** ... *)] comments) as a fallback for [[@jsonschema.description]] when the
+        explicit annotation is absent. *)
 }
 
 val jsonschema_key : (Ppxlib.label_declaration, string Location.loc) Ppxlib.Attribute.t
@@ -37,10 +35,9 @@ val jsonschema_td_attrs : (Ppxlib.type_declaration, Ppxlib.expression) Ppxlib.At
 val jsonschema_ld_attrs : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.Attribute.t
 val jsonschema_ld_default : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.Attribute.t
 
-(** [ld_description], [td_description], [cd_description], [ct_description] and
-    [rtag_description] resolve a description from [\[@jsonschema.description "..."\]].
-    When [ocaml_doc] is [true] and the explicit annotation is absent, they fall back
-    to an [ocaml.doc] attribute (i.e. a [(** ... *)] comment) on the same node. *)
+(** [ld_description], [td_description], [cd_description], [ct_description] and [rtag_description] resolve a description
+    from [[@jsonschema.description "..."]]. When [ocaml_doc] is [true] and the explicit annotation is absent, they fall
+    back to an [ocaml.doc] attribute (i.e. a [(** ... *)] comment) on the same node. *)
 val ld_description : ocaml_doc:bool -> Ppxlib.label_declaration -> string Location.loc option
 
 val td_description : ocaml_doc:bool -> Ppxlib.type_declaration -> string Location.loc option

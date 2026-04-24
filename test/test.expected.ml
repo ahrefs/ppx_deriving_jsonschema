@@ -5224,6 +5224,7 @@ include
       "type": "string"
     }
     |}]]
+[@@@ocamlformat "disable"]
 type doc_comment_multiline =
   {
   name: string
@@ -5258,6 +5259,7 @@ include
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[@@@ocamlformat "enable"]
 [%%expect_test
   let "ocaml_doc_multiline_preserves_internal_whitespace" =
     print_schema doc_comment_multiline_jsonschema;
@@ -5588,7 +5590,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2796"))
+                                   (("$id", (`String "file://test.ml:2798"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5916,7 +5918,7 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2949")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2951")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5924,7 +5926,7 @@ include
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2948")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2950")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5952,7 +5954,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2949",
+          "$id": "file://test/test.ml:2951",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5969,7 +5971,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2948",
+          "$id": "file://test/test.ml:2950",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -6045,7 +6047,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3008"))
+                             `Assoc (("$id", (`String "file://test.ml:3010"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6261,7 +6263,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:3008",
+                  "$id": "file://test/test.ml:3010",
                   "$defs": {
                     "filter": {
                       "anyOf": [
@@ -6890,7 +6892,7 @@ include
                ("record",
                  ((match match record_for_default_jsonschema with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3420"))
+                             `Assoc (("$id", (`String "file://test.ml:3422"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6906,7 +6908,7 @@ include
                ("variant",
                  ((match match variant_for_default_jsonschema with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3419"))
+                             `Assoc (("$id", (`String "file://test.ml:3421"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -7055,7 +7057,7 @@ include
                   ((match match Status.t_jsonschema with
                           | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                               `Assoc
-                                (("$id", (`String "file://test.ml:3485")) ::
+                                (("$id", (`String "file://test.ml:3487")) ::
                                 (List.filter
                                    (fun (k, _) ->
                                       not (Stdlib.String.equal k "$id"))
