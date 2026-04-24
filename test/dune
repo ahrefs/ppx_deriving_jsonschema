@@ -16,15 +16,35 @@
  (action
   (diff test.expected.ml test.actual.ml)))
 
+(copy_files shared/schema_snapshot.ml)
+
 (copy_files shared/default_cases.ml)
+
+(copy_files shared/generate_schemas_cases.ml)
+
+(library
+ (name schema_snapshot_support)
+ (modules schema_snapshot)
+ (wrapped false))
 
 (library
  (name default_cases_support)
  (modules default_cases)
  (wrapped false)
- (libraries melange-json ppx_deriving_jsonschema.runtime)
+ (libraries
+  melange-json
+  ppx_deriving_jsonschema.runtime
+  schema_snapshot_support)
  (preprocess
   (pps ppx_deriving_jsonschema melange-json-native.ppx)))
+
+(library
+ (name generate_schemas_support)
+ (modules generate_schemas_cases)
+ (wrapped false)
+ (libraries ppx_deriving_jsonschema.runtime schema_snapshot_support)
+ (preprocess
+  (pps ppx_deriving_jsonschema)))
 
 (library
  (name test)
@@ -44,7 +64,7 @@
 (executable
  (name generate_schemas)
  (modules generate_schemas)
- (libraries test ppx_deriving_jsonschema.runtime))
+ (libraries yojson generate_schemas_support))
 
 (executable
  (name generate_default_schemas)
