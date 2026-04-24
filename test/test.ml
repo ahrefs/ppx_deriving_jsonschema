@@ -3294,3 +3294,29 @@ let%expect_test "default_with_module_type" =
       "additionalProperties": false
     }
     |}]
+
+type compact_variants =
+  | A
+  | B
+  | C of int
+[@@deriving jsonschema] [@@jsonschema.compact_variants]
+
+let%expect_test "compact_variants" =
+  print_schema compact_variants_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "const": "A" },
+        { "const": "B" },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "C" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]

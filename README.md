@@ -233,6 +233,32 @@ type t =
 { "anyOf": [ { "const": "Typ" }, { "const": "Class" } ] }
 ```
 
+The `[@@jsonschema.compact_variants]` attribute provides a middle ground: unit constructors (no arguments) are rendered as plain string constants, while constructors with arguments keep the tuple array encoding.
+
+```ocaml
+type t =
+| A
+| B
+| C of int
+[@@deriving jsonschema] [@@jsonschema.compact_variants]
+```
+
+```json
+{
+  "anyOf": [
+    { "const": "A" },
+    { "const": "B" },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "C" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
 If the JSON variant names differ from OCaml conventions, it is possible to specify the corresponding JSON string explicitly using `[@name "constr"]`, for example:
 
 ```ocaml
