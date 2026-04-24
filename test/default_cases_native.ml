@@ -1,5 +1,5 @@
 let%expect_test "default_cases_shared" =
-  Default_cases.run print_endline;
+  Generate_schemas_cases.run_default_checks print_endline;
   [%expect
     {|
     ok: default_score

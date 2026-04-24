@@ -1,1 +1,1 @@
-let () = print_endline Default_cases.snapshot_string
+let () = print_endline Generate_schemas_cases.default_snapshot_string

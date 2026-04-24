@@ -1,1 +1,1 @@
-let () = Default_cases.run print_endline
+let () = Generate_schemas_cases.run_default_checks print_endline
