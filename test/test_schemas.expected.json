@@ -616,7 +616,7 @@
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "file://test/test.ml:140",
+      "$id": "file://test/cases.ml:140",
       "$defs": {
         "tree": {
           "anyOf": [
@@ -1894,7 +1894,7 @@
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:313",
+          "$id": "file://test/cases.ml:313",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -1911,7 +1911,7 @@
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:312",
+          "$id": "file://test/cases.ml:312",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2017,7 +2017,7 @@
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:321",
+                  "$id": "file://test/cases.ml:321",
                   "$defs": {
                     "filter": {
                       "anyOf": [

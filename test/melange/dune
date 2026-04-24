@@ -1,4 +1,4 @@
-(copy_files ../test.ml)
+(copy_files ../shared/cases.ml)
 
 (copy_files ../shared/schema_snapshot.ml)
 

@@ -1,6 +1,6 @@
-open Test
+open Cases
 
-(* [test.ml] is the source of truth for the case definitions.
+(* [shared/cases.ml] is the source of truth for the case definitions.
    This module only enumerates which generated schemas are included in the shared
    native/Melange snapshot. *)
 

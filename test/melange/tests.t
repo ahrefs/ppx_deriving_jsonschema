@@ -4,7 +4,7 @@ melange schemas
   > import json
   > from pathlib import Path
   > actual = Path("test_schemas.actual.json").read_text()
-  > actual = actual.replace("file://test/melange/test.ml:", "file://test/test.ml:")
+  > actual = actual.replace("file://test/melange/cases.ml:", "file://test/cases.ml:")
   > print(json.dumps(json.loads(actual), indent=2))
   > EOF
   $ python3 - <<'EOF' > test_schemas.expected.pretty.json

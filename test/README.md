@@ -8,14 +8,18 @@ This directory has three roles:
 
 ## Files in `test/`
 
-- `test.ml`
+- `shared/cases.ml`
   - source of truth for the test case type definitions and helper values
-  - compiled natively
-  - also copied into the Melange test build so both targets exercise the same cases
+  - compiled natively and also copied into the Melange test build so both targets
+    exercise the same cases
 - `pp.ml`
-  - standalone PPX driver used to snapshot expansion output
+  - standalone native PPX driver used to snapshot expansion output
+- `pp_melange.ml`
+  - standalone Melange-flavoured PPX driver used to snapshot expansion output
 - `test.expected.ml`
-  - expected PPX expansion for `test.ml`
+  - expected native PPX expansion for `shared/cases.ml`
+- `test.melange.expected.ml`
+  - expected Melange-flavoured PPX expansion for `shared/cases.ml`
 - `generate_schemas.ml`
   - native entrypoint that prints the full schema snapshot
 - `test_schemas.expected.json`
@@ -27,9 +31,11 @@ This directory has three roles:
 
 Cross-target support code.
 
+- `cases.ml`
+  - source of truth for shared case definitions
 - `generate_schemas_cases.ml`
-  - lists which schemas from `test.ml` are included in the snapshot bundle
-  - this is intentionally separate from `test.ml`: `test.ml` owns the type
+  - lists which schemas from `cases.ml` are included in the snapshot bundle
+  - this is intentionally separate from `cases.ml`: `cases.ml` owns the type
     definitions, while this file owns the snapshot selection/order
 - `schema_snapshot.ml`
   - tiny JSON serializer for `Ppx_deriving_jsonschema_runtime.t`
@@ -48,7 +54,7 @@ Melange-only test entrypoints.
 ## Native vs Melange
 
 Native uses the root `test/` stanzas in `test/dune`.
-Melange uses `test/melange/dune` and reuses the same cases from `test.ml`.
+Melange uses `test/melange/dune` and reuses the same cases from `shared/cases.ml`.
 
 The important distinction is:
 
@@ -61,7 +67,7 @@ The schema content should otherwise match.
 
 When adding a new case:
 
-1. add the type/helper to `test.ml`
+1. add the type/helper to `shared/cases.ml`
 2. add the corresponding schema expression to `shared/generate_schemas_cases.ml`
 3. refresh expectations:
    - `opam exec -- dune runtest --auto-promote`
