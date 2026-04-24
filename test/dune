@@ -16,9 +16,11 @@
  (action
   (diff test.expected.ml test.actual.ml)))
 
+(copy_files shared/default_cases.ml)
+
 (library
  (name test)
- (modules test)
+ (modules test default_cases default_cases_native)
  (libraries yojson melange-json ppx_deriving_jsonschema.runtime)
  (inline_tests)
  (preprocess

@@ -1,3 +1,5 @@
+(copy_files ../shared/default_cases.ml)
+
 (melange.emit
  (target output)
  (libraries melange-json ppx_deriving_jsonschema.runtime_melange)
