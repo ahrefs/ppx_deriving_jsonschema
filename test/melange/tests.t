@@ -11,3 +11,7 @@ melange defaults
   ok: default_int_list
   ok: default_empty_list
   ok: module_t_default
+
+melange default schemas
+  $ node ./output/test/melange/generate_default_schemas.js > default_schemas.actual.json
+  $ diff -u ../default_schemas.expected.json default_schemas.actual.json

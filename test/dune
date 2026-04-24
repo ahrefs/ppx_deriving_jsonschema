@@ -19,9 +19,21 @@
 (copy_files shared/default_cases.ml)
 
 (library
+ (name default_cases_support)
+ (modules default_cases)
+ (wrapped false)
+ (libraries melange-json ppx_deriving_jsonschema.runtime)
+ (preprocess
+  (pps ppx_deriving_jsonschema melange-json-native.ppx)))
+
+(library
  (name test)
- (modules test default_cases default_cases_native)
- (libraries yojson melange-json ppx_deriving_jsonschema.runtime)
+ (modules test default_cases_native)
+ (libraries
+  yojson
+  melange-json
+  ppx_deriving_jsonschema.runtime
+  default_cases_support)
  (inline_tests)
  (preprocess
   (pps ppx_deriving_jsonschema ppx_expect melange-json-native.ppx)))
@@ -34,6 +46,11 @@
  (modules generate_schemas)
  (libraries test ppx_deriving_jsonschema.runtime))
 
+(executable
+ (name generate_default_schemas)
+ (modules generate_default_schemas)
+ (libraries default_cases_support))
+
 (rule
  (targets test_schemas.actual.json)
  (action
@@ -42,6 +59,18 @@
    (run ./generate_schemas.exe))))
 
 (rule
+ (targets default_schemas.actual.json)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run ./generate_default_schemas.exe))))
+
+(rule
  (alias runtest)
  (action
   (diff test_schemas.expected.json test_schemas.actual.json)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff default_schemas.expected.json default_schemas.actual.json)))
