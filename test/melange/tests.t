@@ -1,7 +1,3 @@
-melange default schemas
-  $ node ./output/test/melange/generate_default_schemas.js > default_schemas.actual.json
-  $ diff -u ../default_schemas.expected.json default_schemas.actual.json
-
 melange schemas
   $ node ./output/test/melange/generate_schemas.js > test_schemas.actual.json
   $ node - <<'EOF'

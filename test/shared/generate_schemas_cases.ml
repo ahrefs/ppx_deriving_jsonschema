@@ -30,20 +30,6 @@ end
 
 type default_with_module_type = { status : Status.t [@jsonschema.default Status.Active] } [@@deriving jsonschema]
 
-let default_snapshot =
-  `Assoc
-    [
-      "$schema", `String Ppx_deriving_jsonschema_runtime.schema_version;
-      ( "oneOf",
-        `List
-          [
-            Ppx_deriving_jsonschema_runtime.json_schema default_value_jsonschema;
-            Ppx_deriving_jsonschema_runtime.json_schema default_with_module_type_jsonschema;
-          ] );
-    ]
-
-let default_snapshot_string = Schema_snapshot.json_to_string default_snapshot
-
 let string_jsonschema = `Assoc [ "type", `String "string" ]
 let int_jsonschema = `Assoc [ "type", `String "integer" ]
 let bool_jsonschema = `Assoc [ "type", `String "boolean" ]
@@ -199,6 +185,8 @@ type variant_with_payload =
 
 let schemas =
   [
+    Ppx_deriving_jsonschema_runtime.json_schema default_value_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema default_with_module_type_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema with_modules_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema kind_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema kind_as_string_jsonschema;

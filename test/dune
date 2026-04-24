@@ -56,11 +56,6 @@
  (modules generate_schemas)
  (libraries yojson generate_schemas_support))
 
-(executable
- (name generate_default_schemas)
- (modules generate_default_schemas)
- (libraries generate_schemas_support))
-
 (rule
  (targets test_schemas.actual.json)
  (action
@@ -69,18 +64,6 @@
    (run ./generate_schemas.exe))))
 
 (rule
- (targets default_schemas.actual.json)
- (action
-  (with-stdout-to
-   %{targets}
-   (run ./generate_default_schemas.exe))))
-
-(rule
  (alias runtest)
  (action
   (diff test_schemas.expected.json test_schemas.actual.json)))
-
-(rule
- (alias runtest)
- (action
-  (diff default_schemas.expected.json default_schemas.actual.json)))
