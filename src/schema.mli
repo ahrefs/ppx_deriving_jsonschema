@@ -19,6 +19,7 @@ val description : loc:Warnings.loc -> string -> Ppxlib.expression -> Ppxlib.expr
 val variants :
   loc:Warnings.loc ->
   ?as_string:bool ->
+  ?compact_variants:bool ->
   [< `Inherit of Ppxlib.expression | `Tag of string * Ppxlib.expression list * string option ] list ->
   Ppxlib.expression
 

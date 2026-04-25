@@ -30,5 +30,6 @@ val jsonschema_ct_attrs : (Ppxlib.core_type, Ppxlib.expression) Ppxlib.Attribute
 val jsonschema_td_attrs : (Ppxlib.type_declaration, Ppxlib.expression) Ppxlib.Attribute.t
 val jsonschema_ld_attrs : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.Attribute.t
 val jsonschema_ld_default : (Ppxlib.label_declaration, Ppxlib.expression) Ppxlib.Attribute.t
+val jsonschema_td_compact_variants : Ppxlib.type_declaration Ppxlib.Attribute.flag
 val attributes : Ppxlib.Attribute.packed list
 val args : unit -> (bool -> bool -> 'a, 'a) Ppxlib.Deriving.Args.t
