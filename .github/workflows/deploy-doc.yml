@@ -44,7 +44,7 @@ jobs:
         run: opam exec -- odoc_driver ppx_deriving_jsonschema --remap
 
       - name: Set-up Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
