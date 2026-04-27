@@ -1,0 +1,8 @@
+(library
+ (wrapped false)
+ (modes melange)
+ (name ppx_deriving_jsonschema_runtime_melange)
+ (private_modules classify)
+ (public_name ppx_deriving_jsonschema.runtime_melange))
+
+(copy_files ../ppx_deriving_jsonschema_runtime.ml)

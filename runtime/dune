@@ -1,4 +1,6 @@
 (library
- (modes :standard melange)
+ (wrapped false)
+ (modes :standard)
  (name ppx_deriving_jsonschema_runtime)
+ (private_modules classify)
  (public_name ppx_deriving_jsonschema.runtime))

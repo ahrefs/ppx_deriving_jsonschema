@@ -35,6 +35,17 @@ let schemas =
     json_schema variant_with_payload_jsonschema;
   ]
 
-let schema = `Assoc [ "$schema", `String "https://json-schema.org/draft/2020-12/schema"; "oneOf", `List schemas ]
+let schema : Yojson.Basic.t =
+  `Assoc
+    [
+      "$schema", `String "https://json-schema.org/draft/2020-12/schema";
+      ( "oneOf",
+        `List
+          (List.map
+             (fun schema ->
+               match schema with
+               | `Assoc s -> Ppx_deriving_jsonschema_runtime.classify (fun x -> x) (`Assoc s))
+             schemas) );
+    ]
 
 let () = print_endline (Yojson.Basic.pretty_to_string schema)

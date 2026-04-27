@@ -69,5 +69,11 @@ jobs:
           dune-cache: true
           allow-prerelease-opam: true
 
-      - name: Lint doc
-        uses: ocaml/setup-ocaml/lint-doc@v3
+      - name: Install dependencies
+        run: opam install .
+
+      - name: Install odoc-driver
+        run: opam install odoc-driver
+
+      - name: Build docs
+        run: opam exec -- odoc_driver ppx_deriving_jsonschema
