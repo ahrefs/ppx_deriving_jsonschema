@@ -3964,3 +3964,37 @@ include
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type compact_variants =
+  | A 
+  | B 
+  | C of int [@@deriving jsonschema][@@jsonschema.compact_variants ]
+include
+  struct
+    let compact_variants_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc [("const", (`String "A"))];
+                `Assoc [("const", (`String "B"))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "C"))];
+                       `Assoc [("type", (`String "integer"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]

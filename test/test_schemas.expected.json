@@ -2269,6 +2269,20 @@
       },
       "required": [],
       "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "const": "A" },
+        { "const": "B" },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "C" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
     }
   ]
 }

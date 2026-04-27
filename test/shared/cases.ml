@@ -380,3 +380,8 @@ module Status = struct
   [@@deriving to_json, jsonschema]
 end
 type default_with_module_type = { status : Status.t [@jsonschema.default Status.Active] } [@@deriving jsonschema]
+type compact_variants =
+  | A
+  | B
+  | C of int
+[@@deriving jsonschema] [@@jsonschema.compact_variants]

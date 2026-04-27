@@ -102,6 +102,7 @@ let schemas =
     Ppx_deriving_jsonschema_runtime.json_schema minimum_maximum_variant_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema default_value_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema default_with_module_type_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema compact_variants_jsonschema;
   ]
 
 let snapshot = `Assoc [ "$schema", `String Ppx_deriving_jsonschema_runtime.schema_version; "oneOf", `List schemas ]
