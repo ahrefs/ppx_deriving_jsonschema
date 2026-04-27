@@ -37,8 +37,11 @@ jobs:
           dune-cache: true
           allow-prerelease-opam: true
 
-      - name: Install dependencies
-        run: opam install . --deps-only --with-doc
+      - name: Install
+        run: opam install .
+
+      - name: Install odoc-driver
+        run: opam install odoc-driver
 
       - name: Build documentation
         run: opam exec -- odoc_driver ppx_deriving_jsonschema --remap

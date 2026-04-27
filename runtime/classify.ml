@@ -1,1 +1,1 @@
-let classify f x = f x
+let classify f x = Obj.magic (f x)

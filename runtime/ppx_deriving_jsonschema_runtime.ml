@@ -1,7 +1,9 @@
 let schema_version = "https://json-schema.org/draft/2020-12/schema"
 
 (* There is no Yojson.Basic.t in Melange and the Melange_json.t is not compatible with Yojson.Basic.t,
-   so we use our own type to support universal API. *)
+   so we use our own type to support universal API. Platform-specific conversion is in classify.ml
+   (native: Obj.magic coercion; Melange: Js.Json decode). *)
+
 type t =
   [ `Null
   | `String of string

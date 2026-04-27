@@ -1,0 +1,19 @@
+(copy_files ../shared/cases.ml)
+
+(copy_files ../shared/schema_snapshot.ml)
+
+(copy_files ../shared/generate_schemas_cases.ml)
+
+(melange.emit
+ (target output)
+ (libraries melange-json ppx_deriving_jsonschema.runtime_melange)
+ (preprocess
+  (pps ppx_deriving_jsonschema melange-json.ppx melange.ppx))
+ (module_systems
+  (commonjs js)))
+
+(cram
+ (deps
+  (alias melange)
+  ../test_schemas.expected.json
+  ./output/test/melange/generate_schemas.js))

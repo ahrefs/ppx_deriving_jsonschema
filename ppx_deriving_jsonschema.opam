@@ -24,9 +24,9 @@ depends: [
   "melange-json" {with-test}
   "melange-json-native" {with-test}
   "yojson" {with-test}
-  "ppx_expect" {with-test}
   "ocamlformat" {= "0.29.0" & with-dev-setup}
   "ocaml-lsp-server" {with-dev-setup}
+  "odoc-driver" {with-doc}
   "odoc" {with-doc}
 ]
 build: [

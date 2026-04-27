@@ -191,7 +191,7 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
     is_rec )
 
 (* Returns (schema_expression, is_recursive, params_prefix) *)
-let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) variants =
+let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) ?(compact_variants = false) variants =
   let variants, is_rec =
     List.fold_left
       (fun (variants, is_rec) ({ pcd_args; pcd_name = { txt = name; _ }; _ } as var) ->
@@ -223,7 +223,7 @@ let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) var
   let schema, params_prefix =
     match config.Attrs.variant_as_string with
     | true -> Schema.variants ~loc ~as_string:true variants, "_"
-    | false -> Schema.variants ~loc variants, ""
+    | false -> Schema.variants ~loc ~compact_variants variants, ""
   in
   schema, is_rec, params_prefix
 
@@ -234,7 +234,8 @@ let schema_of_type_decl ~loc ~(config : Attrs.config) ~recursive_types type_decl
   let params = List.map (fun tp -> (get_type_param_name tp).txt) type_decl.ptype_params in
   match type_decl.ptype_kind with
   | Ptype_variant variants ->
-    let schema, is_rec, params_prefix = schema_of_variants ~loc ~config ~recursive_types variants in
+    let compact_variants = Attribute.has_flag Attrs.jsonschema_td_compact_variants type_decl in
+    let schema, is_rec, params_prefix = schema_of_variants ~loc ~config ~recursive_types ~compact_variants variants in
     type_name, schema, is_rec, params, params_prefix
   | Ptype_record label_declarations ->
     let schema, is_rec = schema_of_record ~loc ~config ~recursive_types label_declarations allow_extra_fields in

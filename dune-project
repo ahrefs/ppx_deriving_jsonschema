@@ -33,15 +33,16 @@
   dune
   (ppxlib
    (>= "0.24.0"))
-  (melange (>= "4.0.0"))
+  (melange
+   (>= "4.0.0"))
   (melange-json :with-test)
   (melange-json-native :with-test)
   (yojson :with-test)
-  (ppx_expect :with-test)
   (ocamlformat
    (and
     (= "0.29.0")
     :with-dev-setup))
-  (ocaml-lsp-server :with-dev-setup))
+  (ocaml-lsp-server :with-dev-setup)
+  (odoc-driver :with-doc))
  (tags
   (jsonschema "org:ahrefs" syntax)))

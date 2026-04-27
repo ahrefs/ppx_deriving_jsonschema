@@ -71,7 +71,7 @@ let default ~loc value = annotation ~loc ("default", value)
 let description ~loc description schema_expr =
   annotation ~loc ("description", [%expr `String [%e estring ~loc description]]) schema_expr
 
-let variants ~loc ?(as_string = false) constrs =
+let variants ~loc ?(as_string = false) ?(compact_variants = false) constrs =
   let opt_description ~loc desc schema =
     match desc with
     | Some d -> description ~loc d schema
@@ -81,7 +81,12 @@ let variants ~loc ?(as_string = false) constrs =
     (List.map
        (function
          | `Tag (name, typs, desc) ->
-           opt_description ~loc desc (if as_string then const ~loc name else tuple ~loc (const ~loc name :: typs))
+           let schema =
+             if as_string then const ~loc name
+             else if compact_variants && typs = [] then const ~loc name
+             else tuple ~loc (const ~loc name :: typs)
+           in
+           opt_description ~loc desc schema
          | `Inherit typ -> typ)
        constrs)
 
@@ -158,13 +163,19 @@ module Annotation = struct
 
   let add_default ~loc attr core_type =
     add_schema_attr attr (fun expr schema ->
-      let base_type =
-        match core_type with
-        | [%type: [%t? t] option] -> t
-        | t -> t
+      let json_value =
+        match expr.pexp_desc with
+        | Pexp_construct ({ txt = Lident "[]"; _ }, None) -> [%expr `List []]
+        | Pexp_construct ({ txt = Lident "None"; _ }, None) -> [%expr `Null]
+        | _ ->
+          let base_type =
+            match core_type with
+            | [%type: [%t? t] option] -> t
+            | t -> t
+          in
+          let serializer = serializer_of_core_type ~loc base_type in
+          [%expr [%e serializer] [%e expr]]
       in
-      let serializer = serializer_of_core_type ~loc base_type in
-      let json_value = [%expr [%e serializer] [%e expr]] in
       match schema with
       | [%expr `Assoc [%e? fields]] -> [%expr `Assoc (("default", [%e json_value]) :: [%e fields])]
       | s ->

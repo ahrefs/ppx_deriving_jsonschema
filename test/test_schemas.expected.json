@@ -3,6 +3,44 @@
   "oneOf": [
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "A" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "B" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "C" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "D" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
         "m2": {
@@ -265,6 +303,353 @@
         "a", "opt_int", "comment", "kind_f", "date"
       ],
       "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_record": {
+          "type": "object",
+          "properties": {
+            "b": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/recursive_record" }
+            },
+            "a": { "type": "integer" }
+          },
+          "required": [ "b", "a" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/recursive_record"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_variant": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "A" }, { "$ref": "#/$defs/recursive_variant" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/recursive_variant"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Node" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "right": { "$ref": "#/$defs/tree" },
+                    "left": { "$ref": "#/$defs/tree" },
+                    "value": { "type": "integer" }
+                  },
+                  "required": [ "right", "left", "value" ],
+                  "additionalProperties": false
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/tree"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "y": { "type": "string" }, "x": { "type": "integer" } },
+      "required": [ "y", "x" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "foo": {
+          "type": "object",
+          "properties": {
+            "bar": {
+              "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ]
+            }
+          },
+          "required": [ "bar" ],
+          "additionalProperties": false
+        },
+        "bar": {
+          "type": "object",
+          "properties": {
+            "foo": {
+              "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ]
+            }
+          },
+          "required": [ "foo" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/foo"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "foo": {
+          "type": "object",
+          "properties": {
+            "bar": {
+              "anyOf": [ { "$ref": "#/$defs/bar" }, { "type": "null" } ]
+            }
+          },
+          "required": [ "bar" ],
+          "additionalProperties": false
+        },
+        "bar": {
+          "type": "object",
+          "properties": {
+            "foo": {
+              "anyOf": [ { "$ref": "#/$defs/foo" }, { "type": "null" } ]
+            }
+          },
+          "required": [ "foo" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/bar"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "expr": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Literal" }, { "type": "integer" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Binary" },
+                { "$ref": "#/$defs/expr" },
+                { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Block" },
+                { "type": "array", "items": { "$ref": "#/$defs/stmt" } }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "stmt": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "ExprStmt" }, { "$ref": "#/$defs/expr" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "IfStmt" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "else_": {
+                      "anyOf": [
+                        { "$ref": "#/$defs/stmt" }, { "type": "null" }
+                      ]
+                    },
+                    "then_": { "$ref": "#/$defs/stmt" },
+                    "cond": { "$ref": "#/$defs/expr" }
+                  },
+                  "required": [ "else_", "then_", "cond" ],
+                  "additionalProperties": false
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/expr"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "x": { "type": "integer" } },
+      "required": [ "x" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "y": { "type": "string" } },
+      "required": [ "y" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "node_a": {
+          "type": "object",
+          "properties": {
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            }
+          },
+          "required": [ "c", "b" ],
+          "additionalProperties": false
+        },
+        "node_b": {
+          "type": "object",
+          "properties": {
+            "c": {
+              "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
+          },
+          "required": [ "c", "a" ],
+          "additionalProperties": false
+        },
+        "node_c": {
+          "type": "object",
+          "properties": {
+            "b": {
+              "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
+            },
+            "a": {
+              "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
+            }
+          },
+          "required": [ "b", "a" ],
+          "additionalProperties": false
+        }
+      },
+      "$ref": "#/$defs/node_a"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "recursive_tuple": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Branch" },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    { "$ref": "#/$defs/recursive_tuple" },
+                    { "$ref": "#/$defs/recursive_tuple" }
+                  ],
+                  "unevaluatedItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/recursive_tuple"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "file://test/cases.ml:140",
+      "$defs": {
+        "tree": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Node" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "right": { "$ref": "#/$defs/tree" },
+                    "left": { "$ref": "#/$defs/tree" },
+                    "value": { "type": "integer" }
+                  },
+                  "required": [ "right", "left", "value" ],
+                  "additionalProperties": false
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/tree"
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -886,10 +1271,1017 @@
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "User" },
+            {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string" },
+                "name": { "type": "string" }
+              },
+              "required": [ "email", "name" ],
+              "additionalProperties": true
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Guest" },
+            {
+              "type": "object",
+              "properties": { "ip": { "type": "string" } },
+              "required": [ "ip" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
         { "const": "A" },
         { "const": "B" },
         { "const": "C" },
         { "const": "D" }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Typ" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Class" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "Typ" }, { "const": "Class" } ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "type" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "class" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "prefixItems": [ { "type": "integer" }, { "type": "string" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            { "type": "number" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            { "type": "number" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            { "type": "integer" },
+            { "type": "string" },
+            { "type": "boolean" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "B" },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "type": "string" },
+                { "type": "boolean" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "obj1": {
+          "type": "object",
+          "properties": {
+            "obj2": {
+              "type": "object",
+              "properties": { "x": { "type": "integer" } },
+              "required": [ "x" ],
+              "additionalProperties": true
+            }
+          },
+          "required": [ "obj2" ],
+          "additionalProperties": false
+        }
+      },
+      "required": [ "obj1" ],
+      "additionalProperties": true
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "x": { "type": "integer" } },
+      "required": [ "x" ],
+      "additionalProperties": true
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "title": { "type": [ "string", "null" ] }
+      },
+      "required": [ "url", "title" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "title": { "type": [ "string", "null" ] }
+      },
+      "required": [ "url", "title" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "A" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "B" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "second": { "type": "boolean" },
+        "first": { "type": "integer" }
+      },
+      "required": [ "label", "second", "first" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Left" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Right" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Left" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Right" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [ { "const": "North" }, { "const": "South" } ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "max_results": {
+          "description": "Maximum number of results to return",
+          "type": "integer"
+        },
+        "query": {
+          "description": "The search query to execute",
+          "type": "string"
+        }
+      },
+      "required": [ "max_results", "query" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A user object",
+      "type": "object",
+      "properties": {
+        "age": {
+          "description": "The user's age",
+          "type": [ "integer", "null" ]
+        },
+        "name": { "description": "The user's full name", "type": "string" }
+      },
+      "required": [ "name" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "opt_int": {
+          "description": "An optional integer",
+          "type": [ "integer", "null" ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "description": "String and int",
+          "type": "array",
+          "prefixItems": [
+            { "const": "Pair" }, { "type": "string" }, { "type": "integer" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Description_value" },
+            { "description": "A string value", "type": "string" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "A 2D point",
+          "type": "array",
+          "prefixItems": [
+            { "const": "Point" },
+            {
+              "type": "object",
+              "properties": {
+                "y": { "type": "integer" },
+                "x": { "type": "integer" }
+              },
+              "required": [ "y", "x" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "description": "First choice", "const": "A" },
+        { "description": "Second choice", "const": "B" }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Either success or an error message string",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Ok" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Err" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "drop_complex": {
+          "anyOf": [
+            { "type": "array", "items": { "type": "integer" } },
+            { "type": "null" }
+          ]
+        },
+        "drop_simple": { "type": [ "string", "null" ] },
+        "plain": { "type": [ "string", "null" ] }
+      },
+      "required": [ "plain" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "composing_type": {
+          "anyOf": [
+            { "type": "string", "description": "A string" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "format": "date-time",
+      "type": "string"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "with_format": { "format": "date-time", "type": "string" }
+      },
+      "required": [ "with_format" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "A" },
+            {
+              "format": "date-time",
+              "description": "A date-time string",
+              "type": "string"
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "B" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "grade": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "B" },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    { "$ref": "#/$defs/grade" }, { "$ref": "#/$defs/grade" }
+                  ],
+                  "unevaluatedItems": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "C" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/grade"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "b": {
+          "$id": "file://test/cases.ml:313",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        },
+        "a": {
+          "$id": "file://test/cases.ml:312",
+          "$defs": {
+            "self_ref": {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/self_ref" }
+                }
+              },
+              "required": [ "children" ],
+              "additionalProperties": false
+            }
+          },
+          "$ref": "#/$defs/self_ref"
+        }
+      },
+      "required": [ "b", "a" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Atom" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Group" },
+                { "type": "array", "items": { "$ref": "#/$defs/filter" } },
+                { "type": "string" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/filter"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "outer_rec": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "ORLeaf" }, { "type": "integer" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "ORNode" }, { "$ref": "#/$defs/rec_wrapper" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "rec_wrapper": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RWrap" }, { "$ref": "#/$defs/outer_rec" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "RNested" }, { "$ref": "#/$defs/rec_wrapper" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/outer_rec"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "bool_filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolAtom" },
+                {
+                  "$id": "file://test/cases.ml:321",
+                  "$defs": {
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Atom" }, { "type": "integer" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        {
+                          "type": "array",
+                          "prefixItems": [
+                            { "const": "Group" },
+                            {
+                              "type": "array",
+                              "items": { "$ref": "#/$defs/filter" }
+                            },
+                            { "type": "string" }
+                          ],
+                          "unevaluatedItems": false,
+                          "minItems": 3,
+                          "maxItems": 3
+                        }
+                      ]
+                    }
+                  },
+                  "$ref": "#/$defs/filter"
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "BoolFilterGroup" },
+                {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/bool_filter" }
+                }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/bool_filter"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "maximum": 100,
+      "type": "integer"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "field": { "maximum": 100, "type": "integer" } },
+      "required": [ "field" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Integer percentage value (0-100 inclusive)",
+      "minimum": 0,
+      "maximum": 100,
+      "type": "integer"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "label": {
+          "description": "An ISO date-time",
+          "format": "date-time",
+          "type": "string"
+        },
+        "score": {
+          "description": "Score out of 100",
+          "minimum": 0,
+          "maximum": 100,
+          "type": "integer"
+        }
+      },
+      "required": [ "label", "score" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A plain integer",
+      "type": "integer"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0,
+      "maximum": 100,
+      "type": "integer"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "type": "number"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ratio": { "minimum": 0.0, "maximum": 1.0, "type": "number" },
+        "score": { "minimum": 0, "maximum": 100, "type": "integer" }
+      },
+      "required": [ "ratio", "score" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0,
+      "maximum": 255,
+      "type": "integer"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "type": "number"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Percentage" },
+            { "minimum": 0, "maximum": 100, "type": "integer" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Factor" },
+            { "minimum": 0.0, "maximum": 1.0, "type": "number" }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "empty_list": {
+          "default": [],
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "int_list": {
+          "default": [ 1, 2, 3 ],
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "record": {
+          "default": { "score": null },
+          "type": "object",
+          "properties": { "score": { "type": [ "integer", "null" ] } },
+          "required": [ "score" ],
+          "additionalProperties": false
+        },
+        "variant": {
+          "default": [ "A" ],
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "B" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        },
+        "pairs": {
+          "default": [ [ "a", null ], [ "b", "b" ] ],
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              { "type": "string" }, { "type": [ "string", "null" ] }
+            ],
+            "unevaluatedItems": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "pair": {
+          "default": [ 1, "hello" ],
+          "type": "array",
+          "prefixItems": [ { "type": "integer" }, { "type": "string" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "is_active": { "default": false, "type": "boolean" },
+        "speed": { "default": 100.0, "type": "number" },
+        "label": { "default": "default", "type": "string" },
+        "score": { "default": 0, "type": [ "integer", "null" ] }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "status": {
+          "default": [ "Active" ],
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Active" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Inactive" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        { "const": "A" },
+        { "const": "B" },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "C" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
       ]
     }
   ]
