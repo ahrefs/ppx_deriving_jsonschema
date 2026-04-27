@@ -233,6 +233,32 @@ type t =
 { "anyOf": [ { "const": "Typ" }, { "const": "Class" } ] }
 ```
 
+The `[@@jsonschema.compact_variants]` attribute provides a middle ground: unit constructors (no arguments) are rendered as plain string constants, while constructors with arguments keep the tuple array encoding.
+
+```ocaml
+type t =
+| A
+| B
+| C of int
+[@@deriving jsonschema] [@@jsonschema.compact_variants]
+```
+
+```json
+{
+  "anyOf": [
+    { "const": "A" },
+    { "const": "B" },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "C" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
 If the JSON variant names differ from OCaml conventions, it is possible to specify the corresponding JSON string explicitly using `[@name "constr"]`, for example:
 
 ```ocaml
@@ -666,7 +692,8 @@ type t = {
 
 Set a default value for a record field. Fields with a default are excluded from `required`.
 
-Primitive literals (`int`, `int32`, `nativeint`, `float`, `string`, `bytes`, `bool`) and their `option`, `list`, and `array` variants are serialized automatically. For non-primitive types (custom variants, records, etc.) a `<type>_to_json : <type> -> Yojson.Basic.t` function must be in scope — e.g. via `[@@deriving json]` from melange-json.
+Primitive literals (`int`, `int32`, `nativeint`, `float`, `string`, `bytes`, `bool`) and **their** `option`, `list`, `tuple`, and `array` variants are serialized automatically. 
+For non-primitive types (custom variants, records, etc.) a `<type>_to_json` function must be in scope — e.g. via `[@@deriving json]` from melange-json. (`<type> -> Js.Json.t` at melange and `<type> -> Yojson.Basic.t` at native)
 
 ```ocaml
 type status = Active | Inactive [@@deriving jsonschema]

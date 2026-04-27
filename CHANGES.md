@@ -1,4 +1,5 @@
 # Next release
+- add `[@@jsonschema.compact_variants]` attribute on variant type declarations to render unit constructors as plain string constants (`{ "const": "Name" }`) instead of single-element tuple arrays; constructors with arguments keep the tuple array encoding
 - add `[@@jsonschema.format]` attribute to add a format to a type or a field; now also supported on core types (e.g. variant payloads: `A of (string[@jsonschema.format "date-time"])`); validated to only apply to `string` and `bytes` types
 - add `[@@jsonschema.description]` attribute to add a description to a type or a field; now also supported on core types (e.g. variant payloads and inline type annotations) and on polymorphic variant tags
 - add `~ocaml_doc` flag on `[@@deriving jsonschema]` to use `ocaml.doc` attributes (i.e. `(** ... *)` doc comments) as a fallback for `[@@jsonschema.description]` when the explicit annotation is absent; off by default

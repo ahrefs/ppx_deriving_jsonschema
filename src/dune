@@ -3,5 +3,4 @@
  (kind ppx_deriver)
  (libraries ppxlib)
  (preprocess
-  (pps ppxlib.metaquot))
- (ppx_runtime_libraries ppx_deriving_jsonschema.runtime))
+  (pps ppxlib.metaquot)))

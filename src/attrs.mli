@@ -44,5 +44,7 @@ val td_description : ocaml_doc:bool -> Ppxlib.type_declaration -> string Locatio
 val cd_description : ocaml_doc:bool -> Ppxlib.constructor_declaration -> string Location.loc option
 val ct_description : ocaml_doc:bool -> Ppxlib.core_type -> string Location.loc option
 val rtag_description : ocaml_doc:bool -> Ppxlib.row_field -> string Location.loc option
+
+val jsonschema_td_compact_variants : Ppxlib.type_declaration Ppxlib.Attribute.flag
 val attributes : Ppxlib.Attribute.packed list
 val args : unit -> (bool -> bool -> bool -> 'a, 'a) Ppxlib.Deriving.Args.t

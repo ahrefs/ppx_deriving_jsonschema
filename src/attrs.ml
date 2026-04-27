@@ -100,6 +100,10 @@ let ct_description ~ocaml_doc (ct : core_type) =
 
 let rtag_description ~ocaml_doc (rf : row_field) =
   fallback_description ~ocaml_doc jsonschema_rtag_description rf.prf_attributes rf
+
+let jsonschema_td_compact_variants =
+  Attribute.declare_flag "jsonschema.compact_variants" Attribute.Context.type_declaration
+
 let attributes =
   [
     Attribute.T jsonschema_key;
@@ -127,6 +131,7 @@ let attributes =
     Attribute.T jsonschema_td_attrs;
     Attribute.T jsonschema_ld_attrs;
     Attribute.T jsonschema_ld_default;
+    Attribute.T jsonschema_td_compact_variants;
   ]
 
 let args () = Deriving.Args.(empty +> flag "variant_as_string" +> flag "polymorphic_variant_tuple" +> flag "ocaml_doc")
