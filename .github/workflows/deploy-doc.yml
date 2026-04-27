@@ -38,7 +38,7 @@ jobs:
           allow-prerelease-opam: true
 
       - name: Install dependencies
-        run: opam install . --deps-only --with-doc
+        run: opam install . --with-doc
 
       - name: Build documentation
         run: opam exec -- odoc_driver ppx_deriving_jsonschema --remap
