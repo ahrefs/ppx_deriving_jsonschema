@@ -143,10 +143,19 @@ module Annotation = struct
     | [%type: [%t? t] array] ->
       let s = serializer_of_core_type ~loc t in
       [%expr fun xs -> `List (Array.to_list (Array.map [%e s] xs))]
+    | { ptyp_desc = Ptyp_tuple types; _ } ->
+      let serializers = List.map (serializer_of_core_type ~loc) types in
+      let vars = List.mapi (fun i _ -> Printf.sprintf "ppx_tuple_%d" i) types in
+      let pats = List.map (fun v -> ppat_var ~loc { txt = v; loc }) vars in
+      let exprs = List.map2 (fun s v -> [%expr [%e s] [%e evar ~loc v]]) serializers vars in
+      [%expr fun [%p ppat_tuple ~loc pats] -> `List [%e elist ~loc exprs]]
     | { ptyp_desc = Ptyp_var name; _ } -> evar ~loc name
     | { ptyp_desc = Ptyp_constr (id, args); _ } ->
       let arg_serializers = List.map (serializer_of_core_type ~loc) args in
-      type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
+      let exp =
+        type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
+      in
+      [%expr Ppx_deriving_jsonschema_runtime.classify [%e exp]]
     | _ ->
       Location.raise_errorf ~loc:ct.ptyp_loc
         "[@jsonschema.default] cannot serialize this type. For non-primitive types, ensure a '<type>_to_json' function \

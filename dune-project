@@ -14,9 +14,9 @@
  "Ahrefs <github@ahrefs.com>")
 
 (maintainers
-  "Louis Roché <louis.roche@ahrefs.com>"
-  "Koonwen Lee <koonwen.lee@ahrefs.com>"
-  "Ahrefs <github@ahrefs.com>")
+ "Louis Roché <louis.roche@ahrefs.com>"
+ "Koonwen Lee <koonwen.lee@ahrefs.com>"
+ "Ahrefs <github@ahrefs.com>")
 
 (license MIT)
 
@@ -33,11 +33,15 @@
   dune
   (ppxlib
    (>= "0.24.0"))
+  (melange (>= "4.0.0"))
   (melange-json :with-test)
   (melange-json-native :with-test)
   (yojson :with-test)
   (ppx_expect :with-test)
-  (ocamlformat (and (= "0.29.0") :with-dev-setup))
+  (ocamlformat
+   (and
+    (= "0.29.0")
+    :with-dev-setup))
   (ocaml-lsp-server :with-dev-setup))
  (tags
   (jsonschema "org:ahrefs" syntax)))
