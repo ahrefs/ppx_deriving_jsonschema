@@ -42,6 +42,7 @@
    (and
     (= "0.29.0")
     :with-dev-setup))
-  (ocaml-lsp-server :with-dev-setup))
+  (ocaml-lsp-server :with-dev-setup)
+  (odoc-driver :with-doc))
  (tags
   (jsonschema "org:ahrefs" syntax)))
