@@ -578,6 +578,27 @@ type t = {
 }
 ```
 
+When the `~ocaml_doc` flag is passed to the deriver, an OCaml doc comment (`(** ... *)`, stored in the AST as an `ocaml.doc` attribute) is used as the description when `[@jsonschema.description]` is not provided. The explicit attribute takes precedence. Without the flag, doc comments are ignored.
+
+```ocaml
+type t = {
+  name : string;  (** The user's full name *)
+} [@@deriving jsonschema ~ocaml_doc]
+(** A user object *)
+```
+
+```json
+{
+  "description": "A user object",
+  "type": "object",
+  "properties": {
+    "name": { "description": "The user's full name", "type": "string" }
+  },
+  "required": [ "name" ],
+  "additionalProperties": false
+}
+```
+
 #### `[@@jsonschema.format]` ([REF](https://www.learnjsonschema.com/2020-12/format-annotation/))
 
 Add a format annotation to a string-typed field. It can be used on a type, a field, or directly on a core type (e.g. a variant payload). Only applies to `string` and `bytes` types.

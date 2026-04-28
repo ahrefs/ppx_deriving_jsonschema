@@ -279,6 +279,63 @@ type described_variant_string =
   | A [@jsonschema.description "First choice"]
   | B [@jsonschema.description "Second choice"]
 [@@deriving jsonschema ~variant_as_string]
+
+(* The [~ocaml_doc] flag opts into using [(** ... *)] doc comments as a
+   fallback for [@jsonschema.description]. Without the flag, doc comments are
+   ignored (see [doc_comment_disabled] below). *)
+
+(** A user object *)
+type doc_comment_record = {
+  name : string;  (** The user's full name *)
+  age : int;  (** The user's age *)
+}
+[@@deriving jsonschema ~ocaml_doc]
+
+(* Without the [~ocaml_doc] flag, doc comments are not turned into descriptions. *)
+
+(** A user object *)
+type doc_comment_disabled = { name : string  (** The user's full name *) } [@@deriving jsonschema]
+
+(* Explicit [@jsonschema.description] wins over an ocaml.doc comment on the same node. *)
+type doc_comment_override = { field : string [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *) }
+[@@deriving jsonschema ~ocaml_doc]
+
+type doc_comment_variant =
+  | Plain  (** No payload *)
+  | With_int of int  (** Single integer tag *)
+[@@deriving jsonschema ~ocaml_doc]
+
+type doc_comment_core_type = (string[@ocaml.doc " A string alias "]) [@@deriving jsonschema ~ocaml_doc]
+
+type doc_attribute_alias = (string[@doc " Alias fallback "]) [@@deriving jsonschema ~ocaml_doc]
+
+(* Multi-line doc comments are preserved as-is apart from a [String.trim] on the
+   outermost whitespace. Internal newlines and indentation remain in the
+   generated description. *)
+
+[@@@ocamlformat "disable"]
+type doc_comment_multiline = {
+  name : string;  (** The user's full name.
+          Must be non-empty and under 100 characters. *)
+}
+[@@deriving jsonschema ~ocaml_doc]
+[@@@ocamlformat "enable"]
+
+type doc_comment_poly_variant =
+  [ `Plain  (** No payload *)
+  | `With_int of int  (** Single integer tag *)
+  ]
+[@@deriving jsonschema ~ocaml_doc]
+
+(* Multiple hand-written [@ocaml.doc] / [@doc] attributes on the same node are
+   joined into a single description with a blank-line separator. *)
+type doc_comment_multiple = (string[@ocaml.doc " first block "] [@ocaml.doc " second block "] [@doc " third block "])
+[@@deriving jsonschema ~ocaml_doc]
+
+(* Explicit [@jsonschema.description] on a polymorphic variant tag takes precedence. *)
+type doc_comment_poly_variant_override = [ `Tagged [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *) ]
+[@@deriving jsonschema ~ocaml_doc]
+
 type computation_result =
   | Ok
   | Err of string

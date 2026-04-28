@@ -78,6 +78,16 @@ let schemas =
     Ppx_deriving_jsonschema_runtime.json_schema described_variant_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema described_variant_inline_record_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema described_variant_string_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_record_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_disabled_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_override_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_variant_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_core_type_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_attribute_alias_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_multiline_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_poly_variant_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_multiple_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema doc_comment_poly_variant_override_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema computation_result_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema nullable_fields_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema composing_record_jsonschema;
