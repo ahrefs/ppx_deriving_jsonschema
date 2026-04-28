@@ -308,7 +308,6 @@ type doc_comment_variant =
 type doc_comment_core_type = (string[@ocaml.doc " A string alias "]) [@@deriving jsonschema ~ocaml_doc]
 
 type doc_attribute_alias = (string[@doc " Alias fallback "]) [@@deriving jsonschema ~ocaml_doc]
-
 (* Multi-line doc comments are preserved as-is apart from a [String.trim] on the
    outermost whitespace. Internal newlines and indentation remain in the
    generated description. *)
