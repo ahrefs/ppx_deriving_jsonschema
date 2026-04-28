@@ -14,7 +14,7 @@ type t =
   | `Assoc of (string * t) list
   ]
 
-let classify = Classify.classify
+let classify = Ppx_deriving_jsonschema_classify.classify
 
 let json_schema ?id ?title ?description ?definitions types =
   match types with
