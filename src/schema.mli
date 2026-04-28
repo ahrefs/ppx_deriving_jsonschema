@@ -1,15 +1,11 @@
 val const : loc:Warnings.loc -> string -> Ppxlib.expression
 val type_ref : loc:Warnings.loc -> string -> Ppxlib.expression
 val type_def : loc:Warnings.loc -> string -> Ppxlib.expression
-val null : loc:Warnings.loc -> Ppxlib.expression
-val char : loc:Warnings.loc -> Ppxlib.expression
 val oneOf : loc:Warnings.loc -> Ppxlib.expression list -> Ppxlib.expression
 val anyOf : loc:Warnings.loc -> Ppxlib.expression list -> Ppxlib.expression
-val array_ : loc:Warnings.loc -> ?min_items:int -> ?max_items:int -> Ppxlib.expression -> Ppxlib.expression
 val tuple : loc:Warnings.loc -> Ppxlib.expression list -> Ppxlib.expression
 val enum : loc:Warnings.loc -> string option -> Ppxlib.expression list -> Ppxlib.expression
 val enum_string : loc:Warnings.loc -> string list -> Ppxlib.expression
-val nullable : loc:Warnings.loc -> Ppxlib.expression -> Ppxlib.expression
 val annotation : loc:Warnings.loc -> string * Ppxlib.expression -> Ppxlib.expression -> Ppxlib.expression
 val format : loc:Warnings.loc -> string -> Ppxlib.expression -> Ppxlib.expression
 val maximum : loc:Warnings.loc -> Ppxlib.expression -> Ppxlib.expression -> Ppxlib.expression

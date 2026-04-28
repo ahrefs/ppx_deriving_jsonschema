@@ -1,3 +1,13 @@
+type t =
+  [ `Null
+  | `String of string
+  | `Float of float
+  | `Int of int
+  | `Bool of bool
+  | `List of t list
+  | `Assoc of (string * t) list
+  ]
+
 let classify f x =
   match%platform () with
   | Server -> f x
