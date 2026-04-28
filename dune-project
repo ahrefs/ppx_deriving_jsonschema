@@ -24,6 +24,7 @@
 
 (package
  (name ppx_deriving_jsonschema)
+ (version 0.0.7)
  (synopsis "Jsonschema generator for ppx_deriving")
  (description
   "ppx_deriving_jsonschema is a ppx rewriter that generates jsonschema from ocaml types")

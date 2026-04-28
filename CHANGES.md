@@ -1,4 +1,5 @@
-# Next release
+# 0.0.7
+
 - add `[@@jsonschema.compact_variants]` attribute on variant type declarations to render unit constructors as plain string constants (`{ "const": "Name" }`) instead of single-element tuple arrays; constructors with arguments keep the tuple array encoding
 - add `[@@jsonschema.format]` attribute to add a format to a type or a field; now also supported on core types (e.g. variant payloads: `A of (string[@jsonschema.format "date-time"])`); validated to only apply to `string` and `bytes` types
 - add `[@@jsonschema.description]` attribute to add a description to a type or a field; now also supported on core types (e.g. variant payloads and inline type annotations) and on polymorphic variant tags
@@ -10,6 +11,7 @@
 - fix broken `$ref` scoping when a recursive type uses a parametric recursive type with itself as a type argument (e.g. `type t = ... | N of t wrapper` where `wrapper` is also recursive); inner `$defs` are now hoisted into the root schema's `$defs` namespace
 
 # 0.0.6
+
 - update jsonschema derivation to use t instead of Yojson.Basic for type signatures
 
 # 0.0.5
