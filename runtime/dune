@@ -2,5 +2,19 @@
  (wrapped false)
  (modes :standard)
  (name ppx_deriving_jsonschema_runtime)
- (private_modules classify)
+ (preprocess
+  (pps server-reason-react.browser_ppx))
  (public_name ppx_deriving_jsonschema.runtime))
+
+(subdir
+ melange
+ (library
+  (wrapped false)
+  (modes melange)
+  (name ppx_deriving_jsonschema_runtime_melange)
+  (preprocess
+   (pps server-reason-react.browser_ppx -js))
+  (public_name ppx_deriving_jsonschema.runtime_melange))
+ (copy_files
+  (only_sources)
+  (files ../*.{ml,mli})))

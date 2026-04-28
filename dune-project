@@ -9,9 +9,7 @@
 (source
  (github ahrefs/ppx_deriving_jsonschema))
 
-(authors
- "Louis Roché <louis.roche@ahrefs.com>"
- "Ahrefs <github@ahrefs.com>")
+(authors "Louis Roché <louis.roche@ahrefs.com>" "Ahrefs <github@ahrefs.com>")
 
 (maintainers
  "Louis Roché <louis.roche@ahrefs.com>"
@@ -36,6 +34,8 @@
    (>= "0.24.0"))
   (melange
    (>= "4.0.0"))
+  (server-reason-react
+   (>= "0.4.1"))
   (melange-json :with-test)
   (melange-json-native :with-test)
   (yojson :with-test)

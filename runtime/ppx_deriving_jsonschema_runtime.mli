@@ -10,7 +10,8 @@ type t =
   | `String of string
   ]
 
-val classify : ('a -> t) -> 'a -> t
+val classify : ('a -> t) -> 'a -> t [@@platform native]
+val classify : ('a -> Js.Json.t) -> 'a -> t [@@platform js]
 
 val json_schema :
   ?id:string ->
