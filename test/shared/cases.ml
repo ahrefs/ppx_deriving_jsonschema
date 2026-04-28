@@ -447,6 +447,7 @@ module Status = struct
   [@@deriving to_json, jsonschema]
 end
 type default_with_module_type = { status : Status.t [@jsonschema.default Status.Active] } [@@deriving jsonschema]
+
 (* Regression: a record value used as [@default] for a non-primitive field, where the record has
    an [@option] [@drop_default] field set to None. In Melange, the generated [_to_json] emits the
    field as [Js.Undefined.empty], so the JS object is [{ foo: undefined }]. Then
@@ -454,9 +455,7 @@ type default_with_module_type = { status : Status.t [@jsonschema.default Status.
    crashes with "Cannot convert undefined or null to object" while enumerating its entries. *)
 type inner_with_option_field = { foo : int option [@option] [@drop_default] } [@@deriving to_json, jsonschema]
 let empty_inner_with_option_field : inner_with_option_field = { foo = None }
-type outer_default_record_with_option = {
-  inner : inner_with_option_field; [@default empty_inner_with_option_field]
-}
+type outer_default_record_with_option = { inner : inner_with_option_field [@default empty_inner_with_option_field] }
 [@@deriving jsonschema]
 type compact_variants =
   | A
