@@ -3222,6 +3222,63 @@ include
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type melange_json_defaults =
+  {
+  required_value: int ;
+  option_value: string option [@option ];
+  option_default_none: string [@default None];
+  default_none: string [@default None];
+  default_value: string [@default "-"];
+  dropped_option: int option [@option ][@drop_default ];
+  dropped_default: int list [@default []][@drop_default ];
+  custom_drop_default: float [@default 0.0][@drop_default Float.equal]}
+[@@deriving jsonschema]
+include
+  struct
+    let melange_json_defaults_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("custom_drop_default",
+                  (`Assoc
+                     [("default", (((fun x -> `Float x)) 0.0));
+                     ("type", (`String "number"))]));
+               ("dropped_default",
+                 (`Assoc
+                    [("default", (`List []));
+                    ("type", (`String "array"));
+                    ("items", (`Assoc [("type", (`String "integer"))]))]));
+               ("dropped_option",
+                 (`Assoc
+                    [("type", (`List [`String "integer"; `String "null"]))]));
+               ("default_value",
+                 (`Assoc
+                    [("default", (((fun x -> `String x)) "-"));
+                    ("type", (`String "string"))]));
+               ("default_none",
+                 (`Assoc [("default", `Null); ("type", (`String "string"))]));
+               ("option_default_none",
+                 (`Assoc [("default", `Null); ("type", (`String "string"))]));
+               ("option_value",
+                 (`Assoc
+                    [("type", (`List [`String "string"; `String "null"]))]));
+               ("required_value", (`Assoc [("type", (`String "integer"))]))]));
+          ("required", (`List [`String "required_value"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type composing_type = string
 let composing_type_jsonschema =
   `Assoc
@@ -3248,7 +3305,7 @@ include
                                  ->
                                  `Assoc
                                    (("$id",
-                                      (`String "file://shared/cases.ml:351"))
+                                      (`String "file://shared/cases.ml:361"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -3452,7 +3509,7 @@ include
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                         `Assoc
-                          (("$id", (`String "file://shared/cases.ml:370")) ::
+                          (("$id", (`String "file://shared/cases.ml:380")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -3461,7 +3518,7 @@ include
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                        `Assoc
-                         (("$id", (`String "file://shared/cases.ml:369")) ::
+                         (("$id", (`String "file://shared/cases.ml:379")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -3536,7 +3593,7 @@ include
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:378"))
+                                  (`String "file://shared/cases.ml:388"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -4080,7 +4137,7 @@ include
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:428"))
+                                  (`String "file://shared/cases.ml:438"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -4099,7 +4156,7 @@ include
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:427"))
+                                  (`String "file://shared/cases.ml:437"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -4250,7 +4307,7 @@ include
                           | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
-                                   (`String "file://shared/cases.ml:439"))
+                                   (`String "file://shared/cases.ml:449"))
                                 ::
                                 (List.filter
                                    (fun (k, _) ->

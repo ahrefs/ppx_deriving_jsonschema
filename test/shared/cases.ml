@@ -345,6 +345,17 @@ type nullable_fields = {
   drop_complex : int list option; [@jsonschema.option]
 }
 [@@deriving jsonschema]
+type melange_json_defaults = {
+  required_value : int;
+  option_value : string option; [@option]
+  option_default_none : string; [@default None]
+  default_none : string; [@default None]
+  default_value : string; [@default "-"]
+  dropped_option : int option; [@option] [@drop_default]
+  dropped_default : int list; [@default []] [@drop_default]
+  custom_drop_default : float; [@default 0.0] [@drop_default Float.equal]
+}
+[@@deriving jsonschema]
 type composing_type = string
 let composing_type_jsonschema = `Assoc [ "type", `String "string"; "description", `String "A string" ]
 type composing_record = { composing_type : composing_type option [@jsonschema.option] } [@@deriving jsonschema]

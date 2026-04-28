@@ -90,6 +90,7 @@ let schemas =
     Ppx_deriving_jsonschema_runtime.json_schema doc_comment_poly_variant_override_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema computation_result_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema nullable_fields_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema melange_json_defaults_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema composing_record_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema with_format_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema with_format_record_jsonschema;

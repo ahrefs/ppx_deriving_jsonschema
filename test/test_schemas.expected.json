@@ -1906,6 +1906,26 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
+        "custom_drop_default": { "default": 0.0, "type": "number" },
+        "dropped_default": {
+          "default": [],
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "dropped_option": { "type": [ "integer", "null" ] },
+        "default_value": { "default": "-", "type": "string" },
+        "default_none": { "default": null, "type": "string" },
+        "option_default_none": { "default": null, "type": "string" },
+        "option_value": { "type": [ "string", "null" ] },
+        "required_value": { "type": "integer" }
+      },
+      "required": [ "required_value" ],
+      "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
         "composing_type": {
           "anyOf": [
             { "type": "string", "description": "A string" },
@@ -2003,7 +2023,7 @@
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/cases.ml:370",
+          "$id": "file://test/cases.ml:380",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2020,7 +2040,7 @@
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/cases.ml:369",
+          "$id": "file://test/cases.ml:379",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2126,7 +2146,7 @@
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/cases.ml:378",
+                  "$id": "file://test/cases.ml:388",
                   "$defs": {
                     "filter": {
                       "anyOf": [
