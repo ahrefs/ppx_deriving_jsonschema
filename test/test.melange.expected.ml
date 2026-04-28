@@ -3970,8 +3970,10 @@ include
     [@@@ocaml.warning "-39-11-27"]
     let rec variant_for_default_to_json =
       (fun x ->
-         match x with | A -> `List [`String "A"] | B -> `List [`String "B"] : 
-      variant_for_default -> Yojson.Basic.t)
+         match x with
+         | A -> (Obj.magic [|(Obj.magic "A" : Js.Json.t)|] : Js.Json.t)
+         | B -> (Obj.magic [|(Obj.magic "B" : Js.Json.t)|] : Js.Json.t) : 
+      variant_for_default -> Js.Json.t)
     let variant_for_default_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
@@ -4012,12 +4014,18 @@ include
       (fun x ->
          match x with
          | { score = x_score } ->
-             `Assoc
-               (let bnds__001_ = [] in
-                let bnds__001_ =
-                  ("score", ((option_to_json int_to_json) x_score)) ::
-                  bnds__001_ in
-                bnds__001_) : record_for_default -> Yojson.Basic.t)
+             (Obj.magic
+                (let module J =
+                   struct
+                     external unsafe_expr :
+                       score:'a0 -> < score: 'a0   >  Js.t = "" ""[@@ocaml.warning
+                                                                    "-unboxable-type-in-prim-decl"]
+                     [@@mel.internal.ffi
+                       "\132\149\166\190\000\000\000\012\000\000\000\005\000\000\000\r\000\000\000\012\145\160\160A\144%score@"]
+                   end in
+                   J.unsafe_expr
+                     ~score:((option_to_json int_to_json) x_score)) : 
+             Js.Json.t) : record_for_default -> Js.Json.t)
     let record_for_default_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
@@ -4198,8 +4206,11 @@ module Status =
         let rec to_json =
           (fun x ->
              match x with
-             | Active -> `List [`String "Active"]
-             | Inactive -> `List [`String "Inactive"] : t -> Yojson.Basic.t)
+             | Active ->
+                 (Obj.magic [|(Obj.magic "Active" : Js.Json.t)|] : Js.Json.t)
+             | Inactive ->
+                 (Obj.magic [|(Obj.magic "Inactive" : Js.Json.t)|] : 
+                 Js.Json.t) : t -> Js.Json.t)
         let t_jsonschema =
           let ppx_eds = ref [] in
           let ppx_result =

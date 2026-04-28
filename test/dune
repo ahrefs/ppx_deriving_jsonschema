@@ -1,13 +1,35 @@
 (executable
  (name pp)
  (modules pp)
- (libraries ppx_deriving_jsonschema ppxlib ppx_deriving_jsonschema.runtime))
+ (libraries
+  ppx_deriving_jsonschema
+  ppxlib
+  ppx_deriving_jsonschema.runtime
+  melange-json-native.ppx))
+
+(executable
+ (name pp_melange)
+ (modules pp_melange)
+ (libraries
+  ppx_deriving_jsonschema
+  ppxlib
+  ppx_deriving_jsonschema.runtime
+  melange-json.ppx
+  melange.ppx))
 
 (rule
  (targets test.actual.ml)
  (deps
   (:pp pp.exe)
-  (:input test.ml))
+  (:input shared/cases.ml))
+ (action
+  (run ./%{pp} -deriving-keep-w32 both --impl %{input} -o %{targets})))
+
+(rule
+ (targets test.melange.actual.ml)
+ (deps
+  (:pp pp_melange.exe)
+  (:input shared/cases.ml))
  (action
   (run ./%{pp} -deriving-keep-w32 both --impl %{input} -o %{targets})))
 
@@ -16,21 +38,46 @@
  (action
   (diff test.expected.ml test.actual.ml)))
 
+(rule
+ (alias runtest)
+ (action
+  (diff test.melange.expected.ml test.melange.actual.ml)))
+
+(copy_files shared/cases.ml)
+
+(copy_files shared/schema_snapshot.ml)
+
+(copy_files shared/generate_schemas_cases.ml)
+
 (library
- (name test)
- (modules test)
- (libraries yojson melange-json ppx_deriving_jsonschema.runtime)
- (inline_tests)
+ (name schema_snapshot_support)
+ (modules schema_snapshot)
+ (wrapped false))
+
+(library
+ (name cases_support)
+ (modules cases)
+ (wrapped false)
+ (libraries melange-json ppx_deriving_jsonschema.runtime)
  (preprocess
-  (pps ppx_deriving_jsonschema ppx_expect melange-json-native.ppx)))
+  (pps ppx_deriving_jsonschema melange-json-native.ppx)))
+
+(library
+ (name generate_schemas_support)
+ (modules generate_schemas_cases)
+ (wrapped false)
+ (libraries
+  ppx_deriving_jsonschema.runtime
+  schema_snapshot_support
+  cases_support))
 
 (cram
- (deps %{exe:pp.exe}))
+ (deps %{exe:pp.exe} %{exe:pp_melange.exe}))
 
 (executable
  (name generate_schemas)
  (modules generate_schemas)
- (libraries test ppx_deriving_jsonschema.runtime))
+ (libraries yojson generate_schemas_support))
 
 (rule
  (targets test_schemas.actual.json)

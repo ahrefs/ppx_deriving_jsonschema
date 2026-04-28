@@ -163,13 +163,19 @@ module Annotation = struct
 
   let add_default ~loc attr core_type =
     add_schema_attr attr (fun expr schema ->
-      let base_type =
-        match core_type with
-        | [%type: [%t? t] option] -> t
-        | t -> t
+      let json_value =
+        match expr.pexp_desc with
+        | Pexp_construct ({ txt = Lident "[]"; _ }, None) -> [%expr `List []]
+        | Pexp_construct ({ txt = Lident "None"; _ }, None) -> [%expr `Null]
+        | _ ->
+          let base_type =
+            match core_type with
+            | [%type: [%t? t] option] -> t
+            | t -> t
+          in
+          let serializer = serializer_of_core_type ~loc base_type in
+          [%expr [%e serializer] [%e expr]]
       in
-      let serializer = serializer_of_core_type ~loc base_type in
-      let json_value = [%expr [%e serializer] [%e expr]] in
       match schema with
       | [%expr `Assoc [%e? fields]] -> [%expr `Assoc (("default", [%e json_value]) :: [%e fields])]
       | s ->
