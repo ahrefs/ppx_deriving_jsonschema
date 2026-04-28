@@ -2505,6 +2505,230 @@ let%expect_test "variant_constructor_description_variant_as_string" =
     }
     |}]
 
+(* The [~ocaml_doc] flag opts into using [(** ... *)] doc comments as a
+   fallback for [@jsonschema.description]. Without the flag, doc comments are
+   ignored (see [ocaml_doc_disabled_by_default] below). *)
+
+(** A user object *)
+type doc_comment_record = {
+  name : string;  (** The user's full name *)
+  age : int;  (** The user's age *)
+}
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_fallback_for_record" =
+  print_schema doc_comment_record_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A user object",
+      "type": "object",
+      "properties": {
+        "age": { "description": "The user's age", "type": "integer" },
+        "name": { "description": "The user's full name", "type": "string" }
+      },
+      "required": [ "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Without the [~ocaml_doc] flag, doc comments are not turned into descriptions. *)
+
+(** A user object *)
+type doc_comment_disabled = { name : string  (** The user's full name *) } [@@deriving jsonschema]
+
+let%expect_test "ocaml_doc_disabled_by_default" =
+  print_schema doc_comment_disabled_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "name": { "type": "string" } },
+      "required": [ "name" ],
+      "additionalProperties": false
+    }
+    |}]
+
+(* Explicit [@jsonschema.description] wins over an ocaml.doc comment on the same node. *)
+type doc_comment_override = { field : string [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *) }
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_overridden_by_jsonschema_description" =
+  print_schema doc_comment_override_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "field": { "description": "explicit wins", "type": "string" }
+      },
+      "required": [ "field" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type doc_comment_variant =
+  | Plain  (** No payload *)
+  | With_int of int  (** Single integer tag *)
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_fallback_for_variant" =
+  print_schema doc_comment_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+type doc_comment_core_type = (string[@ocaml.doc " A string alias "]) [@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_fallback_for_core_type" =
+  print_schema doc_comment_core_type_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A string alias",
+      "type": "string"
+    }
+    |}]
+
+type doc_attribute_alias = (string[@doc " Alias fallback "]) [@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "doc_attribute_alias_fallback" =
+  print_schema doc_attribute_alias_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Alias fallback",
+      "type": "string"
+    }
+    |}]
+(* Multi-line doc comments are preserved as-is apart from a [String.trim] on the
+   outermost whitespace. Internal newlines and indentation remain in the
+   generated description. *)
+
+[@@@ocamlformat "disable"]
+type doc_comment_multiline = {
+  name : string;  (** The user's full name.
+          Must be non-empty and under 100 characters. *)
+}
+[@@deriving jsonschema ~ocaml_doc]
+[@@@ocamlformat "enable"]
+
+let%expect_test "ocaml_doc_multiline_preserves_internal_whitespace" =
+  print_schema doc_comment_multiline_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The user's full name.\n          Must be non-empty and under 100 characters.",
+          "type": "string"
+        }
+      },
+      "required": [ "name" ],
+      "additionalProperties": false
+    }
+    |}]
+
+type doc_comment_poly_variant =
+  [ `Plain  (** No payload *)
+  | `With_int of int  (** Single integer tag *)
+  ]
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_fallback_for_polymorphic_variant" =
+  print_schema doc_comment_poly_variant_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]
+
+(* Multiple hand-written [@ocaml.doc] / [@doc] attributes on the same node are
+   joined into a single description with a blank-line separator. *)
+type doc_comment_multiple = (string[@ocaml.doc " first block "] [@ocaml.doc " second block "] [@doc " third block "])
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_multiple_attrs_joined" =
+  print_schema doc_comment_multiple_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "first block\n\nsecond block\n\nthird block",
+      "type": "string"
+    }
+    |}]
+
+(* Explicit [@jsonschema.description] on a polymorphic variant tag takes precedence. *)
+type doc_comment_poly_variant_override = [ `Tagged [@jsonschema.description "explicit wins"]  (** ocaml.doc loses *) ]
+[@@deriving jsonschema ~ocaml_doc]
+
+let%expect_test "ocaml_doc_overridden_on_polymorphic_variant" =
+  print_schema doc_comment_poly_variant_override_jsonschema;
+  [%expect
+    {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "explicit wins",
+          "type": "array",
+          "prefixItems": [ { "const": "Tagged" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    }
+    |}]
+
 (* Top-level @@jsonschema.description on a variant (whole anyOf schema). *)
 type computation_result =
   | Ok
@@ -2735,7 +2959,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2725",
+          "$id": "file://test/test.ml:2949",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2752,7 +2976,7 @@ let%expect_test "no_duplicate_id_when_recursive_type_used_twice" =
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2724",
+          "$id": "file://test/test.ml:2948",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2899,7 +3123,7 @@ let%expect_test "polymorphic_recursive_ref_bool_filter" =
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2784",
+                  "$id": "file://test/test.ml:3008",
                   "$defs": {
                     "filter": {
                       "anyOf": [

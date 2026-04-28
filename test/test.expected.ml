@@ -4950,6 +4950,489 @@ include
       ]
     }
     |}]]
+type doc_comment_record =
+  {
+  name: string [@ocaml.doc " The user's full name "];
+  age: int [@ocaml.doc " The user's age "]}[@@ocaml.doc " A user object "]
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_record_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description", (`String "A user object"));
+          ("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("age",
+                  (`Assoc
+                     [("description", (`String "The user's age"));
+                     ("type", (`String "integer"))]));
+               ("name",
+                 (`Assoc
+                    [("description", (`String "The user's full name"));
+                    ("type", (`String "string"))]))]));
+          ("required", (`List [`String "age"; `String "name"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_fallback_for_record" =
+    print_schema doc_comment_record_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A user object",
+      "type": "object",
+      "properties": {
+        "age": { "description": "The user's age", "type": "integer" },
+        "name": { "description": "The user's full name", "type": "string" }
+      },
+      "required": [ "age", "name" ],
+      "additionalProperties": false
+    }
+    |}]]
+type doc_comment_disabled =
+  {
+  name: string [@ocaml.doc " The user's full name "]}[@@ocaml.doc
+                                                       " A user object "]
+[@@deriving jsonschema]
+include
+  struct
+    let doc_comment_disabled_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc [("name", (`Assoc [("type", (`String "string"))]))]));
+          ("required", (`List [`String "name"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_disabled_by_default" =
+    print_schema doc_comment_disabled_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": { "name": { "type": "string" } },
+      "required": [ "name" ],
+      "additionalProperties": false
+    }
+    |}]]
+type doc_comment_override =
+  {
+  field: string
+    [@jsonschema.description "explicit wins"][@ocaml.doc " ocaml.doc loses "]}
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_override_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("field",
+                  (`Assoc
+                     [("description", (`String "explicit wins"));
+                     ("type", (`String "string"))]))]));
+          ("required", (`List [`String "field"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_overridden_by_jsonschema_description" =
+    print_schema doc_comment_override_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "field": { "description": "explicit wins", "type": "string" }
+      },
+      "required": [ "field" ],
+      "additionalProperties": false
+    }
+    |}]]
+type doc_comment_variant =
+  | Plain [@ocaml.doc " No payload "]
+  | With_int of int [@ocaml.doc " Single integer tag "][@@deriving
+                                                         jsonschema
+                                                           ~ocaml_doc]
+include
+  struct
+    let doc_comment_variant_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("description", (`String "No payload"));
+                   ("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "Plain"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 1));
+                   ("maxItems", (`Int 1))];
+                `Assoc
+                  [("description", (`String "Single integer tag"));
+                  ("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "With_int"))];
+                       `Assoc [("type", (`String "integer"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_fallback_for_variant" =
+    print_schema doc_comment_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]]
+type doc_comment_core_type = ((string)[@ocaml.doc " A string alias "])
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_core_type_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description", (`String "A string alias"));
+          ("type", (`String "string"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_fallback_for_core_type" =
+    print_schema doc_comment_core_type_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "A string alias",
+      "type": "string"
+    }
+    |}]]
+type doc_attribute_alias = ((string)[@doc " Alias fallback "])[@@deriving
+                                                                jsonschema
+                                                                  ~ocaml_doc]
+include
+  struct
+    let doc_attribute_alias_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description", (`String "Alias fallback"));
+          ("type", (`String "string"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "doc_attribute_alias_fallback" =
+    print_schema doc_attribute_alias_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "Alias fallback",
+      "type": "string"
+    }
+    |}]]
+[@@@ocamlformat "disable"]
+type doc_comment_multiline =
+  {
+  name: string
+    [@ocaml.doc
+      " The user's full name.\n          Must be non-empty and under 100 characters. "]}
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_multiline_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("name",
+                  (`Assoc
+                     [("description",
+                        (`String
+                           "The user's full name.\n          Must be non-empty and under 100 characters."));
+                     ("type", (`String "string"))]))]));
+          ("required", (`List [`String "name"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[@@@ocamlformat "enable"]
+[%%expect_test
+  let "ocaml_doc_multiline_preserves_internal_whitespace" =
+    print_schema doc_comment_multiline_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The user's full name.\n          Must be non-empty and under 100 characters.",
+          "type": "string"
+        }
+      },
+      "required": [ "name" ],
+      "additionalProperties": false
+    }
+    |}]]
+type doc_comment_poly_variant =
+  [ `Plain [@ocaml.doc " No payload "]
+  | `With_int of int [@ocaml.doc " Single integer tag "]][@@deriving
+                                                           jsonschema
+                                                             ~ocaml_doc]
+include
+  struct
+    let doc_comment_poly_variant_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("description", (`String "No payload"));
+                   ("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "Plain"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 1));
+                   ("maxItems", (`Int 1))];
+                `Assoc
+                  [("description", (`String "Single integer tag"));
+                  ("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "With_int"))];
+                       `Assoc [("type", (`String "integer"))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_fallback_for_polymorphic_variant" =
+    print_schema doc_comment_poly_variant_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "No payload",
+          "type": "array",
+          "prefixItems": [ { "const": "Plain" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "description": "Single integer tag",
+          "type": "array",
+          "prefixItems": [ { "const": "With_int" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    }
+    |}]]
+type doc_comment_multiple =
+  ((string)[@ocaml.doc " first block "][@ocaml.doc " second block "][@doc
+                                                                    " third block "])
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_multiple_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("description",
+             (`String "first block\n\nsecond block\n\nthird block"));
+          ("type", (`String "string"))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_multiple_attrs_joined" =
+    print_schema doc_comment_multiple_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "description": "first block\n\nsecond block\n\nthird block",
+      "type": "string"
+    }
+    |}]]
+type doc_comment_poly_variant_override =
+  [
+    `Tagged
+      [@jsonschema.description "explicit wins"][@ocaml.doc
+                                                 " ocaml.doc loses "]]
+[@@deriving jsonschema ~ocaml_doc]
+include
+  struct
+    let doc_comment_poly_variant_override_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("description", (`String "explicit wins"));
+                   ("type", (`String "array"));
+                   ("prefixItems",
+                     (`List [`Assoc [("const", (`String "Tagged"))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 1));
+                   ("maxItems", (`Int 1))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+[%%expect_test
+  let "ocaml_doc_overridden_on_polymorphic_variant" =
+    print_schema doc_comment_poly_variant_override_jsonschema;
+    [%expect
+      {|
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "description": "explicit wins",
+          "type": "array",
+          "prefixItems": [ { "const": "Tagged" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    }
+    |}]]
 type computation_result =
   | Ok 
   | Err of string [@@deriving jsonschema][@@jsonschema.description
@@ -5106,7 +5589,7 @@ include
                              | `Assoc pairs when List.mem_assoc "$defs" pairs
                                  ->
                                  `Assoc
-                                   (("$id", (`String "file://test.ml:2572"))
+                                   (("$id", (`String "file://test.ml:2796"))
                                    ::
                                    (List.filter
                                       (fun (k, _) ->
@@ -5434,7 +5917,7 @@ include
                [("b",
                   ((match self_ref_jsonschema with
                     | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                        `Assoc (("$id", (`String "file://test.ml:2725")) ::
+                        `Assoc (("$id", (`String "file://test.ml:2949")) ::
                           (List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -5442,7 +5925,7 @@ include
                ("a",
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc (("$id", (`String "file://test.ml:2724")) ::
+                       `Assoc (("$id", (`String "file://test.ml:2948")) ::
                          (List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
@@ -5470,7 +5953,7 @@ include
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/test.ml:2725",
+          "$id": "file://test/test.ml:2949",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5487,7 +5970,7 @@ include
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/test.ml:2724",
+          "$id": "file://test/test.ml:2948",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -5563,7 +6046,7 @@ include
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:2784"))
+                             `Assoc (("$id", (`String "file://test.ml:3008"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -5779,7 +6262,7 @@ include
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/test.ml:2784",
+                  "$id": "file://test/test.ml:3008",
                   "$defs": {
                     "filter": {
                       "anyOf": [
@@ -6419,7 +6902,7 @@ include
                ("record",
                  ((match match record_for_default_jsonschema with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3198"))
+                             `Assoc (("$id", (`String "file://test.ml:3422"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6436,7 +6919,7 @@ include
                ("variant",
                  ((match match variant_for_default_jsonschema with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                             `Assoc (("$id", (`String "file://test.ml:3197"))
+                             `Assoc (("$id", (`String "file://test.ml:3421"))
                                ::
                                (List.filter
                                   (fun (k, _) ->
@@ -6659,7 +7142,7 @@ include
                   ((match match Status.t_jsonschema with
                           | `Assoc pairs when List.mem_assoc "$defs" pairs ->
                               `Assoc
-                                (("$id", (`String "file://test.ml:3290")) ::
+                                (("$id", (`String "file://test.ml:3514")) ::
                                 (List.filter
                                    (fun (k, _) ->
                                       not (Stdlib.String.equal k "$id"))

@@ -178,7 +178,10 @@ module Annotation = struct
           | `Assoc ppx_fields -> `Assoc (("default", [%e json_value]) :: ppx_fields)
           | ppx_other -> ppx_other])
 
-  let add_description ~loc attr = add_schema_attr attr (fun desc schema -> description ~loc desc.txt schema)
+  let add_description ~loc desc_opt schema =
+    match desc_opt with
+    | Some desc -> description ~loc desc.txt schema
+    | None -> schema
 
   let add_annotations ~loc ?core_type attrs schema =
     let require_core_type field =
