@@ -113,6 +113,7 @@ let schemas =
     Ppx_deriving_jsonschema_runtime.json_schema minimum_maximum_variant_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema default_value_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema default_with_module_type_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema outer_default_record_with_option_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema compact_variants_jsonschema;
   ]
 

@@ -4335,6 +4335,96 @@ include
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type inner_with_option_field = {
+  foo: int option [@option ][@drop_default ]}[@@deriving
+                                               (to_json, jsonschema)]
+include
+  struct
+    [@@@ocaml.warning "-39-11-27"]
+    let rec inner_with_option_field_to_json =
+      (fun x ->
+         match x with
+         | { foo = x_foo } ->
+             `Assoc
+               (let bnds__002_ = [] in
+                let bnds__002_ =
+                  match x_foo with
+                  | Stdlib.Option.None -> bnds__002_
+                  | Stdlib.Option.Some _ ->
+                      ("foo", ((option_to_json int_to_json) x_foo)) ::
+                      bnds__002_ in
+                bnds__002_) : inner_with_option_field -> Yojson.Basic.t)
+    let inner_with_option_field_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("foo",
+                  (`Assoc
+                     [("type", (`List [`String "integer"; `String "null"]))]))]));
+          ("required", (`List []));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+let empty_inner_with_option_field : inner_with_option_field = { foo = None }
+type outer_default_record_with_option =
+  {
+  inner: inner_with_option_field [@default empty_inner_with_option_field]}
+[@@deriving jsonschema]
+include
+  struct
+    let outer_default_record_with_option_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties",
+            (`Assoc
+               [("inner",
+                  ((match match inner_with_option_field_jsonschema with
+                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                              `Assoc
+                                (("$id",
+                                   (`String "file://shared/cases.ml:458"))
+                                ::
+                                (List.filter
+                                   (fun (k, _) ->
+                                      not (Stdlib.String.equal k "$id"))
+                                   pairs))
+                          | other -> other
+                    with
+                    | `Assoc ppx_fields ->
+                        `Assoc
+                          (("default",
+                             ((Ppx_deriving_jsonschema_runtime.classify
+                                 inner_with_option_field_to_json)
+                                empty_inner_with_option_field))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)))]));
+          ("required", (`List []));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type compact_variants =
   | A 
   | B 
