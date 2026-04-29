@@ -9,6 +9,8 @@
 - make option types nullable in generated JSON Schema (e.g. `int option` → `{"type":["integer","null"]}`); add `[@@jsonschema.option]` attribute to opt a field out of `required` without making its type nullable
 - fix schema generation for parametric recursive types (e.g. `type 'a t = ... | B of 'a t`)
 - fix broken `$ref` scoping when a recursive type uses a parametric recursive type with itself as a type argument (e.g. `type t = ... | N of t wrapper` where `wrapper` is also recursive); inner `$defs` are now hoisted into the root schema's `$defs` namespace
+- refactor runtime using `server-reason-react`'s `browser_only` ppx to share more code between the native and melange runtimes
+- raise lower bounds to match what the code now requires: `ocaml >= 5.0.0`, `ppxlib > 0.36.0`, `melange-json >= 2.0.0`, `melange-json-native >= 2.0.0`; declare `conf-npm` and `conf-python-3` as test dependencies so the melange cram test can run in the opam sandbox
 
 # 0.0.6
 
