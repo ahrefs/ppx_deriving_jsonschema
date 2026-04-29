@@ -1,4 +1,4 @@
-[@@@ocaml.warning "-37-69"]
+open Ppx_deriving_jsonschema_runtime.Primitives.Melange_json
 open Melange_json.Primitives
 let string_jsonschema = `Assoc [("type", (`String "string"))]
 let int_jsonschema = `Assoc [("type", (`String "integer"))]
@@ -275,8 +275,7 @@ include
                    [("type", (`String "array"));
                    ("prefixItems",
                      (`List
-                        [`Assoc [("const", (`String "Aaa"))];
-                        `Assoc [("type", (`String "integer"))]]));
+                        [`Assoc [("const", (`String "Aaa"))]; int_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))];
@@ -292,8 +291,8 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "ccc"))];
-                       `Assoc [("type", (`String "string"))];
-                       `Assoc [("type", (`String "boolean"))]]));
+                       string_jsonschema;
+                       bool_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 3));
                   ("maxItems", (`Int 3))]]))] in
@@ -356,7 +355,7 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Second_one"))];
-                       `Assoc [("type", (`String "integer"))]]));
+                       int_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))];
@@ -435,15 +434,11 @@ include
           [("type", (`String "object"));
           ("properties",
             (`Assoc
-               [("native_int", (`Assoc [("type", (`String "integer"))]));
-               ("unit", (`Assoc [("type", (`String "null"))]));
-               ("string_ref", (`Assoc [("type", (`String "string"))]));
-               ("bunch_of_bytes", (`Assoc [("type", (`String "string"))]));
-               ("c",
-                 (`Assoc
-                    [("type", (`String "string"));
-                    ("minLength", (`Int 1));
-                    ("maxLength", (`Int 1))]));
+               [("native_int", int_jsonschema);
+               ("unit", unit_jsonschema);
+               ("string_ref", string_jsonschema);
+               ("bunch_of_bytes", string_jsonschema);
+               ("c", char_jsonschema);
                ("t",
                  (`Assoc
                     [("anyOf",
@@ -469,18 +464,10 @@ include
                             ("unevaluatedItems", (`Bool false));
                             ("minItems", (`Int 1));
                             ("maxItems", (`Int 1))]]))]));
-               ("l",
-                 (`Assoc
-                    [("type", (`String "array"));
-                    ("items", (`Assoc [("type", (`String "string"))]))]));
-               ("a",
-                 (`Assoc
-                    [("type", (`String "array"));
-                    ("items", (`Assoc [("type", (`String "number"))]))]));
-               ("opt_int",
-                 (`Assoc
-                    [("type", (`List [`String "integer"; `String "null"]))]));
-               ("comment", (`Assoc [("type", (`String "string"))]));
+               ("l", (list_jsonschema string_jsonschema));
+               ("a", (array_jsonschema float_jsonschema));
+               ("opt_int", (option_jsonschema int_jsonschema));
+               ("comment", string_jsonschema);
                ("kind_f",
                  ((match kind_jsonschema with
                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
@@ -490,7 +477,7 @@ include
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
                    | other -> other)));
-               ("date", (`Assoc [("type", (`String "number"))]))]));
+               ("date", float_jsonschema)]));
           ("required",
             (`List
                [`String "native_int";
@@ -530,12 +517,9 @@ include
           ("properties",
             (`Assoc
                [("b",
-                  (`Assoc
-                     [("type", (`String "array"));
-                     ("items",
-                       (`Assoc
-                          [("$ref", (`String "#/$defs/recursive_record"))]))]));
-               ("a", (`Assoc [("type", (`String "integer"))]))]));
+                  (list_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/recursive_record"))])));
+               ("a", int_jsonschema)]));
           ("required", (`List [`String "b"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
       `Assoc
@@ -613,8 +597,7 @@ include
                                  (`Assoc [("$ref", (`String "#/$defs/tree"))]));
                               ("left",
                                 (`Assoc [("$ref", (`String "#/$defs/tree"))]));
-                              ("value",
-                                (`Assoc [("type", (`String "integer"))]))]));
+                              ("value", int_jsonschema)]));
                          ("required",
                            (`List
                               [`String "right";
@@ -639,9 +622,7 @@ include
         `Assoc
           [("type", (`String "object"));
           ("properties",
-            (`Assoc
-               [("y", (`Assoc [("type", (`String "string"))]));
-               ("x", (`Assoc [("type", (`String "integer"))]))]));
+            (`Assoc [("y", string_jsonschema); ("x", int_jsonschema)]));
           ("required", (`List [`String "y"; `String "x"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -669,11 +650,8 @@ include
           ("properties",
             (`Assoc
                [("bar",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/bar"))];
-                           `Assoc [("type", (`String "null"))]]))]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/bar"))])))]));
           ("required", (`List [`String "bar"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_bar =
@@ -682,11 +660,8 @@ include
           ("properties",
             (`Assoc
                [("foo",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/foo"))];
-                           `Assoc [("type", (`String "null"))]]))]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/foo"))])))]));
           ("required", (`List [`String "foo"]));
           ("additionalProperties", (`Bool false))] in
       `Assoc
@@ -702,11 +677,8 @@ include
           ("properties",
             (`Assoc
                [("bar",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/bar"))];
-                           `Assoc [("type", (`String "null"))]]))]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/bar"))])))]));
           ("required", (`List [`String "bar"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_bar =
@@ -715,11 +687,8 @@ include
           ("properties",
             (`Assoc
                [("foo",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/foo"))];
-                           `Assoc [("type", (`String "null"))]]))]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/foo"))])))]));
           ("required", (`List [`String "foo"]));
           ("additionalProperties", (`Bool false))] in
       `Assoc
@@ -751,7 +720,7 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "Literal"))];
-                        `Assoc [("type", (`String "integer"))]]));
+                        int_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))];
@@ -770,10 +739,8 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Block"))];
-                       `Assoc
-                         [("type", (`String "array"));
-                         ("items",
-                           (`Assoc [("$ref", (`String "#/$defs/stmt"))]))]]));
+                       list_jsonschema
+                         (`Assoc [("$ref", (`String "#/$defs/stmt"))])]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -800,13 +767,9 @@ include
                          ("properties",
                            (`Assoc
                               [("else_",
-                                 (`Assoc
-                                    [("anyOf",
-                                       (`List
-                                          [`Assoc
-                                             [("$ref",
-                                                (`String "#/$defs/stmt"))];
-                                          `Assoc [("type", (`String "null"))]]))]));
+                                 (option_jsonschema
+                                    (`Assoc
+                                       [("$ref", (`String "#/$defs/stmt"))])));
                               ("then_",
                                 (`Assoc [("$ref", (`String "#/$defs/stmt"))]));
                               ("cond",
@@ -837,7 +800,7 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "Literal"))];
-                        `Assoc [("type", (`String "integer"))]]));
+                        int_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))];
@@ -856,10 +819,8 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Block"))];
-                       `Assoc
-                         [("type", (`String "array"));
-                         ("items",
-                           (`Assoc [("$ref", (`String "#/$defs/stmt"))]))]]));
+                       list_jsonschema
+                         (`Assoc [("$ref", (`String "#/$defs/stmt"))])]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -886,13 +847,9 @@ include
                          ("properties",
                            (`Assoc
                               [("else_",
-                                 (`Assoc
-                                    [("anyOf",
-                                       (`List
-                                          [`Assoc
-                                             [("$ref",
-                                                (`String "#/$defs/stmt"))];
-                                          `Assoc [("type", (`String "null"))]]))]));
+                                 (option_jsonschema
+                                    (`Assoc
+                                       [("$ref", (`String "#/$defs/stmt"))])));
                               ("then_",
                                 (`Assoc [("$ref", (`String "#/$defs/stmt"))]));
                               ("cond",
@@ -924,8 +881,7 @@ include
       let ppx_result =
         `Assoc
           [("type", (`String "object"));
-          ("properties",
-            (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
+          ("properties", (`Assoc [("x", int_jsonschema)]));
           ("required", (`List [`String "x"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -943,8 +899,7 @@ include
       let ppx_result =
         `Assoc
           [("type", (`String "object"));
-          ("properties",
-            (`Assoc [("y", (`Assoc [("type", (`String "string"))]))]));
+          ("properties", (`Assoc [("y", string_jsonschema)]));
           ("required", (`List [`String "y"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -977,17 +932,11 @@ include
           ("properties",
             (`Assoc
                [("c",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_c"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_c"))])));
                ("b",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_b"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_b"))])))]));
           ("required", (`List [`String "c"; `String "b"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_node_b =
@@ -996,17 +945,11 @@ include
           ("properties",
             (`Assoc
                [("c",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_c"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_c"))])));
                ("a",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_a"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "c"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_node_c =
@@ -1015,17 +958,11 @@ include
           ("properties",
             (`Assoc
                [("b",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_b"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_b"))])));
                ("a",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_a"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "b"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
       `Assoc
@@ -1043,17 +980,11 @@ include
           ("properties",
             (`Assoc
                [("c",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_c"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_c"))])));
                ("b",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_b"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_b"))])))]));
           ("required", (`List [`String "c"; `String "b"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_node_b =
@@ -1062,17 +993,11 @@ include
           ("properties",
             (`Assoc
                [("c",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_c"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_c"))])));
                ("a",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_a"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "c"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_node_c =
@@ -1081,17 +1006,11 @@ include
           ("properties",
             (`Assoc
                [("b",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_b"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_b"))])));
                ("a",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_a"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "b"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
       `Assoc
@@ -1109,17 +1028,11 @@ include
           ("properties",
             (`Assoc
                [("c",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_c"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_c"))])));
                ("b",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_b"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_b"))])))]));
           ("required", (`List [`String "c"; `String "b"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_node_b =
@@ -1128,17 +1041,11 @@ include
           ("properties",
             (`Assoc
                [("c",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_c"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_c"))])));
                ("a",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_a"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "c"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
       let ppx_body_node_c =
@@ -1147,17 +1054,11 @@ include
           ("properties",
             (`Assoc
                [("b",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc [("$ref", (`String "#/$defs/node_b"))];
-                           `Assoc [("type", (`String "null"))]]))]));
+                  (option_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/node_b"))])));
                ("a",
-                 (`Assoc
-                    [("anyOf",
-                       (`List
-                          [`Assoc [("$ref", (`String "#/$defs/node_a"))];
-                          `Assoc [("type", (`String "null"))]]))]))]));
+                 (option_jsonschema
+                    (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "b"; `String "a"]));
           ("additionalProperties", (`Bool false))] in
       `Assoc
@@ -1184,7 +1085,7 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "Leaf"))];
-                        `Assoc [("type", (`String "integer"))]]));
+                        int_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))];
@@ -1244,16 +1145,13 @@ include
     let events_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("type", (`String "array"));
-          ("items",
-            ((match event_jsonschema with
-              | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                  `Assoc (("$id", (`String "file://shared/cases.ml:141")) ::
-                    (List.filter
-                       (fun (k, _) -> not (Stdlib.String.equal k "$id"))
-                       pairs))
-              | other -> other)))] in
+        list_jsonschema
+          (match event_jsonschema with
+           | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+               `Assoc (("$id", (`String "file://shared/cases.ml:141")) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
+           | other -> other) in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1271,20 +1169,15 @@ include
     let eventss_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("type", (`String "array"));
-          ("items",
-            (`Assoc
-               [("type", (`String "array"));
-               ("items",
-                 ((match event_jsonschema with
-                   | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                       `Assoc
-                         (("$id", (`String "file://shared/cases.ml:142")) ::
-                         (List.filter
-                            (fun (k, _) -> not (Stdlib.String.equal k "$id"))
-                            pairs))
-                   | other -> other)))]))] in
+        list_jsonschema
+          (list_jsonschema
+             (match event_jsonschema with
+              | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                  `Assoc (("$id", (`String "file://shared/cases.ml:142")) ::
+                    (List.filter
+                       (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                       pairs))
+              | other -> other)) in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1314,7 +1207,7 @@ include
                           (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                           pairs))
                  | other -> other);
-               `Assoc [("type", (`String "string"))]]));
+               string_jsonschema]));
           ("unevaluatedItems", (`Bool false));
           ("minItems", (`Int 2));
           ("maxItems", (`Int 2))] in
@@ -1335,16 +1228,13 @@ include
     let event_comments'_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("type", (`String "array"));
-          ("items",
-            ((match event_comment_jsonschema with
-              | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                  `Assoc (("$id", (`String "file://shared/cases.ml:144")) ::
-                    (List.filter
-                       (fun (k, _) -> not (Stdlib.String.equal k "$id"))
-                       pairs))
-              | other -> other)))] in
+        list_jsonschema
+          (match event_comment_jsonschema with
+           | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+               `Assoc (("$id", (`String "file://shared/cases.ml:144")) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
+           | other -> other) in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1362,26 +1252,23 @@ include
     let event_n_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("type", (`String "array"));
-          ("items",
-            (`Assoc
-               [("type", (`String "array"));
-               ("prefixItems",
-                 (`List
-                    [(match event_jsonschema with
-                      | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                          `Assoc
-                            (("$id", (`String "file://shared/cases.ml:145"))
-                            ::
-                            (List.filter
-                               (fun (k, _) ->
-                                  not (Stdlib.String.equal k "$id")) pairs))
-                      | other -> other);
-                    `Assoc [("type", (`String "integer"))]]));
-               ("unevaluatedItems", (`Bool false));
-               ("minItems", (`Int 2));
-               ("maxItems", (`Int 2))]))] in
+        list_jsonschema
+          (`Assoc
+             [("type", (`String "array"));
+             ("prefixItems",
+               (`List
+                  [(match event_jsonschema with
+                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                        `Assoc
+                          (("$id", (`String "file://shared/cases.ml:145")) ::
+                          (List.filter
+                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                             pairs))
+                    | other -> other);
+                  int_jsonschema]));
+             ("unevaluatedItems", (`Bool false));
+             ("minItems", (`Int 2));
+             ("maxItems", (`Int 2))]) in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1399,16 +1286,13 @@ include
     let events_array_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("type", (`String "array"));
-          ("items",
-            ((match events_jsonschema with
-              | `Assoc pairs when List.mem_assoc "$defs" pairs ->
-                  `Assoc (("$id", (`String "file://shared/cases.ml:146")) ::
-                    (List.filter
-                       (fun (k, _) -> not (Stdlib.String.equal k "$id"))
-                       pairs))
-              | other -> other)))] in
+        array_jsonschema
+          (match events_jsonschema with
+           | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+               `Assoc (("$id", (`String "file://shared/cases.ml:146")) ::
+                 (List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
+           | other -> other) in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1425,10 +1309,7 @@ include
   struct
     let numbers_jsonschema =
       let ppx_eds = ref [] in
-      let ppx_result =
-        `Assoc
-          [("type", (`String "array"));
-          ("items", (`Assoc [("type", (`String "integer"))]))] in
+      let ppx_result = list_jsonschema int_jsonschema in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1445,8 +1326,7 @@ include
   struct
     let opt_jsonschema =
       let ppx_eds = ref [] in
-      let ppx_result =
-        `Assoc [("type", (`List [`String "integer"; `String "null"]))] in
+      let ppx_result = option_jsonschema int_jsonschema in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1521,7 +1401,7 @@ include
           [("type", (`String "array"));
           ("prefixItems",
             (`List
-               [`Assoc [("type", (`String "integer"))];
+               [int_jsonschema;
                `Assoc
                  [("anyOf",
                     (`List
@@ -1569,7 +1449,7 @@ include
             (`Assoc
                [("scores_ref",
                   (`Assoc [("$ref", (`String "#/$defs/numbers"))]));
-               ("player", (`Assoc [("type", (`String "string"))]))]));
+               ("player", string_jsonschema)]));
           ("required", (`List [`String "scores_ref"; `String "player"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -1596,9 +1476,9 @@ include
           [("type", (`String "object"));
           ("properties",
             (`Assoc
-               [("zip", (`Assoc [("type", (`String "string"))]));
-               ("city", (`Assoc [("type", (`String "string"))]));
-               ("street", (`Assoc [("type", (`String "string"))]))]));
+               [("zip", string_jsonschema);
+               ("city", string_jsonschema);
+               ("street", string_jsonschema)]));
           ("required",
             (`List [`String "zip"; `String "city"; `String "street"]));
           ("additionalProperties", (`Bool false))] in
@@ -1636,11 +1516,9 @@ include
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
                     | other -> other)));
-               ("email",
-                 (`Assoc
-                    [("type", (`List [`String "string"; `String "null"]))]));
-               ("age", (`Assoc [("type", (`String "integer"))]));
-               ("name", (`Assoc [("type", (`String "string"))]))]));
+               ("email", (option_jsonschema string_jsonschema));
+               ("age", int_jsonschema);
+               ("name", string_jsonschema)]));
           ("required",
             (`List
                [`String "address";
@@ -1682,11 +1560,9 @@ include
                  (`Assoc [("$ref", (`String "#/$defs/shared_address"))]));
                ("home_address",
                  (`Assoc [("$ref", (`String "#/$defs/shared_address"))]));
-               ("email",
-                 (`Assoc
-                    [("type", (`List [`String "string"; `String "null"]))]));
-               ("age", (`Assoc [("type", (`String "integer"))]));
-               ("name", (`Assoc [("type", (`String "string"))]))]));
+               ("email", (option_jsonschema string_jsonschema));
+               ("age", int_jsonschema);
+               ("name", string_jsonschema)]));
           ("required",
             (`List
                [`String "retreat_address";
@@ -1712,11 +1588,7 @@ include
   struct
     let c_jsonschema =
       let ppx_eds = ref [] in
-      let ppx_result =
-        `Assoc
-          [("type", (`String "string"));
-          ("minLength", (`Int 1));
-          ("maxLength", (`Int 1))] in
+      let ppx_result = char_jsonschema in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1777,10 +1649,8 @@ include
                           [("type", (`String "object"));
                           ("properties",
                             (`Assoc
-                               [("email",
-                                  (`Assoc [("type", (`String "string"))]));
-                               ("name",
-                                 (`Assoc [("type", (`String "string"))]))]));
+                               [("email", string_jsonschema);
+                               ("name", string_jsonschema)]));
                           ("required",
                             (`List [`String "email"; `String "name"]));
                           ("additionalProperties", (`Bool true))]]));
@@ -1794,10 +1664,7 @@ include
                        [`Assoc [("const", (`String "Guest"))];
                        `Assoc
                          [("type", (`String "object"));
-                         ("properties",
-                           (`Assoc
-                              [("ip",
-                                 (`Assoc [("type", (`String "string"))]))]));
+                         ("properties", (`Assoc [("ip", string_jsonschema)]));
                          ("required", (`List [`String "ip"]));
                          ("additionalProperties", (`Bool false))]]));
                   ("unevaluatedItems", (`Bool false));
@@ -1865,7 +1732,7 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Class"))];
-                       `Assoc [("type", (`String "string"))]]));
+                       string_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -1927,7 +1794,7 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "class"))];
-                       `Assoc [("type", (`String "string"))]]));
+                       string_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -1950,10 +1817,7 @@ include
       let ppx_result =
         `Assoc
           [("type", (`String "array"));
-          ("prefixItems",
-            (`List
-               [`Assoc [("type", (`String "integer"))];
-               `Assoc [("type", (`String "string"))]]));
+          ("prefixItems", (`List [int_jsonschema; string_jsonschema]));
           ("unevaluatedItems", (`Bool false));
           ("minItems", (`Int 2));
           ("maxItems", (`Int 2))] in
@@ -1982,9 +1846,9 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "A"))];
-                        `Assoc [("type", (`String "integer"))];
-                        `Assoc [("type", (`String "string"))];
-                        `Assoc [("type", (`String "boolean"))]]));
+                        int_jsonschema;
+                        string_jsonschema;
+                        bool_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 4));
                    ("maxItems", (`Int 4))]]))] in
@@ -2017,13 +1881,13 @@ include
                           [("type", (`String "array"));
                           ("prefixItems",
                             (`List
-                               [`Assoc [("type", (`String "integer"))];
-                               `Assoc [("type", (`String "string"))];
-                               `Assoc [("type", (`String "boolean"))]]));
+                               [int_jsonschema;
+                               string_jsonschema;
+                               bool_jsonschema]));
                           ("unevaluatedItems", (`Bool false));
                           ("minItems", (`Int 3));
                           ("maxItems", (`Int 3))];
-                        `Assoc [("type", (`String "number"))]]));
+                        float_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 3));
                    ("maxItems", (`Int 3))]]))] in
@@ -2053,9 +1917,9 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "A"))];
-                        `Assoc [("type", (`String "integer"))];
-                        `Assoc [("type", (`String "string"))];
-                        `Assoc [("type", (`String "boolean"))]]));
+                        int_jsonschema;
+                        string_jsonschema;
+                        bool_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 4));
                    ("maxItems", (`Int 4))]]))] in
@@ -2089,9 +1953,9 @@ include
                           [("type", (`String "array"));
                           ("prefixItems",
                             (`List
-                               [`Assoc [("type", (`String "integer"))];
-                               `Assoc [("type", (`String "string"))];
-                               `Assoc [("type", (`String "boolean"))]]));
+                               [int_jsonschema;
+                               string_jsonschema;
+                               bool_jsonschema]));
                           ("unevaluatedItems", (`Bool false));
                           ("minItems", (`Int 3));
                           ("maxItems", (`Int 3))]]));
@@ -2128,13 +1992,13 @@ include
                           [("type", (`String "array"));
                           ("prefixItems",
                             (`List
-                               [`Assoc [("type", (`String "integer"))];
-                               `Assoc [("type", (`String "string"))];
-                               `Assoc [("type", (`String "boolean"))]]));
+                               [int_jsonschema;
+                               string_jsonschema;
+                               bool_jsonschema]));
                           ("unevaluatedItems", (`Bool false));
                           ("minItems", (`Int 3));
                           ("maxItems", (`Int 3))];
-                        `Assoc [("type", (`String "number"))]]));
+                        float_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 3));
                    ("maxItems", (`Int 3))]]))] in
@@ -2163,9 +2027,9 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "A"))];
-                        `Assoc [("type", (`String "integer"))];
-                        `Assoc [("type", (`String "string"))];
-                        `Assoc [("type", (`String "boolean"))]]));
+                        int_jsonschema;
+                        string_jsonschema;
+                        bool_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 4));
                    ("maxItems", (`Int 4))]]))] in
@@ -2200,9 +2064,9 @@ include
                           [("type", (`String "array"));
                           ("prefixItems",
                             (`List
-                               [`Assoc [("type", (`String "integer"))];
-                               `Assoc [("type", (`String "string"))];
-                               `Assoc [("type", (`String "boolean"))]]));
+                               [int_jsonschema;
+                               string_jsonschema;
+                               bool_jsonschema]));
                           ("unevaluatedItems", (`Bool false));
                           ("minItems", (`Int 3));
                           ("maxItems", (`Int 3))]]));
@@ -2229,8 +2093,7 @@ include
       let ppx_result =
         `Assoc
           [("type", (`String "object"));
-          ("properties",
-            (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
+          ("properties", (`Assoc [("x", int_jsonschema)]));
           ("required", (`List [`String "x"]));
           ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
@@ -2319,8 +2182,7 @@ include
       let ppx_result =
         `Assoc
           [("type", (`String "object"));
-          ("properties",
-            (`Assoc [("x", (`Assoc [("type", (`String "integer"))]))]));
+          ("properties", (`Assoc [("x", int_jsonschema)]));
           ("required", (`List [`String "x"]));
           ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
@@ -2345,9 +2207,7 @@ include
         `Assoc
           [("type", (`String "object"));
           ("properties",
-            (`Assoc
-               [("y", (`Assoc [("type", (`String "integer"))]));
-               ("x", (`Assoc [("type", (`String "integer"))]))]));
+            (`Assoc [("y", int_jsonschema); ("x", int_jsonschema)]));
           ("required", (`List [`String "y"; `String "x"]));
           ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
@@ -2374,9 +2234,7 @@ include
           ("properties",
             (`Assoc
                [("url", url);
-               ("title",
-                 (`Assoc
-                    [("type", (`List [`String "string"; `String "null"]))]))]));
+               ("title", (option_jsonschema string_jsonschema))]));
           ("required", (`List [`String "url"; `String "title"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -2396,9 +2254,7 @@ include
     let string_link_traffic_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        match generic_link_traffic_jsonschema
-                (`Assoc [("type", (`String "string"))])
-        with
+        match generic_link_traffic_jsonschema string_jsonschema with
         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
             `Assoc (("$id", (`String "file://shared/cases.ml:231")) ::
               (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
@@ -2464,9 +2320,7 @@ include
           [("type", (`String "object"));
           ("properties",
             (`Assoc
-               [("label", (`Assoc [("type", (`String "string"))]));
-               ("second", b);
-               ("first", a)]));
+               [("label", string_jsonschema); ("second", b); ("first", a)]));
           ("required",
             (`List [`String "label"; `String "second"; `String "first"]));
           ("additionalProperties", (`Bool false))] in
@@ -2486,7 +2340,7 @@ include
   struct
     let param_list_jsonschema a =
       let ppx_eds = ref [] in
-      let ppx_result = `Assoc [("type", (`String "array")); ("items", a)] in
+      let ppx_result = list_jsonschema a in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2597,14 +2451,21 @@ include
           ("properties",
             (`Assoc
                [("max_results",
-                  (`Assoc
-                     [("description",
-                        (`String "Maximum number of results to return"));
-                     ("type", (`String "integer"))]));
+                  ((match int_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc
+                          (("description",
+                             (`String "Maximum number of results to return"))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)));
                ("query",
-                 (`Assoc
-                    [("description", (`String "The search query to execute"));
-                    ("type", (`String "string"))]))]));
+                 ((match string_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc
+                         (("description",
+                            (`String "The search query to execute"))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "max_results"; `String "query"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -2636,13 +2497,18 @@ include
           ("properties",
             (`Assoc
                [("age",
-                  (`Assoc
-                     [("description", (`String "The user's age"));
-                     ("type", (`List [`String "integer"; `String "null"]))]));
+                  ((match option_jsonschema int_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("description", (`String "The user's age"))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)));
                ("name",
-                 (`Assoc
-                    [("description", (`String "The user's full name"));
-                    ("type", (`String "string"))]))]));
+                 ((match string_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc
+                         (("description", (`String "The user's full name"))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "name"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -2672,9 +2538,12 @@ include
           ("properties",
             (`Assoc
                [("opt_int",
-                  (`Assoc
-                     [("description", (`String "An optional integer"));
-                     ("type", (`List [`String "integer"; `String "null"]))]))]));
+                  ((match option_jsonschema int_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc
+                          (("description", (`String "An optional integer"))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)))]));
           ("required", (`List []));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -2716,7 +2585,7 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "With_int"))];
-                       `Assoc [("type", (`String "integer"))]]));
+                       int_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))];
@@ -2726,8 +2595,8 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Pair"))];
-                       `Assoc [("type", (`String "string"))];
-                       `Assoc [("type", (`String "integer"))]]));
+                       string_jsonschema;
+                       int_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 3));
                   ("maxItems", (`Int 3))];
@@ -2736,9 +2605,12 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Description_value"))];
-                       `Assoc
-                         [("description", (`String "A string value"));
-                         ("type", (`String "string"))]]));
+                       (match string_jsonschema with
+                        | `Assoc ppx_fields ->
+                            `Assoc
+                              (("description", (`String "A string value")) ::
+                              ppx_fields)
+                        | ppx_other -> ppx_other)]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -2775,10 +2647,7 @@ include
                           [("type", (`String "object"));
                           ("properties",
                             (`Assoc
-                               [("y",
-                                  (`Assoc [("type", (`String "integer"))]));
-                               ("x",
-                                 (`Assoc [("type", (`String "integer"))]))]));
+                               [("y", int_jsonschema); ("x", int_jsonschema)]));
                           ("required", (`List [`String "y"; `String "x"]));
                           ("additionalProperties", (`Bool false))]]));
                    ("unevaluatedItems", (`Bool false));
@@ -2841,13 +2710,18 @@ include
           ("properties",
             (`Assoc
                [("age",
-                  (`Assoc
-                     [("description", (`String "The user's age"));
-                     ("type", (`String "integer"))]));
+                  ((match int_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("description", (`String "The user's age"))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)));
                ("name",
-                 (`Assoc
-                    [("description", (`String "The user's full name"));
-                    ("type", (`String "string"))]))]));
+                 ((match string_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc
+                         (("description", (`String "The user's full name"))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "age"; `String "name"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -2873,8 +2747,7 @@ include
       let ppx_result =
         `Assoc
           [("type", (`String "object"));
-          ("properties",
-            (`Assoc [("name", (`Assoc [("type", (`String "string"))]))]));
+          ("properties", (`Assoc [("name", string_jsonschema)]));
           ("required", (`List [`String "name"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -2903,9 +2776,11 @@ include
           ("properties",
             (`Assoc
                [("field",
-                  (`Assoc
-                     [("description", (`String "explicit wins"));
-                     ("type", (`String "string"))]))]));
+                  ((match string_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("description", (`String "explicit wins")) ::
+                          ppx_fields)
+                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "field"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -2946,7 +2821,7 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "With_int"))];
-                       `Assoc [("type", (`String "integer"))]]));
+                       int_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -2968,9 +2843,11 @@ include
     let doc_comment_core_type_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("description", (`String "A string alias"));
-          ("type", (`String "string"))] in
+        match string_jsonschema with
+        | `Assoc ppx_fields ->
+            `Assoc (("description", (`String "A string alias")) ::
+              ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2990,9 +2867,11 @@ include
     let doc_attribute_alias_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("description", (`String "Alias fallback"));
-          ("type", (`String "string"))] in
+        match string_jsonschema with
+        | `Assoc ppx_fields ->
+            `Assoc (("description", (`String "Alias fallback")) ::
+              ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3021,11 +2900,14 @@ include
           ("properties",
             (`Assoc
                [("name",
-                  (`Assoc
-                     [("description",
-                        (`String
-                           "The user's full name.\n          Must be non-empty and under 100 characters."));
-                     ("type", (`String "string"))]))]));
+                  ((match string_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc
+                          (("description",
+                             (`String
+                                "The user's full name.\n          Must be non-empty and under 100 characters."))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "name"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3067,7 +2949,7 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "With_int"))];
-                       `Assoc [("type", (`String "integer"))]]));
+                       int_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -3091,10 +2973,13 @@ include
     let doc_comment_multiple_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("description",
-             (`String "first block\n\nsecond block\n\nthird block"));
-          ("type", (`String "string"))] in
+        match string_jsonschema with
+        | `Assoc ppx_fields ->
+            `Assoc
+              (("description",
+                 (`String "first block\n\nsecond block\n\nthird block"))
+              :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3165,7 +3050,7 @@ include
                  ("prefixItems",
                    (`List
                       [`Assoc [("const", (`String "Err"))];
-                      `Assoc [("type", (`String "string"))]]));
+                      string_jsonschema]));
                  ("unevaluatedItems", (`Bool false));
                  ("minItems", (`Int 2));
                  ("maxItems", (`Int 2))]]))] in
@@ -3195,20 +3080,9 @@ include
           ("properties",
             (`Assoc
                [("drop_complex",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [`Assoc
-                              [("type", (`String "array"));
-                              ("items",
-                                (`Assoc [("type", (`String "integer"))]))];
-                           `Assoc [("type", (`String "null"))]]))]));
-               ("drop_simple",
-                 (`Assoc
-                    [("type", (`List [`String "string"; `String "null"]))]));
-               ("plain",
-                 (`Assoc
-                    [("type", (`List [`String "string"; `String "null"]))]))]));
+                  (option_jsonschema (list_jsonschema int_jsonschema)));
+               ("drop_simple", (option_jsonschema string_jsonschema));
+               ("plain", (option_jsonschema string_jsonschema))]));
           ("required", (`List [`String "plain"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3243,29 +3117,35 @@ include
           ("properties",
             (`Assoc
                [("custom_drop_default",
-                  (`Assoc
-                     [("default", (((fun x -> `Float x)) 0.0));
-                     ("type", (`String "number"))]));
+                  ((match float_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("default", (((fun x -> `Float x)) 0.0)) ::
+                          ppx_fields)
+                    | ppx_other -> ppx_other)));
                ("dropped_default",
-                 (`Assoc
-                    [("default", (`List []));
-                    ("type", (`String "array"));
-                    ("items", (`Assoc [("type", (`String "integer"))]))]));
-               ("dropped_option",
-                 (`Assoc
-                    [("type", (`List [`String "integer"; `String "null"]))]));
+                 ((match list_jsonschema int_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", (`List [])) :: ppx_fields)
+                   | ppx_other -> ppx_other)));
+               ("dropped_option", (option_jsonschema int_jsonschema));
                ("default_value",
-                 (`Assoc
-                    [("default", (((fun x -> `String x)) "-"));
-                    ("type", (`String "string"))]));
+                 ((match string_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", (((fun x -> `String x)) "-")) ::
+                         ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("default_none",
-                 (`Assoc [("default", `Null); ("type", (`String "string"))]));
+                 ((match string_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", `Null) :: ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("option_default_none",
-                 (`Assoc [("default", `Null); ("type", (`String "string"))]));
-               ("option_value",
-                 (`Assoc
-                    [("type", (`List [`String "string"; `String "null"]))]));
-               ("required_value", (`Assoc [("type", (`String "integer"))]))]));
+                 ((match string_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", `Null) :: ppx_fields)
+                   | ppx_other -> ppx_other)));
+               ("option_value", (option_jsonschema string_jsonschema));
+               ("required_value", int_jsonschema)]));
           ("required", (`List [`String "required_value"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3297,22 +3177,16 @@ include
           ("properties",
             (`Assoc
                [("composing_type",
-                  (`Assoc
-                     [("anyOf",
-                        (`List
-                           [(match composing_type_jsonschema with
-                             | `Assoc pairs when List.mem_assoc "$defs" pairs
-                                 ->
-                                 `Assoc
-                                   (("$id",
-                                      (`String "file://shared/cases.ml:361"))
-                                   ::
-                                   (List.filter
-                                      (fun (k, _) ->
-                                         not (Stdlib.String.equal k "$id"))
-                                      pairs))
-                             | other -> other);
-                           `Assoc [("type", (`String "null"))]]))]))]));
+                  (option_jsonschema
+                     (match composing_type_jsonschema with
+                      | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                          `Assoc
+                            (("$id", (`String "file://shared/cases.ml:361"))
+                            ::
+                            (List.filter
+                               (fun (k, _) ->
+                                  not (Stdlib.String.equal k "$id")) pairs))
+                      | other -> other)))]));
           ("required", (`List []));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3333,8 +3207,10 @@ include
     let with_format_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("format", (`String "date-time")); ("type", (`String "string"))] in
+        match string_jsonschema with
+        | `Assoc ppx_fields ->
+            `Assoc (("format", (`String "date-time")) :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3360,9 +3236,11 @@ include
           ("properties",
             (`Assoc
                [("with_format",
-                  (`Assoc
-                     [("format", (`String "date-time"));
-                     ("type", (`String "string"))]))]));
+                  ((match string_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("format", (`String "date-time")) ::
+                          ppx_fields)
+                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "with_format"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3395,10 +3273,18 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "A"))];
-                        `Assoc
-                          [("format", (`String "date-time"));
-                          ("description", (`String "A date-time string"));
-                          ("type", (`String "string"))]]));
+                        (match match string_jsonschema with
+                               | `Assoc ppx_fields ->
+                                   `Assoc
+                                     (("description",
+                                        (`String "A date-time string"))
+                                     :: ppx_fields)
+                               | ppx_other -> ppx_other
+                         with
+                         | `Assoc ppx_fields ->
+                             `Assoc (("format", (`String "date-time")) ::
+                               ppx_fields)
+                         | ppx_other -> ppx_other)]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))];
@@ -3483,10 +3369,8 @@ include
           ("properties",
             (`Assoc
                [("children",
-                  (`Assoc
-                     [("type", (`String "array"));
-                     ("items",
-                       (`Assoc [("$ref", (`String "#/$defs/self_ref"))]))]))]));
+                  (list_jsonschema
+                     (`Assoc [("$ref", (`String "#/$defs/self_ref"))])))]));
           ("required", (`List [`String "children"]));
           ("additionalProperties", (`Bool false))] in
       `Assoc
@@ -3560,10 +3444,8 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Group"))];
-                       `Assoc
-                         [("type", (`String "array"));
-                         ("items",
-                           (`Assoc [("$ref", (`String "#/$defs/filter"))]))];
+                       list_jsonschema
+                         (`Assoc [("$ref", (`String "#/$defs/filter"))]);
                        group_atom]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 3));
@@ -3607,11 +3489,8 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "BoolFilterGroup"))];
-                       `Assoc
-                         [("type", (`String "array"));
-                         ("items",
-                           (`Assoc
-                              [("$ref", (`String "#/$defs/bool_filter"))]))]]));
+                       list_jsonschema
+                         (`Assoc [("$ref", (`String "#/$defs/bool_filter"))])]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -3668,7 +3547,7 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "ORLeaf"))];
-                        `Assoc [("type", (`String "integer"))]]));
+                        int_jsonschema]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))];
@@ -3712,7 +3591,9 @@ include
     let with_maximum_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc [("maximum", (`Int 100)); ("type", (`String "integer"))] in
+        match int_jsonschema with
+        | `Assoc ppx_fields -> `Assoc (("maximum", (`Int 100)) :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3736,8 +3617,10 @@ include
           ("properties",
             (`Assoc
                [("field",
-                  (`Assoc
-                     [("maximum", (`Int 100)); ("type", (`String "integer"))]))]));
+                  ((match int_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("maximum", (`Int 100)) :: ppx_fields)
+                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "field"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3763,12 +3646,21 @@ include
     let attrs_core_type_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("description",
-             (`String "Integer percentage value (0-100 inclusive)"));
-          ("minimum", (`Int 0));
-          ("maximum", (`Int 100));
-          ("type", (`String "integer"))] in
+        match match match int_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("maximum", (`Int 100)) :: ppx_fields)
+                    | ppx_other -> ppx_other
+              with
+              | `Assoc ppx_fields ->
+                  `Assoc (("minimum", (`Int 0)) :: ppx_fields)
+              | ppx_other -> ppx_other
+        with
+        | `Assoc ppx_fields ->
+            `Assoc
+              (("description",
+                 (`String "Integer percentage value (0-100 inclusive)"))
+              :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3799,16 +3691,31 @@ include
           ("properties",
             (`Assoc
                [("label",
-                  (`Assoc
-                     [("description", (`String "An ISO date-time"));
-                     ("format", (`String "date-time"));
-                     ("type", (`String "string"))]));
+                  ((match match string_jsonschema with
+                          | `Assoc ppx_fields ->
+                              `Assoc (("format", (`String "date-time")) ::
+                                ppx_fields)
+                          | ppx_other -> ppx_other
+                    with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("description", (`String "An ISO date-time"))
+                          :: ppx_fields)
+                    | ppx_other -> ppx_other)));
                ("score",
-                 (`Assoc
-                    [("description", (`String "Score out of 100"));
-                    ("minimum", (`Int 0));
-                    ("maximum", (`Int 100));
-                    ("type", (`String "integer"))]))]));
+                 ((match match match int_jsonschema with
+                               | `Assoc ppx_fields ->
+                                   `Assoc (("maximum", (`Int 100)) ::
+                                     ppx_fields)
+                               | ppx_other -> ppx_other
+                         with
+                         | `Assoc ppx_fields ->
+                             `Assoc (("minimum", (`Int 0)) :: ppx_fields)
+                         | ppx_other -> ppx_other
+                   with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("description", (`String "Score out of 100"))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "label"; `String "score"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3830,9 +3737,11 @@ include
     let attrs_type_decl_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("description", (`String "A plain integer"));
-          ("type", (`String "integer"))] in
+        match int_jsonschema with
+        | `Assoc ppx_fields ->
+            `Assoc (("description", (`String "A plain integer")) ::
+              ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3852,10 +3761,13 @@ include
     let minimum_core_type_int_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("minimum", (`Int 0));
-          ("maximum", (`Int 100));
-          ("type", (`String "integer"))] in
+        match match int_jsonschema with
+              | `Assoc ppx_fields ->
+                  `Assoc (("maximum", (`Int 100)) :: ppx_fields)
+              | ppx_other -> ppx_other
+        with
+        | `Assoc ppx_fields -> `Assoc (("minimum", (`Int 0)) :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3875,10 +3787,14 @@ include
     let minimum_core_type_float_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("minimum", (`Float 0.0));
-          ("maximum", (`Float 1.0));
-          ("type", (`String "number"))] in
+        match match float_jsonschema with
+              | `Assoc ppx_fields ->
+                  `Assoc (("maximum", (`Float 1.0)) :: ppx_fields)
+              | ppx_other -> ppx_other
+        with
+        | `Assoc ppx_fields ->
+            `Assoc (("minimum", (`Float 0.0)) :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3905,15 +3821,24 @@ include
           ("properties",
             (`Assoc
                [("ratio",
-                  (`Assoc
-                     [("minimum", (`Float 0.0));
-                     ("maximum", (`Float 1.0));
-                     ("type", (`String "number"))]));
+                  ((match match float_jsonschema with
+                          | `Assoc ppx_fields ->
+                              `Assoc (("maximum", (`Float 1.0)) ::
+                                ppx_fields)
+                          | ppx_other -> ppx_other
+                    with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("minimum", (`Float 0.0)) :: ppx_fields)
+                    | ppx_other -> ppx_other)));
                ("score",
-                 (`Assoc
-                    [("minimum", (`Int 0));
-                    ("maximum", (`Int 100));
-                    ("type", (`String "integer"))]))]));
+                 ((match match int_jsonschema with
+                         | `Assoc ppx_fields ->
+                             `Assoc (("maximum", (`Int 100)) :: ppx_fields)
+                         | ppx_other -> ppx_other
+                   with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("minimum", (`Int 0)) :: ppx_fields)
+                   | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "ratio"; `String "score"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -3935,10 +3860,13 @@ include
     let minimum_maximum_type_decl_int_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("minimum", (`Int 0));
-          ("maximum", (`Int 255));
-          ("type", (`String "integer"))] in
+        match match int_jsonschema with
+              | `Assoc ppx_fields ->
+                  `Assoc (("maximum", (`Int 255)) :: ppx_fields)
+              | ppx_other -> ppx_other
+        with
+        | `Assoc ppx_fields -> `Assoc (("minimum", (`Int 0)) :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3957,10 +3885,14 @@ include
     let minimum_maximum_type_decl_float_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
-        `Assoc
-          [("minimum", (`Float 0.0));
-          ("maximum", (`Float 1.0));
-          ("type", (`String "number"))] in
+        match match float_jsonschema with
+              | `Assoc ppx_fields ->
+                  `Assoc (("maximum", (`Float 1.0)) :: ppx_fields)
+              | ppx_other -> ppx_other
+        with
+        | `Assoc ppx_fields ->
+            `Assoc (("minimum", (`Float 0.0)) :: ppx_fields)
+        | ppx_other -> ppx_other in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3989,10 +3921,15 @@ include
                    ("prefixItems",
                      (`List
                         [`Assoc [("const", (`String "Percentage"))];
-                        `Assoc
-                          [("minimum", (`Int 0));
-                          ("maximum", (`Int 100));
-                          ("type", (`String "integer"))]]));
+                        (match match int_jsonschema with
+                               | `Assoc ppx_fields ->
+                                   `Assoc (("maximum", (`Int 100)) ::
+                                     ppx_fields)
+                               | ppx_other -> ppx_other
+                         with
+                         | `Assoc ppx_fields ->
+                             `Assoc (("minimum", (`Int 0)) :: ppx_fields)
+                         | ppx_other -> ppx_other)]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))];
@@ -4001,10 +3938,15 @@ include
                   ("prefixItems",
                     (`List
                        [`Assoc [("const", (`String "Factor"))];
-                       `Assoc
-                         [("minimum", (`Float 0.0));
-                         ("maximum", (`Float 1.0));
-                         ("type", (`String "number"))]]));
+                       (match match float_jsonschema with
+                              | `Assoc ppx_fields ->
+                                  `Assoc (("maximum", (`Float 1.0)) ::
+                                    ppx_fields)
+                              | ppx_other -> ppx_other
+                        with
+                        | `Assoc ppx_fields ->
+                            `Assoc (("minimum", (`Float 0.0)) :: ppx_fields)
+                        | ppx_other -> ppx_other)]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -4081,10 +4023,7 @@ include
         `Assoc
           [("type", (`String "object"));
           ("properties",
-            (`Assoc
-               [("score",
-                  (`Assoc
-                     [("type", (`List [`String "integer"; `String "null"]))]))]));
+            (`Assoc [("score", (option_jsonschema int_jsonschema))]));
           ("required", (`List [`String "score"]));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -4121,17 +4060,20 @@ include
           ("properties",
             (`Assoc
                [("empty_list",
-                  (`Assoc
-                     [("default", (`List []));
-                     ("type", (`String "array"));
-                     ("items", (`Assoc [("type", (`String "integer"))]))]));
+                  ((match list_jsonschema int_jsonschema with
+                    | `Assoc ppx_fields ->
+                        `Assoc (("default", (`List [])) :: ppx_fields)
+                    | ppx_other -> ppx_other)));
                ("int_list",
-                 (`Assoc
-                    [("default",
-                       (((fun xs -> `List (List.map (fun x -> `Int x) xs)))
-                          [1; 2; 3]));
-                    ("type", (`String "array"));
-                    ("items", (`Assoc [("type", (`String "integer"))]))]));
+                 ((match list_jsonschema int_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc
+                         (("default",
+                            (((fun xs ->
+                                 `List (List.map (fun x -> `Int x) xs)))
+                               [1; 2; 3]))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("record",
                  ((match match record_for_default_jsonschema with
                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
@@ -4171,34 +4113,36 @@ include
                          :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("pairs",
-                 (`Assoc
-                    [("default",
-                       (((fun xs ->
-                            `List
-                              (List.map
-                                 (fun (ppx_tuple_0, ppx_tuple_1) ->
-                                    `List
-                                      [((fun x -> `String x)) ppx_tuple_0;
-                                      ((fun x ->
-                                          match x with
-                                          | None -> `Null
-                                          | Some v ->
-                                              ((fun x -> `String x)) v))
-                                        ppx_tuple_1]) xs)))
-                          [("a", None); ("b", (Some "b"))]));
-                    ("type", (`String "array"));
-                    ("items",
-                      (`Assoc
-                         [("type", (`String "array"));
-                         ("prefixItems",
-                           (`List
-                              [`Assoc [("type", (`String "string"))];
-                              `Assoc
-                                [("type",
-                                   (`List [`String "string"; `String "null"]))]]));
-                         ("unevaluatedItems", (`Bool false));
-                         ("minItems", (`Int 2));
-                         ("maxItems", (`Int 2))]))]));
+                 ((match list_jsonschema
+                           (`Assoc
+                              [("type", (`String "array"));
+                              ("prefixItems",
+                                (`List
+                                   [string_jsonschema;
+                                   option_jsonschema string_jsonschema]));
+                              ("unevaluatedItems", (`Bool false));
+                              ("minItems", (`Int 2));
+                              ("maxItems", (`Int 2))])
+                   with
+                   | `Assoc ppx_fields ->
+                       `Assoc
+                         (("default",
+                            (((fun xs ->
+                                 `List
+                                   (List.map
+                                      (fun (ppx_tuple_0, ppx_tuple_1) ->
+                                         `List
+                                           [((fun x -> `String x))
+                                              ppx_tuple_0;
+                                           ((fun x ->
+                                               match x with
+                                               | None -> `Null
+                                               | Some v ->
+                                                   ((fun x -> `String x)) v))
+                                             ppx_tuple_1]) xs)))
+                               [("a", None); ("b", (Some "b"))]))
+                         :: ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("pair",
                  (`Assoc
                     [("default",
@@ -4209,28 +4153,35 @@ include
                           (1, "hello")));
                     ("type", (`String "array"));
                     ("prefixItems",
-                      (`List
-                         [`Assoc [("type", (`String "integer"))];
-                         `Assoc [("type", (`String "string"))]]));
+                      (`List [int_jsonschema; string_jsonschema]));
                     ("unevaluatedItems", (`Bool false));
                     ("minItems", (`Int 2));
                     ("maxItems", (`Int 2))]));
                ("is_active",
-                 (`Assoc
-                    [("default", (((fun x -> `Bool x)) false));
-                    ("type", (`String "boolean"))]));
+                 ((match bool_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", (((fun x -> `Bool x)) false)) ::
+                         ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("speed",
-                 (`Assoc
-                    [("default", (((fun x -> `Float x)) 100.0));
-                    ("type", (`String "number"))]));
+                 ((match float_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", (((fun x -> `Float x)) 100.0)) ::
+                         ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("label",
-                 (`Assoc
-                    [("default", (((fun x -> `String x)) "default"));
-                    ("type", (`String "string"))]));
+                 ((match string_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc
+                         (("default", (((fun x -> `String x)) "default")) ::
+                         ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("score",
-                 (`Assoc
-                    [("default", (((fun x -> `Int x)) 0));
-                    ("type", (`List [`String "integer"; `String "null"]))]))]));
+                 ((match option_jsonschema int_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", (((fun x -> `Int x)) 0)) ::
+                         ppx_fields)
+                   | ppx_other -> ppx_other)))]));
           ("required", (`List []));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -4360,10 +4311,7 @@ include
         `Assoc
           [("type", (`String "object"));
           ("properties",
-            (`Assoc
-               [("foo",
-                  (`Assoc
-                     [("type", (`List [`String "integer"; `String "null"]))]))]));
+            (`Assoc [("foo", (option_jsonschema int_jsonschema))]));
           ("required", (`List []));
           ("additionalProperties", (`Bool false))] in
       match !ppx_eds with
@@ -4443,8 +4391,7 @@ include
                   [("type", (`String "array"));
                   ("prefixItems",
                     (`List
-                       [`Assoc [("const", (`String "C"))];
-                       `Assoc [("type", (`String "integer"))]]));
+                       [`Assoc [("const", (`String "C"))]; int_jsonschema]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in

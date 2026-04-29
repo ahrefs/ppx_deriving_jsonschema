@@ -22,23 +22,26 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
   let loc = core_type.ptyp_loc in
   let schema, is_rec =
     match core_type with
-    | [%type: int] | [%type: int32] | [%type: nativeint] -> Schema.type_def ~loc "integer", false
-    | [%type: int64] ->
-      ( Schema.type_def ~loc "string"
-        |> Schema.annotation ~loc ("description", [%expr `String [%e estring ~loc "int64 is represented as a string"]]),
-        false )
-    | [%type: float] -> Schema.type_def ~loc "number", false
-    | [%type: string] | [%type: bytes] -> Schema.type_def ~loc "string", false
-    | [%type: bool] -> Schema.type_def ~loc "boolean", false
-    | [%type: char] -> Schema.char ~loc, false
-    | [%type: unit] -> Schema.null ~loc, false
+    | [%type: int] | [%type: int32] | [%type: nativeint] -> [%expr int_jsonschema], false
+    | [%type: int64] -> [%expr int64_jsonschema], false
+    | [%type: float] -> [%expr float_jsonschema], false
+    | [%type: string] | [%type: bytes] -> [%expr string_jsonschema], false
+    | [%type: bool] -> [%expr bool_jsonschema], false
+    | [%type: char] -> [%expr char_jsonschema], false
+    | [%type: unit] -> [%expr unit_jsonschema], false
+    | [%type: [%t? t] result] ->
+      let expr, is_rec = schema_of_core_type ~config ~recursive_types t in
+      [%expr result_jsonschema [%e expr]], is_rec
     | [%type: [%t? t] option] ->
       let s, is_rec = schema_of_core_type ~config ~recursive_types t in
-      Schema.nullable ~loc s, is_rec
+      [%expr option_jsonschema [%e s]], is_rec
     | [%type: [%t? t] ref] -> schema_of_core_type ~config ~recursive_types t
-    | [%type: [%t? t] list] | [%type: [%t? t] array] ->
+    | [%type: [%t? t] list] ->
       let t, is_rec = schema_of_core_type ~config ~recursive_types t in
-      Schema.array_ ~loc t, is_rec
+      [%expr list_jsonschema [%e t]], is_rec
+    | [%type: [%t? t] array] ->
+      let t, is_rec = schema_of_core_type ~config ~recursive_types t in
+      [%expr array_jsonschema [%e t]], is_rec
     | _ ->
     match core_type.ptyp_desc with
     | Ptyp_var name -> evar ~loc name, false
@@ -165,7 +168,7 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
           match pld_type with
           | [%type: [%t? inner] option] ->
             let s, r = schema_of_core_type ~config ~recursive_types inner in
-            Schema.nullable ~loc s, r
+            [%expr option_jsonschema [%e s]], r
           | _ -> schema_of_core_type ~config ~recursive_types pld_type
         in
         let type_def =
@@ -323,11 +326,6 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
           [%e apply_defs ~loc (`NonRec raw_schema)]]
     in
     let schema = wrap_type_params ~loc ~prefix:params_prefix params schema in
-    let schema =
-      match Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc type_decl with
-      | Some desc -> Schema.description ~loc desc.txt schema
-      | None -> schema
-    in
     [ create_value ~loc type_name schema ]
   (* Multiple type declarations (mutually recursive types) *)
   | _, type_decls when List.length type_decls > 1 ->
