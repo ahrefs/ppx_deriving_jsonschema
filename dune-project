@@ -28,17 +28,25 @@
   "ppx_deriving_jsonschema is a ppx rewriter that generates jsonschema from ocaml types")
  (depends
   (ocaml
-   (>= "4.08.0"))
+   (>= "5.0.0"))
   dune
   (ppxlib
-   (>= "0.24.0"))
+   (> "0.36.0"))
   (melange
    (>= "4.0.0"))
   (server-reason-react
    (>= "0.4.1"))
-  (melange-json :with-test)
-  (melange-json-native :with-test)
+  (melange-json
+   (and
+    (>= "2.0.0")
+    :with-test))
+  (melange-json-native
+   (and
+    (>= "2.0.0")
+    :with-test))
   (yojson :with-test)
+  (conf-npm :with-test)
+  (conf-python-3 :with-test)
   (ocamlformat
    (and
     (= "0.29.0")
