@@ -62,8 +62,8 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
               | `Assoc ppx_pairs ->
                 (match Stdlib.List.assoc_opt "$defs" ppx_pairs with
                 | Some (`Assoc ppx_defs) ->
-                  [%e edv]
-                  := ![%e edv] @ Stdlib.List.filter (fun (n, _) -> not (Stdlib.List.mem_assoc n ![%e edv])) ppx_defs;
+                  [%e edv] :=
+                    ![%e edv] @ Stdlib.List.filter (fun (n, _) -> not (Stdlib.List.mem_assoc n ![%e edv])) ppx_defs;
                   `Assoc (Stdlib.List.filter (fun (k, _) -> not (Stdlib.String.equal k "$defs")) ppx_pairs)
                 | _ -> `Assoc ppx_pairs)
               | ppx_other -> ppx_other],
