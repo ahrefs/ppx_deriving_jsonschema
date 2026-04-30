@@ -36,7 +36,7 @@ module Mod1 =
               (match ppx_result with
                | `Assoc ppx_pairs ->
                    `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                     (List.filter
+                     (Stdlib.List.filter
                         (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                         ppx_pairs))
                | other -> other)[@@warning "-32-39"]
@@ -74,7 +74,7 @@ module Mod1 =
                   (match ppx_result with
                    | `Assoc ppx_pairs ->
                        `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                         (List.filter
+                         (Stdlib.List.filter
                             (fun (k, _) ->
                                not (Stdlib.String.equal k "$defs")) ppx_pairs))
                    | other -> other)[@@warning "-32-39"]
@@ -95,19 +95,20 @@ include
             (`Assoc
                [("m2",
                   ((match Mod1.Mod2.m_2_jsonschema with
-                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                    | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
+                        ->
                         `Assoc
                           (("$id", (`String "file://shared/cases.ml:21")) ::
-                          (List.filter
+                          (Stdlib.List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
                     | other -> other)));
                ("m",
                  ((match Mod1.m_1_jsonschema with
-                   | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                   | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                        `Assoc (("$id", (`String "file://shared/cases.ml:20"))
                          ::
-                         (List.filter
+                         (Stdlib.List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
                    | other -> other)))]));
@@ -119,7 +120,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -163,7 +164,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -189,7 +190,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -230,7 +231,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -255,7 +256,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -303,7 +304,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -329,7 +330,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -361,10 +362,10 @@ include
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))];
                 (match poly_kind_jsonschema with
-                 | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                 | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                      `Assoc (("$id", (`String "file://shared/cases.ml:61"))
                        ::
-                       (List.filter
+                       (Stdlib.List.filter
                           (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                           pairs))
                  | other -> other)]))] in
@@ -374,7 +375,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -394,10 +395,10 @@ include
                 [`Assoc [("const", (`String "New_one"))];
                 `Assoc [("const", (`String "Second_one"))];
                 (match poly_kind_as_string_jsonschema with
-                 | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                 | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                      `Assoc (("$id", (`String "file://shared/cases.ml:67"))
                        ::
-                       (List.filter
+                       (Stdlib.List.filter
                           (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                           pairs))
                  | other -> other)]))] in
@@ -407,7 +408,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -483,10 +484,10 @@ include
                ("comment", (`Assoc [("type", (`String "string"))]));
                ("kind_f",
                  ((match kind_jsonschema with
-                   | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                   | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                        `Assoc (("$id", (`String "file://shared/cases.ml:72"))
                          ::
-                         (List.filter
+                         (Stdlib.List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
                    | other -> other)));
@@ -512,7 +513,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -650,7 +651,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -934,7 +935,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -953,7 +954,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1222,10 +1223,10 @@ include
       let ppx_eds = ref [] in
       let ppx_result =
         match tree_jsonschema with
-        | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+        | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
             `Assoc (("$id", (`String "file://shared/cases.ml:140")) ::
-              (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
-                 pairs))
+              (Stdlib.List.filter
+                 (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
         | other -> other in
       match !ppx_eds with
       | [] -> ppx_result
@@ -1233,7 +1234,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1248,9 +1249,9 @@ include
           [("type", (`String "array"));
           ("items",
             ((match event_jsonschema with
-              | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+              | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                   `Assoc (("$id", (`String "file://shared/cases.ml:141")) ::
-                    (List.filter
+                    (Stdlib.List.filter
                        (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
               | other -> other)))] in
@@ -1260,7 +1261,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1278,10 +1279,10 @@ include
                [("type", (`String "array"));
                ("items",
                  ((match event_jsonschema with
-                   | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                   | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                        `Assoc
                          (("$id", (`String "file://shared/cases.ml:142")) ::
-                         (List.filter
+                         (Stdlib.List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
                    | other -> other)))]))] in
@@ -1291,7 +1292,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1307,10 +1308,10 @@ include
           ("prefixItems",
             (`List
                [(match event_jsonschema with
-                 | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                 | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                      `Assoc (("$id", (`String "file://shared/cases.ml:143"))
                        ::
-                       (List.filter
+                       (Stdlib.List.filter
                           (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                           pairs))
                  | other -> other);
@@ -1324,7 +1325,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1339,9 +1340,9 @@ include
           [("type", (`String "array"));
           ("items",
             ((match event_comment_jsonschema with
-              | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+              | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                   `Assoc (("$id", (`String "file://shared/cases.ml:144")) ::
-                    (List.filter
+                    (Stdlib.List.filter
                        (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
               | other -> other)))] in
@@ -1351,7 +1352,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1370,11 +1371,12 @@ include
                ("prefixItems",
                  (`List
                     [(match event_jsonschema with
-                      | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                      | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
+                          ->
                           `Assoc
                             (("$id", (`String "file://shared/cases.ml:145"))
                             ::
-                            (List.filter
+                            (Stdlib.List.filter
                                (fun (k, _) ->
                                   not (Stdlib.String.equal k "$id")) pairs))
                       | other -> other);
@@ -1388,7 +1390,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1403,9 +1405,9 @@ include
           [("type", (`String "array"));
           ("items",
             ((match events_jsonschema with
-              | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+              | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                   `Assoc (("$id", (`String "file://shared/cases.ml:146")) ::
-                    (List.filter
+                    (Stdlib.List.filter
                        (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                        pairs))
               | other -> other)))] in
@@ -1415,7 +1417,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1435,7 +1437,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1453,7 +1455,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1471,10 +1473,11 @@ include
             (`Assoc
                [("m",
                   ((match Mod1.m_1_jsonschema with
-                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                    | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
+                        ->
                         `Assoc
                           (("$id", (`String "file://shared/cases.ml:149")) ::
-                          (List.filter
+                          (Stdlib.List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
                     | other -> other)))]));
@@ -1486,7 +1489,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1505,7 +1508,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1549,7 +1552,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1578,7 +1581,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1608,7 +1611,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1629,10 +1632,11 @@ include
             (`Assoc
                [("address",
                   ((match address_jsonschema with
-                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                    | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
+                        ->
                         `Assoc
                           (("$id", (`String "file://shared/cases.ml:167")) ::
-                          (List.filter
+                          (Stdlib.List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
                     | other -> other)));
@@ -1654,7 +1658,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1702,7 +1706,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1723,7 +1727,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1749,7 +1753,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1809,7 +1813,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1837,7 +1841,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1875,7 +1879,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1899,7 +1903,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1937,7 +1941,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1963,7 +1967,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -1994,7 +1998,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2033,7 +2037,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2065,7 +2069,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2104,7 +2108,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2144,7 +2148,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2175,7 +2179,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2215,7 +2219,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2239,7 +2243,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2257,10 +2261,11 @@ include
             (`Assoc
                [("obj2",
                   ((match obj2_jsonschema with
-                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                    | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
+                        ->
                         `Assoc
                           (("$id", (`String "file://shared/cases.ml:218")) ::
-                          (List.filter
+                          (Stdlib.List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
                     | other -> other)))]));
@@ -2272,7 +2277,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2290,10 +2295,11 @@ include
             (`Assoc
                [("obj1",
                   ((match obj1_jsonschema with
-                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                    | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
+                        ->
                         `Assoc
                           (("$id", (`String "file://shared/cases.ml:219")) ::
-                          (List.filter
+                          (Stdlib.List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
                     | other -> other)))]));
@@ -2305,7 +2311,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2329,7 +2335,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2356,7 +2362,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2385,7 +2391,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2399,10 +2405,10 @@ include
         match generic_link_traffic_jsonschema
                 (`Assoc [("type", (`String "string"))])
         with
-        | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+        | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
             `Assoc (("$id", (`String "file://shared/cases.ml:231")) ::
-              (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
-                 pairs))
+              (Stdlib.List.filter
+                 (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
         | other -> other in
       match !ppx_eds with
       | [] -> ppx_result
@@ -2410,7 +2416,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2446,7 +2452,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2476,7 +2482,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2493,7 +2499,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2529,7 +2535,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2541,10 +2547,10 @@ include
       let ppx_eds = ref [] in
       let ppx_result =
         match either_jsonschema a b with
-        | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+        | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
             `Assoc (("$id", (`String "file://shared/cases.ml:247")) ::
-              (List.filter (fun (k, _) -> not (Stdlib.String.equal k "$id"))
-                 pairs))
+              (Stdlib.List.filter
+                 (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
         | other -> other in
       match !ppx_eds with
       | [] -> ppx_result
@@ -2552,7 +2558,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2576,7 +2582,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2613,7 +2619,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2651,7 +2657,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2683,7 +2689,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2748,7 +2754,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2790,7 +2796,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2820,7 +2826,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2856,7 +2862,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2883,7 +2889,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2914,7 +2920,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2956,7 +2962,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2977,7 +2983,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -2999,7 +3005,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3034,7 +3040,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3077,7 +3083,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3101,7 +3107,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3134,7 +3140,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3175,7 +3181,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3217,7 +3223,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3274,7 +3280,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3301,13 +3307,13 @@ include
                      [("anyOf",
                         (`List
                            [(match composing_type_jsonschema with
-                             | `Assoc pairs when List.mem_assoc "$defs" pairs
-                                 ->
+                             | `Assoc pairs when
+                                 Stdlib.List.mem_assoc "$defs" pairs ->
                                  `Assoc
                                    (("$id",
                                       (`String "file://shared/cases.ml:361"))
                                    ::
-                                   (List.filter
+                                   (Stdlib.List.filter
                                       (fun (k, _) ->
                                          not (Stdlib.String.equal k "$id"))
                                       pairs))
@@ -3321,7 +3327,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3341,7 +3347,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3371,7 +3377,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3415,7 +3421,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3507,19 +3513,20 @@ include
             (`Assoc
                [("b",
                   ((match self_ref_jsonschema with
-                    | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                    | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
+                        ->
                         `Assoc
                           (("$id", (`String "file://shared/cases.ml:380")) ::
-                          (List.filter
+                          (Stdlib.List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
                     | other -> other)));
                ("a",
                  ((match self_ref_jsonschema with
-                   | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                   | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                        `Assoc
                          (("$id", (`String "file://shared/cases.ml:379")) ::
-                         (List.filter
+                         (Stdlib.List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
                    | other -> other)))]));
@@ -3531,7 +3538,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3590,12 +3597,13 @@ include
                      (`List
                         [`Assoc [("const", (`String "BoolAtom"))];
                         (match filter_jsonschema atom group_atom with
-                         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                         | `Assoc pairs when
+                             Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
                                   (`String "file://shared/cases.ml:388"))
                                ::
-                               (List.filter
+                               (Stdlib.List.filter
                                   (fun (k, _) ->
                                      not (Stdlib.String.equal k "$id")) pairs))
                          | other -> other)]));
@@ -3682,17 +3690,18 @@ include
                                    [("$ref", (`String "#/$defs/outer_rec"))])
                         with
                         | `Assoc ppx_pairs ->
-                            (match List.assoc_opt "$defs" ppx_pairs with
+                            (match Stdlib.List.assoc_opt "$defs" ppx_pairs
+                             with
                              | Some (`Assoc ppx_defs) ->
                                  (ppx_eds :=
                                     ((!ppx_eds) @
-                                       (List.filter
+                                       (Stdlib.List.filter
                                           (fun (n, _) ->
                                              not
-                                               (List.mem_assoc n (!ppx_eds)))
-                                          ppx_defs));
+                                               (Stdlib.List.mem_assoc n
+                                                  (!ppx_eds))) ppx_defs));
                                   `Assoc
-                                    (List.filter
+                                    (Stdlib.List.filter
                                        (fun (k, _) ->
                                           not (Stdlib.String.equal k "$defs"))
                                        ppx_pairs))
@@ -3719,7 +3728,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3746,7 +3755,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3775,7 +3784,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3817,7 +3826,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3839,7 +3848,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3862,7 +3871,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3885,7 +3894,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3922,7 +3931,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3945,7 +3954,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -3967,7 +3976,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4014,7 +4023,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4057,7 +4066,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4101,7 +4110,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4136,18 +4145,20 @@ include
                ("int_list",
                  (`Assoc
                     [("default",
-                       (((fun xs -> `List (List.map (fun x -> `Int x) xs)))
+                       (((fun xs ->
+                            `List (Stdlib.List.map (fun x -> `Int x) xs)))
                           [1; 2; 3]));
                     ("type", (`String "array"));
                     ("items", (`Assoc [("type", (`String "integer"))]))]));
                ("record",
                  ((match match record_for_default_jsonschema with
-                         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                         | `Assoc pairs when
+                             Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
                                   (`String "file://shared/cases.ml:438"))
                                ::
-                               (List.filter
+                               (Stdlib.List.filter
                                   (fun (k, _) ->
                                      not (Stdlib.String.equal k "$id")) pairs))
                          | other -> other
@@ -4161,12 +4172,13 @@ include
                    | ppx_other -> ppx_other)));
                ("variant",
                  ((match match variant_for_default_jsonschema with
-                         | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                         | `Assoc pairs when
+                             Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
                                   (`String "file://shared/cases.ml:437"))
                                ::
-                               (List.filter
+                               (Stdlib.List.filter
                                   (fun (k, _) ->
                                      not (Stdlib.String.equal k "$id")) pairs))
                          | other -> other
@@ -4183,7 +4195,7 @@ include
                     [("default",
                        (((fun xs ->
                             `List
-                              (List.map
+                              (Stdlib.List.map
                                  (fun (ppx_tuple_0, ppx_tuple_1) ->
                                     `List
                                       [((fun x -> `String x)) ppx_tuple_0;
@@ -4247,7 +4259,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4294,7 +4306,7 @@ module Status =
               (match ppx_result with
                | `Assoc ppx_pairs ->
                    `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                     (List.filter
+                     (Stdlib.List.filter
                         (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                         ppx_pairs))
                | other -> other)[@@warning "-32-39"]
@@ -4315,12 +4327,13 @@ include
             (`Assoc
                [("status",
                   ((match match Status.t_jsonschema with
-                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                          | `Assoc pairs when
+                              Stdlib.List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
                                    (`String "file://shared/cases.ml:449"))
                                 ::
-                                (List.filter
+                                (Stdlib.List.filter
                                    (fun (k, _) ->
                                       not (Stdlib.String.equal k "$id"))
                                    pairs))
@@ -4341,7 +4354,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4390,7 +4403,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4411,12 +4424,13 @@ include
             (`Assoc
                [("inner",
                   ((match match inner_with_option_field_jsonschema with
-                          | `Assoc pairs when List.mem_assoc "$defs" pairs ->
+                          | `Assoc pairs when
+                              Stdlib.List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
                                    (`String "file://shared/cases.ml:458"))
                                 ::
-                                (List.filter
+                                (Stdlib.List.filter
                                    (fun (k, _) ->
                                       not (Stdlib.String.equal k "$id"))
                                    pairs))
@@ -4438,7 +4452,7 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
@@ -4472,8 +4486,229 @@ include
           (match ppx_result with
            | `Assoc ppx_pairs ->
                `Assoc (("$defs", (`Assoc ppx_defs)) ::
-                 (List.filter
+                 (Stdlib.List.filter
                     (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+module Generated_code_must_qualify_stdlib =
+  struct
+    module List = struct  end
+    module String = struct  end
+    module Array = struct  end
+    type plain_variant_with_shadowed_stdlib =
+      | A 
+      | B [@name "b"][@@deriving jsonschema]
+    include
+      struct
+        let plain_variant_with_shadowed_stdlib_jsonschema =
+          let ppx_eds = ref [] in
+          let ppx_result =
+            `Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List [`Assoc [("const", (`String "A"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 1));
+                       ("maxItems", (`Int 1))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List [`Assoc [("const", (`String "b"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 1));
+                      ("maxItems", (`Int 1))]]))] in
+          match !ppx_eds with
+          | [] -> ppx_result
+          | ppx_defs ->
+              (match ppx_result with
+               | `Assoc ppx_pairs ->
+                   `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                     (Stdlib.List.filter
+                        (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                        ppx_pairs))
+               | other -> other)[@@warning "-32-39"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+    type 'a wrapper_with_shadowed_stdlib =
+      | Wrap of 'a 
+      | Nested of 'a wrapper_with_shadowed_stdlib [@@deriving jsonschema]
+    include
+      struct
+        let wrapper_with_shadowed_stdlib_jsonschema a =
+          let ppx_eds = ref [] in
+          let ppx_body_wrapper_with_shadowed_stdlib =
+            `Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List [`Assoc [("const", (`String "Wrap"))]; a]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 2));
+                       ("maxItems", (`Int 2))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List
+                           [`Assoc [("const", (`String "Nested"))];
+                           `Assoc
+                             [("$ref",
+                                (`String
+                                   "#/$defs/wrapper_with_shadowed_stdlib"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 2));
+                      ("maxItems", (`Int 2))]]))] in
+          `Assoc
+            [("$defs",
+               (`Assoc
+                  ([("wrapper_with_shadowed_stdlib",
+                      ppx_body_wrapper_with_shadowed_stdlib)]
+                     @ (!ppx_eds))));
+            ("$ref", (`String "#/$defs/wrapper_with_shadowed_stdlib"))]
+          [@@warning "-32-39"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+    type rec_using_wrapper_with_shadowed_stdlib =
+      | Leaf of int 
+      | Node of rec_using_wrapper_with_shadowed_stdlib
+      wrapper_with_shadowed_stdlib [@@deriving jsonschema]
+    include
+      struct
+        let rec_using_wrapper_with_shadowed_stdlib_jsonschema =
+          let ppx_eds = ref [] in
+          let ppx_body_rec_using_wrapper_with_shadowed_stdlib =
+            `Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List
+                            [`Assoc [("const", (`String "Leaf"))];
+                            `Assoc [("type", (`String "integer"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 2));
+                       ("maxItems", (`Int 2))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List
+                           [`Assoc [("const", (`String "Node"))];
+                           (match wrapper_with_shadowed_stdlib_jsonschema
+                                    (`Assoc
+                                       [("$ref",
+                                          (`String
+                                             "#/$defs/rec_using_wrapper_with_shadowed_stdlib"))])
+                            with
+                            | `Assoc ppx_pairs ->
+                                (match Stdlib.List.assoc_opt "$defs"
+                                         ppx_pairs
+                                 with
+                                 | Some (`Assoc ppx_defs) ->
+                                     (ppx_eds :=
+                                        ((!ppx_eds) @
+                                           (Stdlib.List.filter
+                                              (fun (n, _) ->
+                                                 not
+                                                   (Stdlib.List.mem_assoc n
+                                                      (!ppx_eds))) ppx_defs));
+                                      `Assoc
+                                        (Stdlib.List.filter
+                                           (fun (k, _) ->
+                                              not
+                                                (Stdlib.String.equal k
+                                                   "$defs")) ppx_pairs))
+                                 | _ -> `Assoc ppx_pairs)
+                            | ppx_other -> ppx_other)]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 2));
+                      ("maxItems", (`Int 2))]]))] in
+          `Assoc
+            [("$defs",
+               (`Assoc
+                  ([("rec_using_wrapper_with_shadowed_stdlib",
+                      ppx_body_rec_using_wrapper_with_shadowed_stdlib)]
+                     @ (!ppx_eds))));
+            ("$ref",
+              (`String "#/$defs/rec_using_wrapper_with_shadowed_stdlib"))]
+          [@@warning "-32-39"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+    type record_with_default_with_shadowed_stdlib =
+      {
+      items: int list [@default [1; 2]];
+      items_a: int array [@default [|1;2|]];
+      name: string [@default "x"]}[@@deriving jsonschema]
+    include
+      struct
+        let record_with_default_with_shadowed_stdlib_jsonschema =
+          let ppx_eds = ref [] in
+          let ppx_result =
+            `Assoc
+              [("type", (`String "object"));
+              ("properties",
+                (`Assoc
+                   [("name",
+                      (`Assoc
+                         [("default", (((fun x -> `String x)) "x"));
+                         ("type", (`String "string"))]));
+                   ("items_a",
+                     (`Assoc
+                        [("default",
+                           (((fun xs ->
+                                `List
+                                  (Stdlib.Array.to_list
+                                     (Stdlib.Array.map (fun x -> `Int x) xs))))
+                              [|1;2|]));
+                        ("type", (`String "array"));
+                        ("items", (`Assoc [("type", (`String "integer"))]))]));
+                   ("items",
+                     (`Assoc
+                        [("default",
+                           (((fun xs ->
+                                `List (Stdlib.List.map (fun x -> `Int x) xs)))
+                              [1; 2]));
+                        ("type", (`String "array"));
+                        ("items", (`Assoc [("type", (`String "integer"))]))]))]));
+              ("required", (`List []));
+              ("additionalProperties", (`Bool false))] in
+          match !ppx_eds with
+          | [] -> ppx_result
+          | ppx_defs ->
+              (match ppx_result with
+               | `Assoc ppx_pairs ->
+                   `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                     (Stdlib.List.filter
+                        (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                        ppx_pairs))
+               | other -> other)[@@warning "-32-39"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+    type non_rec_using_wrapper_with_shadowed_stdlib =
+      int wrapper_with_shadowed_stdlib[@@deriving jsonschema]
+    include
+      struct
+        let non_rec_using_wrapper_with_shadowed_stdlib_jsonschema =
+          let ppx_eds = ref [] in
+          let ppx_result =
+            match wrapper_with_shadowed_stdlib_jsonschema
+                    (`Assoc [("type", (`String "integer"))])
+            with
+            | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
+                `Assoc (("$id", (`String "file://shared/cases.ml:499")) ::
+                  (Stdlib.List.filter
+                     (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
+            | other -> other in
+          match !ppx_eds with
+          | [] -> ppx_result
+          | ppx_defs ->
+              (match ppx_result with
+               | `Assoc ppx_pairs ->
+                   `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                     (Stdlib.List.filter
+                        (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                        ppx_pairs))
+               | other -> other)[@@warning "-32-39"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+  end

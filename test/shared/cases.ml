@@ -462,3 +462,39 @@ type compact_variants =
   | B
   | C of int
 [@@deriving jsonschema] [@@jsonschema.compact_variants]
+
+(* Regression test: PPX-generated code must not depend on user-scope [List]/[String]/[Array].
+   Shadowing them with empty modules makes any unqualified reference (e.g. [List.filter])
+   in generated code fail to compile. This catches the same class of bug as `open Base`,
+   `open Containers`, etc. without pulling those libraries into the test deps. *)
+module Generated_code_must_qualify_stdlib = struct
+  module List = struct end
+  module String = struct end
+  module Array = struct end
+
+  type plain_variant_with_shadowed_stdlib =
+    | A
+    | B [@name "b"]
+  [@@deriving jsonschema]
+
+  type 'a wrapper_with_shadowed_stdlib =
+    | Wrap of 'a
+    | Nested of 'a wrapper_with_shadowed_stdlib
+  [@@deriving jsonschema]
+
+  type rec_using_wrapper_with_shadowed_stdlib =
+    | Leaf of int
+    | Node of rec_using_wrapper_with_shadowed_stdlib wrapper_with_shadowed_stdlib
+  [@@deriving jsonschema]
+
+  type record_with_default_with_shadowed_stdlib = {
+    items : int list; [@default [ 1; 2 ]]
+    items_a : int array; [@default [| 1; 2 |]]
+    name : string; [@default "x"]
+  }
+  [@@deriving jsonschema]
+
+  (* Non-recursive top-level type using a parametric recursive type as an arg:
+     exercises the [$id]-injection branch where the inner [$defs] gets a resource boundary. *)
+  type non_rec_using_wrapper_with_shadowed_stdlib = int wrapper_with_shadowed_stdlib [@@deriving jsonschema]
+end

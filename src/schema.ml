@@ -139,10 +139,10 @@ module Annotation = struct
           | Some v -> [%e s] v]
     | [%type: [%t? t] list] ->
       let s = serializer_of_core_type ~loc t in
-      [%expr fun xs -> `List (List.map [%e s] xs)]
+      [%expr fun xs -> `List (Stdlib.List.map [%e s] xs)]
     | [%type: [%t? t] array] ->
       let s = serializer_of_core_type ~loc t in
-      [%expr fun xs -> `List (Array.to_list (Array.map [%e s] xs))]
+      [%expr fun xs -> `List (Stdlib.Array.to_list (Stdlib.Array.map [%e s] xs))]
     | { ptyp_desc = Ptyp_tuple types; _ } ->
       let serializers = List.map (serializer_of_core_type ~loc) types in
       let vars = List.mapi (fun i _ -> Printf.sprintf "ppx_tuple_%d" i) types in
