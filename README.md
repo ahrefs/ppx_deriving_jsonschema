@@ -55,17 +55,255 @@ Such a type will be turned into a JSON schema like this:
 }
 ```
 
+## Usage
+
+To generate jsonschema for a type, add the `[@@deriving jsonschema]` attribute to
+the type declaration.
+
+```ocaml
+open Ppx_deriving_jsonschema_runtime.Primitives.Melange_json
+
+type t = {
+  a: int;
+  b: string;
+} [@@deriving jsonschema]
+```
+
 ### Conversion rules
 
-#### Basic types
+#### Primitives
 
-Types `int`, `int32`, `int64`, `nativeint`, `string`, `bytes`, `float`, `bool` are converted to their JSON equivalents.
+As we support the ppx to be used with both melange-json and yojson, we provide two primitives modules: `Melange_json` and `Yojson`.
 
-Type `char` is converted to `{ "type": "string",  "minLength": 1,  "maxLength": 1}`.
+##### Melange_json
+
+<table>
+<thead>
+<tr><th>OCaml type</th><th>JSON schema</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><code>char</code></td>
+<td>
+
+```json
+{ "type": "string", "minLength": 1, "maxLength": 1 }
+```
+
+</tr>
+<tr>
+<td><code>int</code></td>
+<td>
+
+```json
+{ "type": "integer" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>int64</code></td>
+<td>
+
+```json
+{ "type": "string", "description": "int64 is represented as a string" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td>
+
+```json
+{ "type": "number" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td>
+
+```json
+{ "type": "boolean" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>string</code></td>
+<td>
+
+```json
+{ "type": "string" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>list</code>, <code>array</code></td>
+<td>
+
+```json
+{ "type": "array", "items": { "type": "..." } }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>'a option</code></td>
+<td>
+
+```json
+{ "type": ["...", "null"] }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>unit</code></td>
+<td>
+
+```json
+{ "type": "null" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>result('a, 'b)</code></td>
+<td>
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Error" }, { "type": "..." } ],
+      "unevaluatedItems": false,
+      "minItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Ok" }, { "type": "..." } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
+</td>
+</tr>
+</tbody>
+</table>
+
+
+##### Yojson
+
+<table>
+<thead>
+<tr><th>OCaml type</th><th>JSON schema</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><code>char</code></td>
+<td>
+
+```json
+{ "type": "string", "minLength": 1, "maxLength": 1 }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>int</code>, <code>int64</code></td>
+<td>
+
+```json
+{ "type": "number" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td>
+
+```json
+{ "type": "number" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td>
+
+```json
+{ "type": "boolean" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>string</code></td>
+<td>
+
+```json
+{ "type": "string" }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>list</code>, <code>array</code></td>
+<td>
+
+```json
+{ "type": "array", "items": { "type": "..." } }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>'a option</code></td>
+<td>
+
+```json
+{ "type": ["...", "null"] }
+```
+
+</td>
+</tr>
+<tr>
+<td><code>unit</code></td>
+<td>
+
+```json
+{ "type": "null" }
+```
+
+</td>
+</tr>
+</tbody>
+</table>
+
+#### Ref
 
 Type `'a ref` is treated as `'a`.
 
-Type `unit` is converted to `{ "type": "null" }`.
+```ocaml
+type t = {
+  name : string ref;
+} [@@deriving jsonschema]
+```
+
+```json
+{ "type": "string" }
+```
 
 #### Option
 
@@ -110,6 +348,34 @@ type t = {
   "additionalProperties": false 
 }
 ```
+#### Result
+
+`('ok, 'err) result` is converted to an `anyOf` with two array variants, matching the standard variant encoding:
+
+```ocaml
+type result_value = (int, string) result [@@deriving jsonschema]
+```
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Error" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Ok" }, { "type": "string" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
 #### List and arrays
 
 OCaml lists and arrays are converted to `{ "type": "array", "items": { "type": "..." } }`.

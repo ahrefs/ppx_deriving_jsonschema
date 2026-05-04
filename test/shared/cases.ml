@@ -1,4 +1,4 @@
-[@@@ocaml.warning "-37-69"]
+open Ppx_deriving_jsonschema_runtime.Primitives.Melange_json
 open Melange_json.Primitives
 
 let string_jsonschema = `Assoc [ "type", `String "string" ]

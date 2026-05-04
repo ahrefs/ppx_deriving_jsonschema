@@ -1927,10 +1927,8 @@
       "type": "object",
       "properties": {
         "composing_type": {
-          "anyOf": [
-            { "type": "string", "description": "A string" },
-            { "type": "null" }
-          ]
+          "type": [ "string", "null" ],
+          "description": "A string"
         }
       },
       "required": [],
