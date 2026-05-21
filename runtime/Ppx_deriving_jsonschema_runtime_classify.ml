@@ -8,9 +8,9 @@ type t =
   | `Assoc of (string * t) list
   ]
 
-let classify f x =
+let classify value =
   match%platform () with
-  | Server -> f x
+  | Server -> value
   | Client ->
     (* [Js.Json.classify] only checks for [=== null] when distinguishing null from object, so it
      mis-classifies [undefined] as [JSONObject]. melange-json's [@option] [@drop_default] codegen
@@ -31,7 +31,24 @@ let classify f x =
       | JSONObject dict ->
         let is_undefined json = Js.typeof json = "undefined" in
         `Assoc
-          (Js.Dict.entries dict
-          |> Array.fold_left (fun acc (k, v) -> if is_undefined v then acc else (k, decode v) :: acc) [])
+          (Array.fold_right
+             (fun (k, v) acc -> if is_undefined v then acc else (k, decode v) :: acc)
+             (Js.Dict.entries dict)
+             [])
     in
-    decode (f x)
+    decode value
+
+let declassify value =
+  match%platform () with
+  | Server -> value
+  | Client ->
+    let rec encode = function
+      | `Null -> Js.Json.null
+      | `String str -> Js.Json.string str
+      | `Float f -> Js.Json.number f
+      | `Int i -> Js.Json.number (Js.Int.toFloat i)
+      | `Bool b -> Js.Json.boolean b
+      | `List li -> Js.Json.array (Array.of_list (List.map encode li))
+      | `Assoc assoc -> Js.Json.object_ (Js.Dict.fromList (List.map (fun (k, v) -> k, encode v) assoc))
+    in
+    encode value

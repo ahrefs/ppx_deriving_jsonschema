@@ -3,6 +3,7 @@ let schema_version = "https://json-schema.org/draft/2020-12/schema"
 type t = Ppx_deriving_jsonschema_runtime_classify.t
 
 let classify = Ppx_deriving_jsonschema_runtime_classify.classify
+let declassify = Ppx_deriving_jsonschema_runtime_classify.declassify
 
 let json_schema ?id ?title ?description ?definitions types =
   let fields =

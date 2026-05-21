@@ -2305,6 +2305,16 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
+        "range": {
+          "default": { "from": 0, "to": 100 },
+          "type": "object",
+          "properties": {
+            "to": { "type": "integer" },
+            "from": { "type": "integer" }
+          },
+          "required": [ "to", "from" ],
+          "additionalProperties": false
+        },
         "empty_list": {
           "default": [],
           "type": "array",
