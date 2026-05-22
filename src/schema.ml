@@ -101,38 +101,44 @@ module Annotation = struct
       | [%type: float], Pexp_constant (Pconst_float _) -> minimum ~loc [%expr `Float [%e expr]] schema
       | _ -> Location.raise_errorf ~loc:core_type.ptyp_loc "[@jsonschema.minimum] can only be applied to numeric types")
 
-  let rec serializer_of_core_type ~loc ct =
+  let rec serialize_expr ~loc ct default_value_expr =
     match ct with
-    | [%type: int] | [%type: int32] | [%type: nativeint] -> [%expr fun x -> `Int x]
-    | [%type: float] -> [%expr fun x -> `Float x]
-    | [%type: string] | [%type: bytes] -> [%expr fun x -> `String x]
-    | [%type: bool] -> [%expr fun x -> `Bool x]
+    | [%type: int] | [%type: int32] | [%type: nativeint] -> [%expr `Int [%e default_value_expr]]
+    | [%type: float] -> [%expr `Float [%e default_value_expr]]
+    | [%type: string] | [%type: bytes] -> [%expr `String [%e default_value_expr]]
+    | [%type: bool] -> [%expr `Bool [%e default_value_expr]]
     | [%type: [%t? t] option] ->
-      let s = serializer_of_core_type ~loc t in
       [%expr
-        fun x ->
-          match x with
-          | None -> `Null
-          | Some v -> [%e s] v]
+        match [%e default_value_expr] with
+        | None -> `Null
+        | Some ppx_opt_v -> [%e serialize_expr ~loc t [%expr ppx_opt_v]]]
     | [%type: [%t? t] list] ->
-      let s = serializer_of_core_type ~loc t in
-      [%expr fun xs -> `List (Stdlib.List.map [%e s] xs)]
+      [%expr
+        `List (Stdlib.List.map (fun ppx_item -> [%e serialize_expr ~loc t [%expr ppx_item]]) [%e default_value_expr])]
     | [%type: [%t? t] array] ->
-      let s = serializer_of_core_type ~loc t in
-      [%expr fun xs -> `List (Stdlib.Array.to_list (Stdlib.Array.map [%e s] xs))]
+      [%expr
+        `List
+          (Stdlib.Array.to_list
+             (Stdlib.Array.map (fun ppx_item -> [%e serialize_expr ~loc t [%expr ppx_item]]) [%e default_value_expr]))]
     | { ptyp_desc = Ptyp_tuple types; _ } ->
-      let serializers = List.map (serializer_of_core_type ~loc) types in
       let vars = List.mapi (fun i _ -> Printf.sprintf "ppx_tuple_%d" i) types in
       let pats = List.map (fun v -> ppat_var ~loc { txt = v; loc }) vars in
-      let exprs = List.map2 (fun s v -> [%expr [%e s] [%e evar ~loc v]]) serializers vars in
-      [%expr fun [%p ppat_tuple ~loc pats] -> `List [%e elist ~loc exprs]]
-    | { ptyp_desc = Ptyp_var name; _ } -> evar ~loc name
+      let exprs = List.map2 (fun t v -> serialize_expr ~loc t (evar ~loc v)) types vars in
+      [%expr
+        match [%e default_value_expr] with
+        | [%p ppat_tuple ~loc pats] -> `List [%e elist ~loc exprs]]
+    | { ptyp_desc = Ptyp_var name; _ } -> [%expr [%e evar ~loc name] [%e default_value_expr]]
     | { ptyp_desc = Ptyp_constr (id, args); _ } ->
-      let arg_serializers = List.map (serializer_of_core_type ~loc) args in
-      let exp =
+      let arg_serializers =
+        List.map
+          (fun arg ->
+            [%expr fun ppx_x -> Ppx_deriving_jsonschema_runtime.declassify [%e serialize_expr ~loc arg [%expr ppx_x]]])
+          args
+      in
+      let to_json_expr =
         type_constr_conv ~loc id ~f:(fun s -> if String.equal s "t" then "to_json" else s ^ "_to_json") arg_serializers
       in
-      [%expr Ppx_deriving_jsonschema_runtime.classify [%e exp]]
+      [%expr Ppx_deriving_jsonschema_runtime.classify ([%e to_json_expr] [%e default_value_expr])]
     | _ ->
       Location.raise_errorf ~loc:ct.ptyp_loc
         "[@jsonschema.default] cannot serialize this type. For non-primitive types, ensure a '<type>_to_json' function \
@@ -150,8 +156,7 @@ module Annotation = struct
             | [%type: [%t? t] option] -> t
             | t -> t
           in
-          let serializer = serializer_of_core_type ~loc base_type in
-          [%expr [%e serializer] [%e expr]]
+          serialize_expr ~loc base_type expr
       in
       match schema with
       | [%expr `Assoc [%e? fields]] -> [%expr `Assoc (("default", [%e json_value]) :: [%e fields])]

@@ -426,7 +426,14 @@ type variant_for_default =
   | B
 [@@deriving to_json, jsonschema]
 
+type 'a range = {
+  from : 'a;
+  to_ : 'a; [@key "to"]
+}
+[@@deriving to_json, jsonschema]
+
 type record_for_default = { score : int option } [@@deriving to_json, jsonschema]
+
 type default_value = {
   score : int option; [@default 0]
   label : string; [@jsonschema.default "default"]
@@ -438,8 +445,10 @@ type default_value = {
   record : record_for_default; [@jsonschema.default { score = None }]
   int_list : int list; [@jsonschema.default [ 1; 2; 3 ]]
   empty_list : int list; [@jsonschema.default []]
+  range : int range; [@jsonschema.default { from = 0; to_ = 100 }]
 }
 [@@deriving jsonschema]
+
 module Status = struct
   type t =
     | Active

@@ -3125,8 +3125,7 @@ include
                [("custom_drop_default",
                   ((match float_jsonschema with
                     | `Assoc ppx_fields ->
-                        `Assoc (("default", (((fun x -> `Float x)) 0.0)) ::
-                          ppx_fields)
+                        `Assoc (("default", (`Float 0.0)) :: ppx_fields)
                     | ppx_other -> ppx_other)));
                ("dropped_default",
                  ((match list_jsonschema int_jsonschema with
@@ -3137,8 +3136,7 @@ include
                ("default_value",
                  ((match string_jsonschema with
                    | `Assoc ppx_fields ->
-                       `Assoc (("default", (((fun x -> `String x)) "-")) ::
-                         ppx_fields)
+                       `Assoc (("default", (`String "-")) :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("default_none",
                  ((match string_jsonschema with
@@ -4012,6 +4010,40 @@ include
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type 'a range = {
+  from: 'a ;
+  to_: 'a [@key "to"]}[@@deriving (to_json, jsonschema)]
+include
+  struct
+    [@@@ocaml.warning "-39-11-27"]
+    let rec range_to_json a_to_json =
+      (fun x ->
+         match x with
+         | { from = x_from; to_ = x_to_ } ->
+             `Assoc
+               (let bnds__001_ = [] in
+                let bnds__001_ = ("to", (a_to_json x_to_)) :: bnds__001_ in
+                let bnds__001_ = ("from", (a_to_json x_from)) :: bnds__001_ in
+                bnds__001_) : 'a range -> Yojson.Basic.t)
+    let range_jsonschema a =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties", (`Assoc [("to", a); ("from", a)]));
+          ("required", (`List [`String "to"; `String "from"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (Stdlib.List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type record_for_default = {
   score: int option }[@@deriving (to_json, jsonschema)]
 include
@@ -4022,11 +4054,11 @@ include
          match x with
          | { score = x_score } ->
              `Assoc
-               (let bnds__001_ = [] in
-                let bnds__001_ =
+               (let bnds__002_ = [] in
+                let bnds__002_ =
                   ("score", ((option_to_json int_to_json) x_score)) ::
-                  bnds__001_ in
-                bnds__001_) : record_for_default -> Yojson.Basic.t)
+                  bnds__002_ in
+                bnds__002_) : record_for_default -> Yojson.Basic.t)
     let record_for_default_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
@@ -4059,7 +4091,9 @@ type default_value =
   variant: variant_for_default [@jsonschema.default A];
   record: record_for_default [@jsonschema.default { score = None }];
   int_list: int list [@jsonschema.default [1; 2; 3]];
-  empty_list: int list [@jsonschema.default []]}[@@deriving jsonschema]
+  empty_list: int list [@jsonschema.default []];
+  range: int range [@jsonschema.default { from = 0; to_ = 100 }]}[@@deriving
+                                                                   jsonschema]
 include
   struct
     let default_value_jsonschema =
@@ -4069,19 +4103,44 @@ include
           [("type", (`String "object"));
           ("properties",
             (`Assoc
-               [("empty_list",
-                  ((match list_jsonschema int_jsonschema with
+               [("range",
+                  ((match match range_jsonschema int_jsonschema with
+                          | `Assoc pairs when
+                              Stdlib.List.mem_assoc "$defs" pairs ->
+                              `Assoc
+                                (("$id",
+                                   (`String "file://shared/cases.ml:448"))
+                                ::
+                                (Stdlib.List.filter
+                                   (fun (k, _) ->
+                                      not (Stdlib.String.equal k "$id"))
+                                   pairs))
+                          | other -> other
+                    with
                     | `Assoc ppx_fields ->
-                        `Assoc (("default", (`List [])) :: ppx_fields)
+                        `Assoc
+                          (("default",
+                             (Ppx_deriving_jsonschema_runtime.classify
+                                ((range_to_json
+                                    (fun ppx_x ->
+                                       Ppx_deriving_jsonschema_runtime.declassify
+                                         (`Int ppx_x)))
+                                   { from = 0; to_ = 100 })))
+                          :: ppx_fields)
                     | ppx_other -> ppx_other)));
+               ("empty_list",
+                 ((match list_jsonschema int_jsonschema with
+                   | `Assoc ppx_fields ->
+                       `Assoc (("default", (`List [])) :: ppx_fields)
+                   | ppx_other -> ppx_other)));
                ("int_list",
                  ((match list_jsonschema int_jsonschema with
                    | `Assoc ppx_fields ->
                        `Assoc
                          (("default",
-                            (((fun xs ->
-                                 `List (Stdlib.List.map (fun x -> `Int x) xs)))
-                               [1; 2; 3]))
+                            (`List
+                               (Stdlib.List.map
+                                  (fun ppx_item -> `Int ppx_item) [1; 2; 3])))
                          :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("record",
@@ -4090,7 +4149,7 @@ include
                              Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:438"))
+                                  (`String "file://shared/cases.ml:445"))
                                ::
                                (Stdlib.List.filter
                                   (fun (k, _) ->
@@ -4100,8 +4159,8 @@ include
                    | `Assoc ppx_fields ->
                        `Assoc
                          (("default",
-                            ((Ppx_deriving_jsonschema_runtime.classify
-                                record_for_default_to_json) { score = None }))
+                            (Ppx_deriving_jsonschema_runtime.classify
+                               (record_for_default_to_json { score = None })))
                          :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("variant",
@@ -4110,7 +4169,7 @@ include
                              Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:437"))
+                                  (`String "file://shared/cases.ml:444"))
                                ::
                                (Stdlib.List.filter
                                   (fun (k, _) ->
@@ -4120,8 +4179,8 @@ include
                    | `Assoc ppx_fields ->
                        `Assoc
                          (("default",
-                            ((Ppx_deriving_jsonschema_runtime.classify
-                                variant_for_default_to_json) A))
+                            (Ppx_deriving_jsonschema_runtime.classify
+                               (variant_for_default_to_json A)))
                          :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("pairs",
@@ -4139,30 +4198,26 @@ include
                    | `Assoc ppx_fields ->
                        `Assoc
                          (("default",
-                            (((fun xs ->
-                                 `List
-                                   (Stdlib.List.map
-                                      (fun (ppx_tuple_0, ppx_tuple_1) ->
+                            (`List
+                               (Stdlib.List.map
+                                  (fun ppx_item ->
+                                     match ppx_item with
+                                     | (ppx_tuple_0, ppx_tuple_1) ->
                                          `List
-                                           [((fun x -> `String x))
-                                              ppx_tuple_0;
-                                           ((fun x ->
-                                               match x with
-                                               | None -> `Null
-                                               | Some v ->
-                                                   ((fun x -> `String x)) v))
-                                             ppx_tuple_1]) xs)))
-                               [("a", None); ("b", (Some "b"))]))
+                                           [`String ppx_tuple_0;
+                                           (match ppx_tuple_1 with
+                                            | None -> `Null
+                                            | Some ppx_opt_v ->
+                                                `String ppx_opt_v)])
+                                  [("a", None); ("b", (Some "b"))])))
                          :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("pair",
                  (`Assoc
                     [("default",
-                       (((fun (ppx_tuple_0, ppx_tuple_1) ->
-                            `List
-                              [((fun x -> `Int x)) ppx_tuple_0;
-                              ((fun x -> `String x)) ppx_tuple_1]))
-                          (1, "hello")));
+                       ((match (1, "hello") with
+                         | (ppx_tuple_0, ppx_tuple_1) ->
+                             `List [`Int ppx_tuple_0; `String ppx_tuple_1])));
                     ("type", (`String "array"));
                     ("prefixItems",
                       (`List [int_jsonschema; string_jsonschema]));
@@ -4172,27 +4227,23 @@ include
                ("is_active",
                  ((match bool_jsonschema with
                    | `Assoc ppx_fields ->
-                       `Assoc (("default", (((fun x -> `Bool x)) false)) ::
-                         ppx_fields)
+                       `Assoc (("default", (`Bool false)) :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("speed",
                  ((match float_jsonschema with
                    | `Assoc ppx_fields ->
-                       `Assoc (("default", (((fun x -> `Float x)) 100.0)) ::
-                         ppx_fields)
+                       `Assoc (("default", (`Float 100.0)) :: ppx_fields)
                    | ppx_other -> ppx_other)));
                ("label",
                  ((match string_jsonschema with
                    | `Assoc ppx_fields ->
-                       `Assoc
-                         (("default", (((fun x -> `String x)) "default")) ::
+                       `Assoc (("default", (`String "default")) ::
                          ppx_fields)
                    | ppx_other -> ppx_other)));
                ("score",
                  ((match option_jsonschema int_jsonschema with
                    | `Assoc ppx_fields ->
-                       `Assoc (("default", (((fun x -> `Int x)) 0)) ::
-                         ppx_fields)
+                       `Assoc (("default", (`Int 0)) :: ppx_fields)
                    | ppx_other -> ppx_other)))]));
           ("required", (`List []));
           ("additionalProperties", (`Bool false))] in
@@ -4271,7 +4322,7 @@ include
                               Stdlib.List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
-                                   (`String "file://shared/cases.ml:449"))
+                                   (`String "file://shared/cases.ml:458"))
                                 ::
                                 (Stdlib.List.filter
                                    (fun (k, _) ->
@@ -4282,8 +4333,8 @@ include
                     | `Assoc ppx_fields ->
                         `Assoc
                           (("default",
-                             ((Ppx_deriving_jsonschema_runtime.classify
-                                 Status.to_json) Status.Active))
+                             (Ppx_deriving_jsonschema_runtime.classify
+                                (Status.to_json Status.Active)))
                           :: ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List []));
@@ -4310,14 +4361,14 @@ include
          match x with
          | { foo = x_foo } ->
              `Assoc
-               (let bnds__002_ = [] in
-                let bnds__002_ =
+               (let bnds__003_ = [] in
+                let bnds__003_ =
                   match x_foo with
-                  | Stdlib.Option.None -> bnds__002_
+                  | Stdlib.Option.None -> bnds__003_
                   | Stdlib.Option.Some _ ->
                       ("foo", ((option_to_json int_to_json) x_foo)) ::
-                      bnds__002_ in
-                bnds__002_) : inner_with_option_field -> Yojson.Basic.t)
+                      bnds__003_ in
+                bnds__003_) : inner_with_option_field -> Yojson.Basic.t)
     let inner_with_option_field_jsonschema =
       let ppx_eds = ref [] in
       let ppx_result =
@@ -4358,7 +4409,7 @@ include
                               Stdlib.List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
-                                   (`String "file://shared/cases.ml:458"))
+                                   (`String "file://shared/cases.ml:467"))
                                 ::
                                 (Stdlib.List.filter
                                    (fun (k, _) ->
@@ -4369,9 +4420,9 @@ include
                     | `Assoc ppx_fields ->
                         `Assoc
                           (("default",
-                             ((Ppx_deriving_jsonschema_runtime.classify
-                                 inner_with_option_field_to_json)
-                                empty_inner_with_option_field))
+                             (Ppx_deriving_jsonschema_runtime.classify
+                                (inner_with_option_field_to_json
+                                   empty_inner_with_option_field)))
                           :: ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List []));
@@ -4582,19 +4633,18 @@ module Generated_code_must_qualify_stdlib =
                    [("name",
                       ((match string_jsonschema with
                         | `Assoc ppx_fields ->
-                            `Assoc (("default", (((fun x -> `String x)) "x"))
-                              :: ppx_fields)
+                            `Assoc (("default", (`String "x")) :: ppx_fields)
                         | ppx_other -> ppx_other)));
                    ("items_a",
                      ((match array_jsonschema int_jsonschema with
                        | `Assoc ppx_fields ->
                            `Assoc
                              (("default",
-                                (((fun xs ->
-                                     `List
-                                       (Stdlib.Array.to_list
-                                          (Stdlib.Array.map (fun x -> `Int x)
-                                             xs)))) [|1;2|]))
+                                (`List
+                                   (Stdlib.Array.to_list
+                                      (Stdlib.Array.map
+                                         (fun ppx_item -> `Int ppx_item)
+                                         [|1;2|]))))
                              :: ppx_fields)
                        | ppx_other -> ppx_other)));
                    ("items",
@@ -4602,10 +4652,10 @@ module Generated_code_must_qualify_stdlib =
                        | `Assoc ppx_fields ->
                            `Assoc
                              (("default",
-                                (((fun xs ->
-                                     `List
-                                       (Stdlib.List.map (fun x -> `Int x) xs)))
-                                   [1; 2]))
+                                (`List
+                                   (Stdlib.List.map
+                                      (fun ppx_item -> `Int ppx_item) 
+                                      [1; 2])))
                              :: ppx_fields)
                        | ppx_other -> ppx_other)))]));
               ("required", (`List []));
@@ -4630,7 +4680,7 @@ module Generated_code_must_qualify_stdlib =
           let ppx_result =
             match wrapper_with_shadowed_stdlib_jsonschema int_jsonschema with
             | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
-                `Assoc (("$id", (`String "file://shared/cases.ml:499")) ::
+                `Assoc (("$id", (`String "file://shared/cases.ml:508")) ::
                   (Stdlib.List.filter
                      (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
             | other -> other in
