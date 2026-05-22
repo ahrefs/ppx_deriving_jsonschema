@@ -33,8 +33,7 @@ let classify value =
         `Assoc
           (Array.fold_right
              (fun (k, v) acc -> if is_undefined v then acc else (k, decode v) :: acc)
-             (Js.Dict.entries dict)
-             [])
+             (Js.Dict.entries dict) [])
     in
     decode value
 
