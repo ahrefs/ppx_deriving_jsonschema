@@ -4741,10 +4741,25 @@ module Nonrec_type_alias =
           struct
             let foo_jsonschema =
               let ppx_eds = ref [] in
-              let ppx_body_foo = `Assoc [("$ref", (`String "#/$defs/foo"))] in
-              `Assoc
-                [("$defs", (`Assoc ([("foo", ppx_body_foo)] @ (!ppx_eds))));
-                ("$ref", (`String "#/$defs/foo"))][@@warning "-32-39"]
+              let ppx_result =
+                match foo_jsonschema with
+                | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
+                    `Assoc (("$id", (`String "file://shared/cases.ml:518"))
+                      ::
+                      (Stdlib.List.filter
+                         (fun (k, _) -> not (Stdlib.String.equal k "$id"))
+                         pairs))
+                | other -> other in
+              match !ppx_eds with
+              | [] -> ppx_result
+              | ppx_defs ->
+                  (match ppx_result with
+                   | `Assoc ppx_pairs ->
+                       `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                         (Stdlib.List.filter
+                            (fun (k, _) ->
+                               not (Stdlib.String.equal k "$defs")) ppx_pairs))
+                   | other -> other)[@@warning "-32-39"]
           end[@@ocaml.doc "@inline"][@@merlin.hide ]
       end
   end

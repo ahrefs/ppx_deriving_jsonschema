@@ -2457,8 +2457,22 @@
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$defs": { "foo": { "$ref": "#/$defs/foo" } },
-      "$ref": "#/$defs/foo"
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "A" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "B" } ],
+          "unevaluatedItems": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
     }
   ]
 }
