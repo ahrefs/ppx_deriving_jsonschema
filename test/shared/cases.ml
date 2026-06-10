@@ -507,3 +507,14 @@ module Generated_code_must_qualify_stdlib = struct
      exercises the [$id]-injection branch where the inner [$defs] gets a resource boundary. *)
   type non_rec_using_wrapper_with_shadowed_stdlib = int wrapper_with_shadowed_stdlib [@@deriving jsonschema]
 end
+
+module Nonrec_type_alias = struct
+  type foo =
+    | A
+    | B
+  [@@deriving jsonschema]
+
+  module X = struct
+    type nonrec foo = foo [@@deriving jsonschema]
+  end
+end

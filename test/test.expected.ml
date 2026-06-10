@@ -4696,3 +4696,55 @@ module Generated_code_must_qualify_stdlib =
                | other -> other)[@@warning "-32-39"]
       end[@@ocaml.doc "@inline"][@@merlin.hide ]
   end
+module Nonrec_type_alias =
+  struct
+    type foo =
+      | A 
+      | B [@@deriving jsonschema]
+    include
+      struct
+        let foo_jsonschema =
+          let ppx_eds = ref [] in
+          let ppx_result =
+            `Assoc
+              [("anyOf",
+                 (`List
+                    [`Assoc
+                       [("type", (`String "array"));
+                       ("prefixItems",
+                         (`List [`Assoc [("const", (`String "A"))]]));
+                       ("unevaluatedItems", (`Bool false));
+                       ("minItems", (`Int 1));
+                       ("maxItems", (`Int 1))];
+                    `Assoc
+                      [("type", (`String "array"));
+                      ("prefixItems",
+                        (`List [`Assoc [("const", (`String "B"))]]));
+                      ("unevaluatedItems", (`Bool false));
+                      ("minItems", (`Int 1));
+                      ("maxItems", (`Int 1))]]))] in
+          match !ppx_eds with
+          | [] -> ppx_result
+          | ppx_defs ->
+              (match ppx_result with
+               | `Assoc ppx_pairs ->
+                   `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                     (Stdlib.List.filter
+                        (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                        ppx_pairs))
+               | other -> other)[@@warning "-32-39"]
+      end[@@ocaml.doc "@inline"][@@merlin.hide ]
+    module X =
+      struct
+        type nonrec foo = foo[@@deriving jsonschema]
+        include
+          struct
+            let foo_jsonschema =
+              let ppx_eds = ref [] in
+              let ppx_body_foo = `Assoc [("$ref", (`String "#/$defs/foo"))] in
+              `Assoc
+                [("$defs", (`Assoc ([("foo", ppx_body_foo)] @ (!ppx_eds))));
+                ("$ref", (`String "#/$defs/foo"))][@@warning "-32-39"]
+          end[@@ocaml.doc "@inline"][@@merlin.hide ]
+      end
+  end
