@@ -2473,6 +2473,194 @@
           "maxItems": 1
         }
       ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "a": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" }, { "$ref": "#/$defs/b" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "b": { "type": "integer" }
+      },
+      "$ref": "#/$defs/a"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "a": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "A" }, { "$ref": "#/$defs/b" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "b": { "type": "integer" }
+      },
+      "$ref": "#/$defs/b"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "t": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "N" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "S" }, { "$ref": "#/$defs/t" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/t"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "lst": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Nil" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Cons" },
+                { "type": "integer" },
+                { "$ref": "#/$defs/lst" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/lst"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Node" },
+                { "type": "string" },
+                { "$ref": "#/$defs/forest" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        },
+        "forest": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Empty" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Base" },
+                { "$ref": "#/$defs/tree" },
+                { "$ref": "#/$defs/forest" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/tree"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$defs": {
+        "tree": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Leaf" }, { "type": "string" } ],
+              "unevaluatedItems": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Node" },
+                { "type": "string" },
+                { "$ref": "#/$defs/forest" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        },
+        "forest": {
+          "anyOf": [
+            {
+              "type": "array",
+              "prefixItems": [ { "const": "Empty" } ],
+              "unevaluatedItems": false,
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                { "const": "Base" },
+                { "$ref": "#/$defs/tree" },
+                { "$ref": "#/$defs/forest" }
+              ],
+              "unevaluatedItems": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        }
+      },
+      "$ref": "#/$defs/forest"
     }
   ]
 }

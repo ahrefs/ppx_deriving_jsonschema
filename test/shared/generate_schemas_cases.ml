@@ -117,6 +117,12 @@ let schemas =
     Ppx_deriving_jsonschema_runtime.json_schema compact_variants_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema Nonrec_type_alias.foo_jsonschema;
     Ppx_deriving_jsonschema_runtime.json_schema Nonrec_type_alias.X.foo_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema Recursive_shapes.a_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema Recursive_shapes.b_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema Recursive_shapes.t_jsonschema;
+    Ppx_deriving_jsonschema_runtime.json_schema (Recursive_shapes.lst_jsonschema int_jsonschema);
+    Ppx_deriving_jsonschema_runtime.json_schema (Recursive_shapes.tree_jsonschema string_jsonschema);
+    Ppx_deriving_jsonschema_runtime.json_schema (Recursive_shapes.forest_jsonschema string_jsonschema);
   ]
 
 let snapshot = `Assoc [ "$schema", `String Ppx_deriving_jsonschema_runtime.schema_version; "oneOf", `List schemas ]
