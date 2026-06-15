@@ -300,11 +300,14 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
   in
   match ast with
   (* Single type declaration *)
-  | _, [ type_decl ] ->
+  | rec_flag, [ type_decl ] ->
     let type_name = type_decl.ptype_name.txt in
-    let _, raw_schema, is_rec, params, params_prefix =
-      schema_of_type_decl ~loc ~config ~recursive_types:[ type_name ] type_decl
+    let recursive_types =
+      match rec_flag with
+      | Recursive -> [ type_name ]
+      | Nonrecursive -> []
     in
+    let _, raw_schema, is_rec, params, params_prefix = schema_of_type_decl ~loc ~config ~recursive_types type_decl in
     let raw_schema =
       raw_schema
       |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc type_decl)
@@ -331,8 +334,12 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
     let schema = wrap_type_params ~loc ~prefix:params_prefix params schema in
     [ create_value ~loc type_name schema ]
   (* Multiple type declarations (mutually recursive types) *)
-  | _, type_decls when List.length type_decls > 1 ->
-    let recursive_types = List.map (fun td -> td.ptype_name.txt) type_decls in
+  | rec_flag, type_decls when List.length type_decls > 1 ->
+    let recursive_types =
+      match rec_flag with
+      | Recursive -> List.map (fun td -> td.ptype_name.txt) type_decls
+      | Nonrecursive -> []
+    in
     let raw_results = List.map (schema_of_type_decl ~loc ~config ~recursive_types) type_decls in
     let any_recursive = List.exists (fun (_, _, is_rec, _, _) -> is_rec) raw_results in
     if any_recursive then
