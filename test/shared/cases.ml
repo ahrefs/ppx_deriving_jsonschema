@@ -26,47 +26,24 @@ type kind =
   | Error
   | Skipped [@name "skipped"]
 [@@deriving jsonschema]
-type kind_as_string =
-  | Success
-  | Error
-  | Skipped [@name "skipped"]
-[@@deriving jsonschema ~variant_as_string]
 type poly_kind =
   [ `Aaa
   | `Bbb
   | `Ccc [@name "ccc"]
   ]
 [@@deriving jsonschema]
-type poly_kind_as_string =
-  [ `Aaa
-  | `Bbb
-  | `Ccc [@name "ccc"]
-  ]
-[@@deriving jsonschema ~variant_as_string]
 type poly_kind_with_payload =
   [ `Aaa of int
   | `Bbb
   | `Ccc of string * bool [@name "ccc"]
   ]
 [@@deriving jsonschema]
-type poly_kind_with_payload_as_string =
-  [ `Aaa of int
-  | `Bbb
-  | `Ccc of string * bool [@name "ccc"]
-  ]
-[@@deriving jsonschema ~variant_as_string]
 type poly_inherit =
   [ `New_one
   | `Second_one of int
   | poly_kind
   ]
 [@@deriving jsonschema]
-type poly_inherit_as_string =
-  [ `New_one
-  | `Second_one of int
-  | poly_kind_as_string
-  ]
-[@@deriving jsonschema ~variant_as_string]
 type event = {
   date : float;
   kind_f : kind;
@@ -147,7 +124,6 @@ type events_array = events array [@@deriving jsonschema]
 type numbers = int list [@@deriving jsonschema]
 type opt = int option [@@deriving jsonschema]
 type using_m = { m : Mod1.m_1 } [@@deriving jsonschema]
-type 'param2 poly2 = C of 'param2 [@@deriving jsonschema ~variant_as_string]
 type tuple_with_variant = int * [ `A | `B [@name "second_cstr"] ] [@@deriving jsonschema]
 type player_scores = {
   player : string;
@@ -177,10 +153,6 @@ type tt = {
 }
 [@@deriving jsonschema]
 type c = char [@@deriving jsonschema]
-type variant_inline_record =
-  | A of { a : int }
-  | B of { b : string }
-[@@deriving jsonschema ~variant_as_string]
 type inline_record_with_extra_fields =
   | User of {
       name : string;
@@ -188,20 +160,10 @@ type inline_record_with_extra_fields =
     } [@jsonschema.allow_extra_fields]
   | Guest of { ip : string }
 [@@deriving jsonschema]
-type variant_with_payload =
-  | A of int
-  | B
-  | C of int * string
-  | D of (int * string * bool)
-[@@deriving jsonschema ~variant_as_string]
 type t1 =
   | Typ
   | Class of string
 [@@deriving jsonschema]
-type t2 =
-  | Typ
-  | Class of string
-[@@deriving jsonschema ~variant_as_string]
 type t3 =
   | Typ [@name "type"]
   | Class of string [@name "class"]
@@ -245,10 +207,6 @@ type ('a, 'b) either =
   | Right of 'b
 [@@deriving jsonschema]
 type ('a, 'b) either_alias = ('a, 'b) either [@@deriving jsonschema]
-type ('a, 'b) direction =
-  | North
-  | South
-[@@deriving jsonschema ~variant_as_string]
 type tool_params = {
   query : string; [@jsonschema.description "The search query to execute"]
   max_results : int; [@jsonschema.description "Maximum number of results to return"]
@@ -275,10 +233,6 @@ type described_variant_inline_record =
       y : int;
     } [@jsonschema.description "A 2D point"]
 [@@deriving jsonschema]
-type described_variant_string =
-  | A [@jsonschema.description "First choice"]
-  | B [@jsonschema.description "Second choice"]
-[@@deriving jsonschema ~variant_as_string]
 
 (* The [~ocaml_doc] flag opts into using [(** ... *)] doc comments as a
    fallback for [@jsonschema.description]. Without the flag, doc comments are

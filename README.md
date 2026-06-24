@@ -486,33 +486,37 @@ type b = [ `B of int * string * bool ] [@@deriving jsonschema ~polymorphic_varia
 }
 ```
 
-A `~variant_as_string` flag is exposed to obtain a more natural representation `"anyOf": [{ "const": "..." }, ...]`. This representation does _not_ support payloads. For example:
-
-```ocaml
-type t =
-| Typ
-| Class of string
-[@@deriving jsonschema ~variant_as_string]
-```
-
-```json
-{ "anyOf": [ { "const": "Typ" }, { "const": "Class" } ] }
-```
-
 If the JSON variant names differ from OCaml conventions, it is possible to specify the corresponding JSON string explicitly using `[@name "constr"]`, for example:
 
 ```ocaml
 type t =
 | Typ   [@name "type"]
 | Class of string [@name "class"]
-[@@deriving jsonschema ~variant_as_string]
+[@@deriving jsonschema]
 ```
 
 ```json
-{ "anyOf": [ { "const": "type" }, { "const": "class" } ] }
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "type" } ],
+      "unevaluatedItems": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "class" }, { "type": "string" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
 ```
 
-A `[@@jsonschema.compact_variants]` attribute offers a middle ground. Unlike `~variant_as_string`, it only collapses payload-free constructors to a bare `{ "const": "..." }`; constructors with arguments keep the standard array encoding. It therefore supports payloads.
+A `[@@jsonschema.compact_variants]` attribute on the type declaration collapses payload-free constructors to a bare `{ "const": "..." }`; constructors with arguments keep the standard array encoding. It therefore supports payloads.
 
 ```ocaml
 type t =

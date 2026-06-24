@@ -11,10 +11,8 @@ let create_value ~loc name value = [%stri let[@warning "-32-39"] [%p value_name_
    Parametric types like [('a, 'b) t] derive as [fun a b -> <schema>],
    so callers can pass schemas for each type variable.
    Use [~prefix:"_"] to mark params unused in the body. *)
-let wrap_type_params ~loc ?(prefix = "") params body =
-  List.fold_right
-    (fun param body -> [%expr fun [%p ppat_var ~loc { txt = prefix ^ param; loc }] -> [%e body]])
-    params body
+let wrap_type_params ~loc params body =
+  List.fold_right (fun param body -> [%expr fun [%p ppat_var ~loc { txt = param; loc }] -> [%e body]]) params body
 
 (* schema_of_core_type and schema_of_poly_variant are mutually recursive.
    All other functions only call downward and use plain let. *)
@@ -147,7 +145,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
       ([], false) row_fields
   in
   let constrs = List.rev constrs in
-  let v = Schema.variants ~loc ~as_string:config.Attrs.variant_as_string ~compact_variants constrs in
+  let v = Schema.variants ~loc ~compact_variants constrs in
   v, is_rec
 
 (* Returns (schema_expression, is_recursive) *)
@@ -199,7 +197,7 @@ let schema_of_record ~loc ~(config : Attrs.config) ?(recursive_types = []) field
         ]],
     is_rec )
 
-(* Returns (schema_expression, is_recursive, params_prefix) *)
+(* Returns (schema_expression, is_recursive) *)
 let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) ?(compact_variants = false) variants =
   let variants, is_rec =
     List.fold_left
@@ -227,14 +225,10 @@ let schema_of_variants ~loc ~(config : Attrs.config) ?(recursive_types = []) ?(c
       ([], false) variants
   in
   let variants = List.rev variants in
-  let schema, params_prefix =
-    match config.Attrs.variant_as_string with
-    | true -> Schema.variants ~loc ~as_string:true variants, "_"
-    | false -> Schema.variants ~loc ~compact_variants variants, ""
-  in
-  schema, is_rec, params_prefix
+  let schema = Schema.variants ~loc ~compact_variants variants in
+  schema, is_rec
 
-(* Returns (type_name, schema_expression, is_recursive, params, params_prefix) *)
+(* Returns (type_name, schema_expression, is_recursive, params) *)
 let schema_of_type_decl ~loc ~(config : Attrs.config) ~recursive_types type_decl =
   let type_name = type_decl.ptype_name.txt in
   let allow_extra_fields = Attribute.get Attrs.jsonschema_td_allow_extra_fields type_decl |> Option.is_some in
@@ -242,23 +236,23 @@ let schema_of_type_decl ~loc ~(config : Attrs.config) ~recursive_types type_decl
   match type_decl.ptype_kind with
   | Ptype_variant variants ->
     let compact_variants = Attribute.has_flag Attrs.jsonschema_td_compact_variants type_decl in
-    let schema, is_rec, params_prefix = schema_of_variants ~loc ~config ~recursive_types ~compact_variants variants in
-    type_name, schema, is_rec, params, params_prefix
+    let schema, is_rec = schema_of_variants ~loc ~config ~recursive_types ~compact_variants variants in
+    type_name, schema, is_rec, params
   | Ptype_record label_declarations ->
     let schema, is_rec = schema_of_record ~loc ~config ~recursive_types label_declarations allow_extra_fields in
-    type_name, schema, is_rec, params, ""
+    type_name, schema, is_rec, params
   | Ptype_abstract ->
     (match type_decl.ptype_manifest with
     | Some core_type ->
       let compact_variants = Attribute.has_flag Attrs.jsonschema_td_compact_variants type_decl in
       let schema, is_rec = schema_of_core_type ~config ~recursive_types ~compact_variants core_type in
-      type_name, schema, is_rec, params, ""
+      type_name, schema, is_rec, params
     | None ->
       let msg = "ppx_deriving_jsonschema: abstract type without manifest" in
-      type_name, [%expr [%ocaml.error [%e estring ~loc msg]]], false, params, "")
+      type_name, [%expr [%ocaml.error [%e estring ~loc msg]]], false, params)
   | Ptype_open ->
     let msg = "ppx_deriving_jsonschema: open types not supported" in
-    type_name, [%expr [%ocaml.error [%e estring ~loc msg]]], false, params, ""
+    type_name, [%expr [%ocaml.error [%e estring ~loc msg]]], false, params
 
 let apply_defs ~loc = function
   | `Rec (primary, defs) ->
@@ -292,14 +286,10 @@ let apply_defs ~loc = function
           :: Stdlib.List.filter (fun (k, _) -> not (Stdlib.String.equal k "$defs")) ppx_pairs)
       | other -> other]
 
-let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tuple flag_ocaml_doc =
+let str_type_decl ~ctxt ast flag_polymorphic_variant_tuple flag_ocaml_doc =
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   let config : Attrs.config =
-    {
-      Attrs.variant_as_string = flag_variant_as_string;
-      Attrs.polymorphic_variant_tuple = flag_polymorphic_variant_tuple;
-      Attrs.ocaml_doc = flag_ocaml_doc;
-    }
+    { Attrs.polymorphic_variant_tuple = flag_polymorphic_variant_tuple; Attrs.ocaml_doc = flag_ocaml_doc }
   in
   match ast with
   (* Single type declaration *)
@@ -310,7 +300,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
       | Recursive -> [ type_name ]
       | Nonrecursive -> []
     in
-    let _, raw_schema, is_rec, params, params_prefix = schema_of_type_decl ~loc ~config ~recursive_types type_decl in
+    let _, raw_schema, is_rec, params = schema_of_type_decl ~loc ~config ~recursive_types type_decl in
     let raw_schema =
       raw_schema
       |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc type_decl)
@@ -334,7 +324,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
           let ppx_eds = ref [] in
           [%e apply_defs ~loc (`NonRec raw_schema)]]
     in
-    let schema = wrap_type_params ~loc ~prefix:params_prefix params schema in
+    let schema = wrap_type_params ~loc params schema in
     [ create_value ~loc type_name schema ]
   (* Multiple type declarations (mutually recursive types) *)
   | rec_flag, type_decls when List.length type_decls > 1 ->
@@ -344,10 +334,10 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
       | Nonrecursive -> []
     in
     let raw_results = List.map (schema_of_type_decl ~loc ~config ~recursive_types) type_decls in
-    let any_recursive = List.exists (fun (_, _, is_rec, _, _) -> is_rec) raw_results in
+    let any_recursive = List.exists (fun (_, _, is_rec, _) -> is_rec) raw_results in
     if any_recursive then
       List.map
-        (fun (name, raw, _, params, prefix) ->
+        (fun (name, raw, _, params) ->
           let td = List.find (fun td -> td.ptype_name.txt = name) type_decls in
           let raw =
             raw |> Schema.Annotation.add_description ~loc (Attrs.td_description ~ocaml_doc:config.Attrs.ocaml_doc td)
@@ -360,9 +350,9 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
                 |> Schema.Annotation.add_minimum ~loc (Attrs.jsonschema_td_minimum, td) core_type)
               td.ptype_manifest
           in
-          let defs = List.map (fun (n, r, _, _, _) -> n, if n = name then raw else r) raw_results in
+          let defs = List.map (fun (n, r, _, _) -> n, if n = name then raw else r) raw_results in
           let schema =
-            wrap_type_params ~loc ~prefix params
+            wrap_type_params ~loc params
               [%expr
                 let ppx_eds = ref [] in
                 [%e apply_defs ~loc (`Rec (name, defs))]]
@@ -371,10 +361,10 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
         raw_results
     else
       List.map
-        (fun (name, raw, _, params, prefix) ->
+        (fun (name, raw, _, params) ->
           let td = List.find (fun td -> td.ptype_name.txt = name) type_decls in
           let schema =
-            wrap_type_params ~loc ~prefix params
+            wrap_type_params ~loc params
               [%expr
                 let ppx_eds = ref [] in
                 [%e apply_defs ~loc (`NonRec raw)]]
@@ -386,7 +376,7 @@ let str_type_decl ~ctxt ast flag_variant_as_string flag_polymorphic_variant_tupl
         raw_results
   | _, _ -> [%str [%ocaml.error "ppx_deriving_jsonschema: unsupported type"]]
 
-let sig_type_decl ~ctxt ast _flag_variant_as_string _flag_polymorphic_variant_tuple _flag_ocaml_doc =
+let sig_type_decl ~ctxt ast _flag_polymorphic_variant_tuple _flag_ocaml_doc =
   let jsonschema_t ~loc = ptyp_constr ~loc { txt = Ldot (Lident "Ppx_deriving_jsonschema_runtime", "t"); loc } [] in
   let loc = Expansion_context.Deriver.derived_item_loc ctxt in
   match ast with
