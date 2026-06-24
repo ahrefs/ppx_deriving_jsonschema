@@ -88,7 +88,8 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) ?(c
       let ts = List.map fst results in
       let is_rec = List.exists snd results in
       Schema.tuple ~loc ts, is_rec
-    | Ptyp_variant (row_fields, _, _) -> schema_of_poly_variant ~loc ~config ~recursive_types ~compact_variants row_fields
+    | Ptyp_variant (row_fields, _, _) ->
+      schema_of_poly_variant ~loc ~config ~recursive_types ~compact_variants row_fields
     | _ ->
       let msg = Format.asprintf "ppx_deriving_jsonschema: unsupported type %a" Astlib.Pprintast.core_type core_type in
       [%expr [%ocaml.error [%e estring ~loc msg]]], false
@@ -103,7 +104,8 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) ?(c
   in
   schema, is_rec
 
-and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = []) ?(compact_variants = false) row_fields =
+and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = []) ?(compact_variants = false) row_fields
+    =
   let constrs, is_rec =
     List.fold_left
       (fun (constrs, is_rec) row_field ->
