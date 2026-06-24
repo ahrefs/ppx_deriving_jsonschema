@@ -471,6 +471,12 @@ type compact_variants =
   | B
   | C of int
 [@@deriving jsonschema] [@@jsonschema.compact_variants]
+type compact_poly_variants =
+  [ `Aaa
+  | `Bbb
+  | `Ccc of int
+  ]
+[@@deriving jsonschema] [@@jsonschema.compact_variants]
 
 (* Regression test: PPX-generated code must not depend on user-scope [List]/[String]/[Array].
    Shadowing them with empty modules makes any unqualified reference (e.g. [List.filter])

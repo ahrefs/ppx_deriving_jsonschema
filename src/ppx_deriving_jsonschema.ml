@@ -18,7 +18,7 @@ let wrap_type_params ~loc ?(prefix = "") params body =
 
 (* schema_of_core_type and schema_of_poly_variant are mutually recursive.
    All other functions only call downward and use plain let. *)
-let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) core_type =
+let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) ?(compact_variants = false) core_type =
   let loc = core_type.ptyp_loc in
   let schema, is_rec =
     match core_type with
@@ -88,7 +88,7 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
       let ts = List.map fst results in
       let is_rec = List.exists snd results in
       Schema.tuple ~loc ts, is_rec
-    | Ptyp_variant (row_fields, _, _) -> schema_of_poly_variant ~loc ~config ~recursive_types row_fields
+    | Ptyp_variant (row_fields, _, _) -> schema_of_poly_variant ~loc ~config ~recursive_types ~compact_variants row_fields
     | _ ->
       let msg = Format.asprintf "ppx_deriving_jsonschema: unsupported type %a" Astlib.Pprintast.core_type core_type in
       [%expr [%ocaml.error [%e estring ~loc msg]]], false
@@ -103,7 +103,7 @@ let rec schema_of_core_type ~(config : Attrs.config) ?(recursive_types = []) cor
   in
   schema, is_rec
 
-and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = []) row_fields =
+and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = []) ?(compact_variants = false) row_fields =
   let constrs, is_rec =
     List.fold_left
       (fun (constrs, is_rec) row_field ->
@@ -145,7 +145,7 @@ and schema_of_poly_variant ~loc ~(config : Attrs.config) ?(recursive_types = [])
       ([], false) row_fields
   in
   let constrs = List.rev constrs in
-  let v = Schema.variants ~loc ~as_string:config.Attrs.variant_as_string constrs in
+  let v = Schema.variants ~loc ~as_string:config.Attrs.variant_as_string ~compact_variants constrs in
   v, is_rec
 
 (* Returns (schema_expression, is_recursive) *)
@@ -248,7 +248,8 @@ let schema_of_type_decl ~loc ~(config : Attrs.config) ~recursive_types type_decl
   | Ptype_abstract ->
     (match type_decl.ptype_manifest with
     | Some core_type ->
-      let schema, is_rec = schema_of_core_type ~config ~recursive_types core_type in
+      let compact_variants = Attribute.has_flag Attrs.jsonschema_td_compact_variants type_decl in
+      let schema, is_rec = schema_of_core_type ~config ~recursive_types ~compact_variants core_type in
       type_name, schema, is_rec, params, ""
     | None ->
       let msg = "ppx_deriving_jsonschema: abstract type without manifest" in

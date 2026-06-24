@@ -4471,6 +4471,38 @@ include
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type compact_poly_variants = [ `Aaa  | `Bbb  | `Ccc of int ][@@deriving
+                                                              jsonschema]
+[@@jsonschema.compact_variants ]
+include
+  struct
+    let compact_poly_variants_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc [("const", (`String "Aaa"))];
+                `Assoc [("const", (`String "Bbb"))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Ccc"))]; int_jsonschema]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (Stdlib.List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
 module Generated_code_must_qualify_stdlib =
   struct
     module List = struct  end
@@ -4680,7 +4712,7 @@ module Generated_code_must_qualify_stdlib =
           let ppx_result =
             match wrapper_with_shadowed_stdlib_jsonschema int_jsonschema with
             | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
-                `Assoc (("$id", (`String "file://shared/cases.ml:508")) ::
+                `Assoc (("$id", (`String "file://shared/cases.ml:514")) ::
                   (Stdlib.List.filter
                      (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
             | other -> other in
@@ -4744,7 +4776,7 @@ module Nonrec_type_alias =
               let ppx_result =
                 match foo_jsonschema with
                 | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
-                    `Assoc (("$id", (`String "file://shared/cases.ml:518"))
+                    `Assoc (("$id", (`String "file://shared/cases.ml:524"))
                       ::
                       (Stdlib.List.filter
                          (fun (k, _) -> not (Stdlib.String.equal k "$id"))
