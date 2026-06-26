@@ -538,7 +538,32 @@ type t =
 }
 ```
 
-This attribute only affects regular variants. On polymorphic variants it is currently ignored, and the default array encoding is used.
+It works the same way on polymorphic variants: payload-free constructors collapse to `{ "const": "..." }`, while constructors with arguments keep the array encoding.
+
+```ocaml
+type t =
+[ `Aaa
+| `Bbb
+| `Ccc of int
+]
+[@@deriving jsonschema] [@@jsonschema.compact_variants]
+```
+
+```json
+{
+  "anyOf": [
+    { "const": "Aaa" },
+    { "const": "Bbb" },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Ccc" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
 
 #### Records
 
