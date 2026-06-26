@@ -1,3 +1,7 @@
+# Unreleased
+
+- **breaking**: allow extra fields by default in generated record schemas (`"additionalProperties": true`), matching the Melange JSON deriver which ignores unknown object keys; add `[@@jsonschema.disallow_extra_fields]` (and `[@jsonschema.disallow_extra_fields]` on inline records in variants) to opt back into strict objects (`"additionalProperties": false`); `[@@jsonschema.allow_extra_fields]` is still accepted for backwards compatibility but is now a no-op, and using it together with `disallow_extra_fields` is rejected
+
 # 0.0.8
 
 - add runtime primitive schema modules under `Ppx_deriving_jsonschema_runtime.Primitives` for Yojson and Melange JSON backends; generated code now uses the selected primitive bindings, including backend-specific `int64` handling and Melange JSON `result` schemas

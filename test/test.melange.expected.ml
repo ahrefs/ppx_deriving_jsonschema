@@ -113,7 +113,7 @@ include
                             pairs))
                    | other -> other)))]));
           ("required", (`List [`String "m2"; `String "m"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -493,7 +493,7 @@ include
                `String "comment";
                `String "kind_f";
                `String "date"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -522,7 +522,7 @@ include
                      (`Assoc [("$ref", (`String "#/$defs/recursive_record"))])));
                ("a", int_jsonschema)]));
           ("required", (`List [`String "b"; `String "a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       `Assoc
         [("$defs",
            (`Assoc
@@ -604,7 +604,7 @@ include
                               [`String "right";
                               `String "left";
                               `String "value"]));
-                         ("additionalProperties", (`Bool false))]]));
+                         ("additionalProperties", (`Bool true))]]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -625,7 +625,7 @@ include
           ("properties",
             (`Assoc [("y", string_jsonschema); ("x", int_jsonschema)]));
           ("required", (`List [`String "y"; `String "x"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -654,7 +654,7 @@ include
                   (option_jsonschema
                      (`Assoc [("$ref", (`String "#/$defs/bar"))])))]));
           ("required", (`List [`String "bar"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_bar =
         `Assoc
           [("type", (`String "object"));
@@ -664,7 +664,7 @@ include
                   (option_jsonschema
                      (`Assoc [("$ref", (`String "#/$defs/foo"))])))]));
           ("required", (`List [`String "foo"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       `Assoc
         [("$defs",
            (`Assoc
@@ -681,7 +681,7 @@ include
                   (option_jsonschema
                      (`Assoc [("$ref", (`String "#/$defs/bar"))])))]));
           ("required", (`List [`String "bar"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_bar =
         `Assoc
           [("type", (`String "object"));
@@ -691,7 +691,7 @@ include
                   (option_jsonschema
                      (`Assoc [("$ref", (`String "#/$defs/foo"))])))]));
           ("required", (`List [`String "foo"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       `Assoc
         [("$defs",
            (`Assoc
@@ -780,7 +780,7 @@ include
                               [`String "else_";
                               `String "then_";
                               `String "cond"]));
-                         ("additionalProperties", (`Bool false))]]));
+                         ("additionalProperties", (`Bool true))]]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -860,7 +860,7 @@ include
                               [`String "else_";
                               `String "then_";
                               `String "cond"]));
-                         ("additionalProperties", (`Bool false))]]));
+                         ("additionalProperties", (`Bool true))]]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -884,7 +884,7 @@ include
           [("type", (`String "object"));
           ("properties", (`Assoc [("x", int_jsonschema)]));
           ("required", (`List [`String "x"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -902,7 +902,7 @@ include
           [("type", (`String "object"));
           ("properties", (`Assoc [("y", string_jsonschema)]));
           ("required", (`List [`String "y"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -939,7 +939,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_b"))])))]));
           ("required", (`List [`String "a_to_c"; `String "a_to_b"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_node_b =
         `Assoc
           [("type", (`String "object"));
@@ -952,7 +952,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "b_to_c"; `String "b_to_a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_node_c =
         `Assoc
           [("type", (`String "object"));
@@ -965,7 +965,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "c_to_b"; `String "c_to_a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       `Assoc
         [("$defs",
            (`Assoc
@@ -987,7 +987,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_b"))])))]));
           ("required", (`List [`String "a_to_c"; `String "a_to_b"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_node_b =
         `Assoc
           [("type", (`String "object"));
@@ -1000,7 +1000,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "b_to_c"; `String "b_to_a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_node_c =
         `Assoc
           [("type", (`String "object"));
@@ -1013,7 +1013,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "c_to_b"; `String "c_to_a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       `Assoc
         [("$defs",
            (`Assoc
@@ -1035,7 +1035,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_b"))])))]));
           ("required", (`List [`String "a_to_c"; `String "a_to_b"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_node_b =
         `Assoc
           [("type", (`String "object"));
@@ -1048,7 +1048,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "b_to_c"; `String "b_to_a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       let ppx_body_node_c =
         `Assoc
           [("type", (`String "object"));
@@ -1061,7 +1061,7 @@ include
                  (option_jsonschema
                     (`Assoc [("$ref", (`String "#/$defs/node_a"))])))]));
           ("required", (`List [`String "c_to_b"; `String "c_to_a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       `Assoc
         [("$defs",
            (`Assoc
@@ -1362,7 +1362,7 @@ include
                              pairs))
                     | other -> other)))]));
           ("required", (`List [`String "m"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1454,7 +1454,7 @@ include
                   (`Assoc [("$ref", (`String "#/$defs/numbers"))]));
                ("player", string_jsonschema)]));
           ("required", (`List [`String "scores_ref"; `String "player"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1484,7 +1484,7 @@ include
                ("street", string_jsonschema)]));
           ("required",
             (`List [`String "zip"; `String "city"; `String "street"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1529,7 +1529,7 @@ include
                `String "email";
                `String "age";
                `String "name"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1575,7 +1575,7 @@ include
                `String "email";
                `String "age";
                `String "name"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -1670,7 +1670,7 @@ include
                          [("type", (`String "object"));
                          ("properties", (`Assoc [("ip", string_jsonschema)]));
                          ("required", (`List [`String "ip"]));
-                         ("additionalProperties", (`Bool false))]]));
+                         ("additionalProperties", (`Bool true))]]));
                   ("unevaluatedItems", (`Bool false));
                   ("minItems", (`Int 2));
                   ("maxItems", (`Int 2))]]))] in
@@ -2133,7 +2133,7 @@ include
                              pairs))
                     | other -> other)))]));
           ("required", (`List [`String "obj2"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2227,6 +2227,84 @@ include
                     ppx_pairs))
            | other -> other)[@@warning "-32-39"]
   end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type strict_obj = {
+  x: int }[@@deriving jsonschema][@@jsonschema.disallow_extra_fields ]
+include
+  struct
+    let strict_obj_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("type", (`String "object"));
+          ("properties", (`Assoc [("x", int_jsonschema)]));
+          ("required", (`List [`String "x"]));
+          ("additionalProperties", (`Bool false))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (Stdlib.List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
+type inline_record_disallow_extra_fields =
+  | User of {
+  name: string ;
+  email: string } [@jsonschema.disallow_extra_fields ]
+  | Guest of {
+  ip: string } [@@deriving jsonschema]
+include
+  struct
+    let inline_record_disallow_extra_fields_jsonschema =
+      let ppx_eds = ref [] in
+      let ppx_result =
+        `Assoc
+          [("anyOf",
+             (`List
+                [`Assoc
+                   [("type", (`String "array"));
+                   ("prefixItems",
+                     (`List
+                        [`Assoc [("const", (`String "User"))];
+                        `Assoc
+                          [("type", (`String "object"));
+                          ("properties",
+                            (`Assoc
+                               [("email", string_jsonschema);
+                               ("name", string_jsonschema)]));
+                          ("required",
+                            (`List [`String "email"; `String "name"]));
+                          ("additionalProperties", (`Bool false))]]));
+                   ("unevaluatedItems", (`Bool false));
+                   ("minItems", (`Int 2));
+                   ("maxItems", (`Int 2))];
+                `Assoc
+                  [("type", (`String "array"));
+                  ("prefixItems",
+                    (`List
+                       [`Assoc [("const", (`String "Guest"))];
+                       `Assoc
+                         [("type", (`String "object"));
+                         ("properties", (`Assoc [("ip", string_jsonschema)]));
+                         ("required", (`List [`String "ip"]));
+                         ("additionalProperties", (`Bool true))]]));
+                  ("unevaluatedItems", (`Bool false));
+                  ("minItems", (`Int 2));
+                  ("maxItems", (`Int 2))]]))] in
+      match !ppx_eds with
+      | [] -> ppx_result
+      | ppx_defs ->
+          (match ppx_result with
+           | `Assoc ppx_pairs ->
+               `Assoc (("$defs", (`Assoc ppx_defs)) ::
+                 (Stdlib.List.filter
+                    (fun (k, _) -> not (Stdlib.String.equal k "$defs"))
+                    ppx_pairs))
+           | other -> other)[@@warning "-32-39"]
+  end[@@ocaml.doc "@inline"][@@merlin.hide ]
 type 'url generic_link_traffic = {
   title: string option ;
   url: 'url }[@@deriving jsonschema]
@@ -2242,7 +2320,7 @@ include
                [("url", url);
                ("title", (option_jsonschema string_jsonschema))]));
           ("required", (`List [`String "url"; `String "title"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2262,7 +2340,7 @@ include
       let ppx_result =
         match generic_link_traffic_jsonschema string_jsonschema with
         | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
-            `Assoc (("$id", (`String "file://shared/cases.ml:231")) ::
+            `Assoc (("$id", (`String "file://shared/cases.ml:239")) ::
               (Stdlib.List.filter
                  (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
         | other -> other in
@@ -2329,7 +2407,7 @@ include
                [("label", string_jsonschema); ("second", b); ("first", a)]));
           ("required",
             (`List [`String "label"; `String "second"; `String "first"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2402,7 +2480,7 @@ include
       let ppx_result =
         match either_jsonschema a b with
         | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
-            `Assoc (("$id", (`String "file://shared/cases.ml:247")) ::
+            `Assoc (("$id", (`String "file://shared/cases.ml:255")) ::
               (Stdlib.List.filter
                  (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
         | other -> other in
@@ -2473,7 +2551,7 @@ include
                          :: ppx_fields)
                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "max_results"; `String "query"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2516,7 +2594,7 @@ include
                          :: ppx_fields)
                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "name"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2551,7 +2629,7 @@ include
                           :: ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List []));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2655,7 +2733,7 @@ include
                             (`Assoc
                                [("y", int_jsonschema); ("x", int_jsonschema)]));
                           ("required", (`List [`String "y"; `String "x"]));
-                          ("additionalProperties", (`Bool false))]]));
+                          ("additionalProperties", (`Bool true))]]));
                    ("unevaluatedItems", (`Bool false));
                    ("minItems", (`Int 2));
                    ("maxItems", (`Int 2))]]))] in
@@ -2729,7 +2807,7 @@ include
                          :: ppx_fields)
                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "age"; `String "name"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2755,7 +2833,7 @@ include
           [("type", (`String "object"));
           ("properties", (`Assoc [("name", string_jsonschema)]));
           ("required", (`List [`String "name"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2788,7 +2866,7 @@ include
                           ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "field"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -2915,7 +2993,7 @@ include
                           :: ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "name"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3090,7 +3168,7 @@ include
                ("drop_simple", (option_jsonschema string_jsonschema));
                ("plain", (option_jsonschema string_jsonschema))]));
           ("required", (`List [`String "plain"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3151,7 +3229,7 @@ include
                ("option_value", (option_jsonschema string_jsonschema));
                ("required_value", int_jsonschema)]));
           ("required", (`List [`String "required_value"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3186,14 +3264,14 @@ include
                       | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
                           ->
                           `Assoc
-                            (("$id", (`String "file://shared/cases.ml:361"))
+                            (("$id", (`String "file://shared/cases.ml:369"))
                             ::
                             (Stdlib.List.filter
                                (fun (k, _) ->
                                   not (Stdlib.String.equal k "$id")) pairs))
                       | other -> other)))]));
           ("required", (`List []));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3247,7 +3325,7 @@ include
                           ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "with_format"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3377,7 +3455,7 @@ include
                   (list_jsonschema
                      (`Assoc [("$ref", (`String "#/$defs/self_ref"))])))]));
           ("required", (`List [`String "children"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       `Assoc
         [("$defs", (`Assoc ([("self_ref", ppx_body_self_ref)] @ (!ppx_eds))));
         ("$ref", (`String "#/$defs/self_ref"))][@@warning "-32-39"]
@@ -3399,7 +3477,7 @@ include
                     | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs
                         ->
                         `Assoc
-                          (("$id", (`String "file://shared/cases.ml:380")) ::
+                          (("$id", (`String "file://shared/cases.ml:388")) ::
                           (Stdlib.List.filter
                              (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                              pairs))
@@ -3408,13 +3486,13 @@ include
                  ((match self_ref_jsonschema with
                    | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
                        `Assoc
-                         (("$id", (`String "file://shared/cases.ml:379")) ::
+                         (("$id", (`String "file://shared/cases.ml:387")) ::
                          (Stdlib.List.filter
                             (fun (k, _) -> not (Stdlib.String.equal k "$id"))
                             pairs))
                    | other -> other)))]));
           ("required", (`List [`String "b"; `String "a"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3482,7 +3560,7 @@ include
                              Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:388"))
+                                  (`String "file://shared/cases.ml:396"))
                                ::
                                (Stdlib.List.filter
                                   (fun (k, _) ->
@@ -3630,7 +3708,7 @@ include
                         `Assoc (("maximum", (`Int 100)) :: ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "field"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3725,7 +3803,7 @@ include
                          :: ppx_fields)
                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "label"; `String "score"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -3848,7 +3926,7 @@ include
                        `Assoc (("minimum", (`Int 0)) :: ppx_fields)
                    | ppx_other -> ppx_other)))]));
           ("required", (`List [`String "ratio"; `String "score"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -4042,7 +4120,7 @@ include
           [("type", (`String "object"));
           ("properties", (`Assoc [("to", a); ("from", a)]));
           ("required", (`List [`String "to"; `String "from"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -4083,7 +4161,7 @@ include
           ("properties",
             (`Assoc [("score", (option_jsonschema int_jsonschema))]));
           ("required", (`List [`String "score"]));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -4125,7 +4203,7 @@ include
                               Stdlib.List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
-                                   (`String "file://shared/cases.ml:448"))
+                                   (`String "file://shared/cases.ml:456"))
                                 ::
                                 (Stdlib.List.filter
                                    (fun (k, _) ->
@@ -4165,7 +4243,7 @@ include
                              Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:445"))
+                                  (`String "file://shared/cases.ml:453"))
                                ::
                                (Stdlib.List.filter
                                   (fun (k, _) ->
@@ -4185,7 +4263,7 @@ include
                              Stdlib.List.mem_assoc "$defs" pairs ->
                              `Assoc
                                (("$id",
-                                  (`String "file://shared/cases.ml:444"))
+                                  (`String "file://shared/cases.ml:452"))
                                ::
                                (Stdlib.List.filter
                                   (fun (k, _) ->
@@ -4262,7 +4340,7 @@ include
                        `Assoc (("default", (`Int 0)) :: ppx_fields)
                    | ppx_other -> ppx_other)))]));
           ("required", (`List []));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -4341,7 +4419,7 @@ include
                               Stdlib.List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
-                                   (`String "file://shared/cases.ml:458"))
+                                   (`String "file://shared/cases.ml:466"))
                                 ::
                                 (Stdlib.List.filter
                                    (fun (k, _) ->
@@ -4357,7 +4435,7 @@ include
                           :: ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List []));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -4403,7 +4481,7 @@ include
           ("properties",
             (`Assoc [("foo", (option_jsonschema int_jsonschema))]));
           ("required", (`List []));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -4435,7 +4513,7 @@ include
                               Stdlib.List.mem_assoc "$defs" pairs ->
                               `Assoc
                                 (("$id",
-                                   (`String "file://shared/cases.ml:467"))
+                                   (`String "file://shared/cases.ml:475"))
                                 ::
                                 (Stdlib.List.filter
                                    (fun (k, _) ->
@@ -4452,7 +4530,7 @@ include
                           :: ppx_fields)
                     | ppx_other -> ppx_other)))]));
           ("required", (`List []));
-          ("additionalProperties", (`Bool false))] in
+          ("additionalProperties", (`Bool true))] in
       match !ppx_eds with
       | [] -> ppx_result
       | ppx_defs ->
@@ -4717,7 +4795,7 @@ module Generated_code_must_qualify_stdlib =
                              :: ppx_fields)
                        | ppx_other -> ppx_other)))]));
               ("required", (`List []));
-              ("additionalProperties", (`Bool false))] in
+              ("additionalProperties", (`Bool true))] in
           match !ppx_eds with
           | [] -> ppx_result
           | ppx_defs ->
@@ -4738,7 +4816,7 @@ module Generated_code_must_qualify_stdlib =
           let ppx_result =
             match wrapper_with_shadowed_stdlib_jsonschema int_jsonschema with
             | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
-                `Assoc (("$id", (`String "file://shared/cases.ml:514")) ::
+                `Assoc (("$id", (`String "file://shared/cases.ml:522")) ::
                   (Stdlib.List.filter
                      (fun (k, _) -> not (Stdlib.String.equal k "$id")) pairs))
             | other -> other in
@@ -4802,7 +4880,7 @@ module Nonrec_type_alias =
               let ppx_result =
                 match foo_jsonschema with
                 | `Assoc pairs when Stdlib.List.mem_assoc "$defs" pairs ->
-                    `Assoc (("$id", (`String "file://shared/cases.ml:524"))
+                    `Assoc (("$id", (`String "file://shared/cases.ml:532"))
                       ::
                       (Stdlib.List.filter
                          (fun (k, _) -> not (Stdlib.String.equal k "$id"))
