@@ -512,6 +512,59 @@ type t =
 { "anyOf": [ { "const": "type" }, { "const": "class" } ] }
 ```
 
+A `[@@jsonschema.compact_variants]` attribute offers a middle ground. Unlike `~variant_as_string`, it only collapses payload-free constructors to a bare `{ "const": "..." }`; constructors with arguments keep the standard array encoding. It therefore supports payloads.
+
+```ocaml
+type t =
+| A
+| B
+| C of int
+[@@deriving jsonschema] [@@jsonschema.compact_variants]
+```
+
+```json
+{
+  "anyOf": [
+    { "const": "A" },
+    { "const": "B" },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "C" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
+It works the same way on polymorphic variants: payload-free constructors collapse to `{ "const": "..." }`, while constructors with arguments keep the array encoding.
+
+```ocaml
+type t =
+[ `Aaa
+| `Bbb
+| `Ccc of int
+]
+[@@deriving jsonschema] [@@jsonschema.compact_variants]
+```
+
+```json
+{
+  "anyOf": [
+    { "const": "Aaa" },
+    { "const": "Bbb" },
+    {
+      "type": "array",
+      "prefixItems": [ { "const": "Ccc" }, { "type": "integer" } ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
+```
+
 #### Records
 
 Records are converted to `{ "type": "object", "properties": {...}, "required": [...], "additionalProperties": false }`.
@@ -996,4 +1049,21 @@ It can also be applied directly to a core type in a variant payload:
 type t =
   | Score of (int [@jsonschema.attrs { maximum = 100; minimum = 0; description = "Percentage" }])
 [@@deriving jsonschema]
+```
+
+```json
+{
+  "anyOf": [
+    {
+      "type": "array",
+      "prefixItems": [
+        { "const": "Score" },
+        { "minimum": 0, "maximum": 100, "description": "Percentage", "type": "integer" }
+      ],
+      "unevaluatedItems": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ]
+}
 ```
