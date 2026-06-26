@@ -1,5 +1,6 @@
 # Unreleased
 
+- **breaking**: remove the `~variant_as_string` flag; use `[@@jsonschema.compact_variants]` to render payload-free constructors as plain string constants
 - add `[@@jsonschema.compact_variants]` support on polymorphic variant type declarations
 
 # 0.0.7

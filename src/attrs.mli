@@ -1,7 +1,4 @@
 type config = {
-  variant_as_string : bool;
-    (** Encode variants as string instead of string array. This option breaks compatibility with yojson derivers and
-        doesn't support constructors with a payload. *)
   polymorphic_variant_tuple : bool;
     (** Preserve the implicit tuple in a polymorphic variant. This option breaks compatibility with yojson derivers. *)
   ocaml_doc : bool;
@@ -47,4 +44,4 @@ val rtag_description : ocaml_doc:bool -> Ppxlib.row_field -> string Location.loc
 
 val jsonschema_td_compact_variants : Ppxlib.type_declaration Ppxlib.Attribute.flag
 val attributes : Ppxlib.Attribute.packed list
-val args : unit -> (bool -> bool -> bool -> 'a, 'a) Ppxlib.Deriving.Args.t
+val args : unit -> (bool -> bool -> 'a, 'a) Ppxlib.Deriving.Args.t
