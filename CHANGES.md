@@ -1,3 +1,7 @@
+# Unreleased
+
+- add `[@@jsonschema.compact_variants]` support on polymorphic variant type declarations
+
 # 0.0.7
 
 - add `[@@jsonschema.compact_variants]` attribute on variant type declarations to render unit constructors as plain string constants (`{ "const": "Name" }`) instead of single-element tuple arrays; constructors with arguments keep the tuple array encoding

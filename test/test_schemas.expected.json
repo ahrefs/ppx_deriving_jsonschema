@@ -2439,6 +2439,20 @@
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "anyOf": [
+        { "const": "Aaa" },
+        { "const": "Bbb" },
+        {
+          "type": "array",
+          "prefixItems": [ { "const": "Ccc" }, { "type": "integer" } ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
         {
           "type": "array",
           "prefixItems": [ { "const": "A" } ],
