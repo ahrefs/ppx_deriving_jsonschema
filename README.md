@@ -316,15 +316,15 @@ type t = {
 ```
 
 ```json
-{ 
-  "type": "object", 
-  "properties": { 
-    "name": { 
-      "type": [ "string", "null" ] 
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": [ "string", "null" ]
     },
   },
-  "required": [ "name" ], 
-  "additionalProperties": false 
+  "required": [ "name" ],
+  "additionalProperties": false
 }
 ```
 
@@ -337,15 +337,15 @@ type t = {
 ```
 
 ```json
-{ 
-  "type": "object", 
-  "properties": { 
-    "name": { 
-      "type": [ "string", "null" ] 
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": [ "string", "null" ]
     },
   },
-  "required": [], 
-  "additionalProperties": false 
+  "required": [],
+  "additionalProperties": false
 }
 ```
 #### Result
@@ -516,7 +516,7 @@ type t =
 }
 ```
 
-A `[@@jsonschema.compact_variants]` attribute on the type declaration collapses payload-free constructors to a bare `{ "const": "..." }`; constructors with arguments keep the standard array encoding. It therefore supports payloads.
+A `[@@jsonschema.compact_variants]` attribute on the type declaration collapses payload-free constructors to a bare `{ "const": "..." }`; constructors with arguments keep the standard array encoding. It preserves the encoding of constructors with a payload.
 
 ```ocaml
 type t =
@@ -928,7 +928,7 @@ Add a format annotation to a string-typed field. It can be used on a type, a fie
 
 ```ocaml
 type t = {
-  name : string [@jsonschema.format "date-time"]; 
+  name : string [@jsonschema.format "date-time"];
 } [@@deriving jsonschema]
 ```
 
@@ -989,7 +989,7 @@ type t = {
 
 Set a default value for a record field. Fields with a default are excluded from `required`.
 
-Primitive literals (`int`, `int32`, `nativeint`, `float`, `string`, `bytes`, `bool`) and **their** `option`, `list`, `tuple`, and `array` variants are serialized automatically. 
+Primitive literals (`int`, `int32`, `nativeint`, `float`, `string`, `bytes`, `bool`) and **their** `option`, `list`, `tuple`, and `array` variants are serialized automatically.
 For non-primitive types (custom variants, records, etc.) a `<type>_to_json` function must be in scope — e.g. via `[@@deriving json]` from melange-json. (`<type> -> Js.Json.t` at melange and `<type> -> Yojson.Basic.t` at native)
 
 ```ocaml
