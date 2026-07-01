@@ -1,6 +1,11 @@
-# Unreleased
+# 0.0.8
 
+- add runtime primitive schema modules under `Ppx_deriving_jsonschema_runtime.Primitives` for Yojson and Melange JSON backends; generated code now uses the selected primitive bindings, including backend-specific `int64` handling and Melange JSON `result` schemas
+- add `Ppx_deriving_jsonschema_runtime.declassify` and simplify `[@jsonschema.default]` serialization so non-primitive and parametric default values can be converted through their generated `*_to_json` functions
+- fix `type nonrec` and other non-recursive type declarations so aliases are not treated as recursive self-references
 - add `[@@jsonschema.compact_variants]` support on polymorphic variant type declarations
+- document primitive modules, result schemas, `compact_variants`, and the completed `[@jsonschema.attrs]` example in the README
+- update GitHub Actions used by build and documentation workflows
 
 # 0.0.7
 
