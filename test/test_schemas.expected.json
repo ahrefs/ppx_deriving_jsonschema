@@ -539,40 +539,40 @@
         "node_a": {
           "type": "object",
           "properties": {
-            "c": {
+            "a_to_c": {
               "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
             },
-            "b": {
+            "a_to_b": {
               "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
             }
           },
-          "required": [ "c", "b" ],
+          "required": [ "a_to_c", "a_to_b" ],
           "additionalProperties": false
         },
         "node_b": {
           "type": "object",
           "properties": {
-            "c": {
+            "b_to_c": {
               "anyOf": [ { "$ref": "#/$defs/node_c" }, { "type": "null" } ]
             },
-            "a": {
+            "b_to_a": {
               "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
             }
           },
-          "required": [ "c", "a" ],
+          "required": [ "b_to_c", "b_to_a" ],
           "additionalProperties": false
         },
         "node_c": {
           "type": "object",
           "properties": {
-            "b": {
+            "c_to_b": {
               "anyOf": [ { "$ref": "#/$defs/node_b" }, { "type": "null" } ]
             },
-            "a": {
+            "c_to_a": {
               "anyOf": [ { "$ref": "#/$defs/node_a" }, { "type": "null" } ]
             }
           },
-          "required": [ "b", "a" ],
+          "required": [ "c_to_b", "c_to_a" ],
           "additionalProperties": false
         }
       },
