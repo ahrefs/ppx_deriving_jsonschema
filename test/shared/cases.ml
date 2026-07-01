@@ -223,6 +223,14 @@ type x_with_extra = {
   y : int;
 }
 [@@deriving jsonschema] [@@allow_extra_fields]
+type strict_obj = { x : int } [@@deriving jsonschema] [@@jsonschema.disallow_extra_fields]
+type inline_record_disallow_extra_fields =
+  | User of {
+      name : string;
+      email : string;
+    } [@jsonschema.disallow_extra_fields]
+  | Guest of { ip : string }
+[@@deriving jsonschema]
 type 'url generic_link_traffic = {
   title : string option;
   url : 'url;

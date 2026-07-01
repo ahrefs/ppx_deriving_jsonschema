@@ -30,6 +30,16 @@ let jsonschema_cd_allow_extra_fields =
     Ast_pattern.(pstr nil)
     (fun () -> ())
 
+let jsonschema_td_disallow_extra_fields =
+  Attribute.declare "jsonschema.disallow_extra_fields" Attribute.Context.type_declaration
+    Ast_pattern.(pstr nil)
+    (fun () -> ())
+
+let jsonschema_cd_disallow_extra_fields =
+  Attribute.declare "jsonschema.disallow_extra_fields" Attribute.Context.constructor_declaration
+    Ast_pattern.(pstr nil)
+    (fun () -> ())
+
 let jsonschema_option = Attribute.declare_flag "jsonschema.option" Attribute.Context.label_declaration
 
 let jsonschema_ld_description = string_attr "jsonschema.description" Attribute.Context.label_declaration
@@ -112,6 +122,8 @@ let attributes =
     Attribute.T jsonschema_polymorphic_variant_name;
     Attribute.T jsonschema_td_allow_extra_fields;
     Attribute.T jsonschema_cd_allow_extra_fields;
+    Attribute.T jsonschema_td_disallow_extra_fields;
+    Attribute.T jsonschema_cd_disallow_extra_fields;
     Attribute.T jsonschema_option;
     Attribute.T jsonschema_ld_description;
     Attribute.T jsonschema_td_description;

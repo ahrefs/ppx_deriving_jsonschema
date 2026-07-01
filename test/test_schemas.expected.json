@@ -81,7 +81,7 @@
         }
       },
       "required": [ "m2", "m" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -302,7 +302,7 @@
         "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t", "l",
         "a", "opt_int", "comment", "kind_f", "date"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -317,7 +317,7 @@
             "a": { "type": "integer" }
           },
           "required": [ "b", "a" ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
       "$ref": "#/$defs/recursive_record"
@@ -372,7 +372,7 @@
                     "value": { "type": "integer" }
                   },
                   "required": [ "right", "left", "value" ],
-                  "additionalProperties": false
+                  "additionalProperties": true
                 }
               ],
               "unevaluatedItems": false,
@@ -389,7 +389,7 @@
       "type": "object",
       "properties": { "y": { "type": "string" }, "x": { "type": "integer" } },
       "required": [ "y", "x" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -402,7 +402,7 @@
             }
           },
           "required": [ "bar" ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "bar": {
           "type": "object",
@@ -412,7 +412,7 @@
             }
           },
           "required": [ "foo" ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
       "$ref": "#/$defs/foo"
@@ -428,7 +428,7 @@
             }
           },
           "required": [ "bar" ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "bar": {
           "type": "object",
@@ -438,7 +438,7 @@
             }
           },
           "required": [ "foo" ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
       "$ref": "#/$defs/bar"
@@ -507,7 +507,7 @@
                     "cond": { "$ref": "#/$defs/expr" }
                   },
                   "required": [ "else_", "then_", "cond" ],
-                  "additionalProperties": false
+                  "additionalProperties": true
                 }
               ],
               "unevaluatedItems": false,
@@ -524,14 +524,14 @@
       "type": "object",
       "properties": { "x": { "type": "integer" } },
       "required": [ "x" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": { "y": { "type": "string" } },
       "required": [ "y" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -547,7 +547,7 @@
             }
           },
           "required": [ "a_to_c", "a_to_b" ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "node_b": {
           "type": "object",
@@ -560,7 +560,7 @@
             }
           },
           "required": [ "b_to_c", "b_to_a" ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "node_c": {
           "type": "object",
@@ -573,7 +573,7 @@
             }
           },
           "required": [ "c_to_b", "c_to_a" ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
       "$ref": "#/$defs/node_a"
@@ -639,7 +639,7 @@
                     "value": { "type": "integer" }
                   },
                   "required": [ "right", "left", "value" ],
-                  "additionalProperties": false
+                  "additionalProperties": true
                 }
               ],
               "unevaluatedItems": false,
@@ -722,7 +722,7 @@
           "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
           "l", "a", "opt_int", "comment", "kind_f", "date"
         ],
-        "additionalProperties": false
+        "additionalProperties": true
       }
     },
     {
@@ -798,7 +798,7 @@
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
             "l", "a", "opt_int", "comment", "kind_f", "date"
           ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       }
     },
@@ -874,7 +874,7 @@
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
             "l", "a", "opt_int", "comment", "kind_f", "date"
           ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         { "type": "string" }
       ],
@@ -956,7 +956,7 @@
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           { "type": "string" }
         ],
@@ -1039,7 +1039,7 @@
               "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
               "l", "a", "opt_int", "comment", "kind_f", "date"
             ],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           { "type": "integer" }
         ],
@@ -1121,7 +1121,7 @@
             "native_int", "unit", "string_ref", "bunch_of_bytes", "c", "t",
             "l", "a", "opt_int", "comment", "kind_f", "date"
           ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       }
     },
@@ -1158,7 +1158,7 @@
         }
       },
       "required": [ "m" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1206,7 +1206,7 @@
         "player": { "type": "string" }
       },
       "required": [ "scores_ref", "player" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1220,14 +1220,14 @@
             "street": { "type": "string" }
           },
           "required": [ "zip", "city", "street" ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "email": { "type": [ "string", "null" ] },
         "age": { "type": "integer" },
         "name": { "type": "string" }
       },
       "required": [ "address", "email", "age", "name" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1240,7 +1240,7 @@
             "street": { "type": "string" }
           },
           "required": [ "zip", "city", "street" ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
       "type": "object",
@@ -1256,7 +1256,7 @@
         "retreat_address", "work_address", "home_address", "email", "age",
         "name"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1297,7 +1297,7 @@
               "type": "object",
               "properties": { "ip": { "type": "string" } },
               "required": [ "ip" ],
-              "additionalProperties": false
+              "additionalProperties": true
             }
           ],
           "unevaluatedItems": false,
@@ -1533,7 +1533,7 @@
             }
           },
           "required": [ "obj2" ],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
       "required": [ "obj1" ],
@@ -1549,12 +1549,47 @@
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
-      "properties": {
-        "url": { "type": "string" },
-        "title": { "type": [ "string", "null" ] }
-      },
-      "required": [ "url", "title" ],
+      "properties": { "x": { "type": "integer" } },
+      "required": [ "x" ],
       "additionalProperties": false
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "User" },
+            {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string" },
+                "name": { "type": "string" }
+              },
+              "required": [ "email", "name" ],
+              "additionalProperties": false
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "Guest" },
+            {
+              "type": "object",
+              "properties": { "ip": { "type": "string" } },
+              "required": [ "ip" ],
+              "additionalProperties": true
+            }
+          ],
+          "unevaluatedItems": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1564,7 +1599,17 @@
         "title": { "type": [ "string", "null" ] }
       },
       "required": [ "url", "title" ],
-      "additionalProperties": false
+      "additionalProperties": true
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "title": { "type": [ "string", "null" ] }
+      },
+      "required": [ "url", "title" ],
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1594,7 +1639,7 @@
         "first": { "type": "integer" }
       },
       "required": [ "label", "second", "first" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1657,7 +1702,7 @@
         }
       },
       "required": [ "max_results", "query" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1671,7 +1716,7 @@
         "name": { "description": "The user's full name", "type": "string" }
       },
       "required": [ "name" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1683,7 +1728,7 @@
         }
       },
       "required": [],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1741,7 +1786,7 @@
                 "x": { "type": "integer" }
               },
               "required": [ "y", "x" ],
-              "additionalProperties": false
+              "additionalProperties": true
             }
           ],
           "unevaluatedItems": false,
@@ -1766,14 +1811,14 @@
         "name": { "description": "The user's full name", "type": "string" }
       },
       "required": [ "age", "name" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": { "name": { "type": "string" } },
       "required": [ "name" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1782,7 +1827,7 @@
         "field": { "description": "explicit wins", "type": "string" }
       },
       "required": [ "field" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1825,7 +1870,7 @@
         }
       },
       "required": [ "name" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1900,7 +1945,7 @@
         "plain": { "type": [ "string", "null" ] }
       },
       "required": [ "plain" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1920,7 +1965,7 @@
         "required_value": { "type": "integer" }
       },
       "required": [ "required_value" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1932,7 +1977,7 @@
         }
       },
       "required": [],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1946,7 +1991,7 @@
         "with_format": { "format": "date-time", "type": "string" }
       },
       "required": [ "with_format" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2021,7 +2066,7 @@
       "type": "object",
       "properties": {
         "b": {
-          "$id": "file://test/cases.ml:380",
+          "$id": "file://test/cases.ml:388",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2032,13 +2077,13 @@
                 }
               },
               "required": [ "children" ],
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "$ref": "#/$defs/self_ref"
         },
         "a": {
-          "$id": "file://test/cases.ml:379",
+          "$id": "file://test/cases.ml:387",
           "$defs": {
             "self_ref": {
               "type": "object",
@@ -2049,14 +2094,14 @@
                 }
               },
               "required": [ "children" ],
-              "additionalProperties": false
+              "additionalProperties": true
             }
           },
           "$ref": "#/$defs/self_ref"
         }
       },
       "required": [ "b", "a" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2144,7 +2189,7 @@
               "prefixItems": [
                 { "const": "BoolAtom" },
                 {
-                  "$id": "file://test/cases.ml:388",
+                  "$id": "file://test/cases.ml:396",
                   "$defs": {
                     "filter": {
                       "anyOf": [
@@ -2209,7 +2254,7 @@
       "type": "object",
       "properties": { "field": { "maximum": 100, "type": "integer" } },
       "required": [ "field" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2235,7 +2280,7 @@
         }
       },
       "required": [ "label", "score" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2262,7 +2307,7 @@
         "score": { "minimum": 0, "maximum": 100, "type": "integer" }
       },
       "required": [ "ratio", "score" ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2313,7 +2358,7 @@
             "from": { "type": "integer" }
           },
           "required": [ "to", "from" ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "empty_list": {
           "default": [],
@@ -2330,7 +2375,7 @@
           "type": "object",
           "properties": { "score": { "type": [ "integer", "null" ] } },
           "required": [ "score" ],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "variant": {
           "default": [ "A" ],
@@ -2378,7 +2423,7 @@
         "score": { "default": 0, "type": [ "integer", "null" ] }
       },
       "required": [],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2405,7 +2450,7 @@
         }
       },
       "required": [],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2416,11 +2461,11 @@
           "type": "object",
           "properties": { "foo": { "type": [ "integer", "null" ] } },
           "required": [],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       },
       "required": [],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
